@@ -76,7 +76,12 @@ body {
   }
 }
 
-/* Outgoing sector word rolls up and fades. */
+/*
+ * Sector word swap. The two words are staged rather than crossfaded: the
+ * outgoing word is fully gone before the incoming one starts. Crossfading them
+ * left both legible at once, and with words of very different lengths
+ * ("Precision Strips" over "Galvanised") that read as garbled text.
+ */
 @keyframes hero-word-out {
   from {
     opacity: 1;
@@ -84,15 +89,14 @@ body {
   }
   to {
     opacity: 0;
-    transform: translateY(-0.55em);
+    transform: translateY(-0.32em);
   }
 }
 
-/* Incoming sector word rises into place. */
 @keyframes hero-word-in {
   from {
     opacity: 0;
-    transform: translateY(0.55em);
+    transform: translateY(0.32em);
   }
   to {
     opacity: 1;
@@ -140,6 +144,12 @@ body {
 
   .hero-highlight::before {
     clip-path: inset(0 0 0 0);
+  }
+
+  /* With the swap animations off the outgoing word would otherwise sit on top
+     of the incoming one at full opacity until it unmounts. */
+  .hero-word-out {
+    display: none !important;
   }
 }
 
@@ -194,12 +204,15 @@ body {
   display: inline-block;
 }
 
-.hero-word-in {
-  animation: hero-word-in 600ms cubic-bezier(0.22, 1, 0.36, 1) both;
+/* Leaves first — ease-in, so it accelerates away. */
+.hero-word-out {
+  animation: hero-word-out 300ms cubic-bezier(0.4, 0, 1, 1) both;
 }
 
-.hero-word-out {
-  animation: hero-word-out 600ms cubic-bezier(0.55, 0, 1, 0.45) both;
+/* Arrives only after the outgoing word has cleared — hence the delay, which
+   must stay in step with HERO_WORD_DURATION in src/lib/hero-slides.ts. */
+.hero-word-in {
+  animation: hero-word-in 420ms cubic-bezier(0, 0, 0.2, 1) 320ms both;
 }
 
 .hero-rise {
