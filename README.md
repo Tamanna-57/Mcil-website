@@ -52,16 +52,20 @@ Below that the sector word drops to a second line, the pipe is hidden, and the
 type grows back to a readable size. If you lengthen a sector word past
 "Precision Strips", re-check the desktop line for overflow.
 
-## ⚠️ Hero images are placeholders
+## Hero images
 
-`public/images/hero-1..4.jpg` are generated steel-toned plates, not the real
-photographs. See [`public/images/README.md`](public/images/README.md) for the
-swap-in list and framing guidelines — save the real photos over those four
-filenames and nothing else needs to change.
+The four photographs live in [`public/images/`](public/images/README.md) as
+`hero-1..4.jpg`. That is the only images folder the site can use — Next.js
+serves static files from `public/` and nothing else. To replace one, save over
+the same filename; no code change is needed.
+
+`hero-1` and `hero-4` are roughly 1000px wide, so they are upscaled on wide
+displays and look softer than the other two. Higher-resolution originals are
+worth dropping in if they exist.
 
 ## Still to do
 
-- Real hero photography (above).
+- Higher-resolution originals for `hero-1` and `hero-4` (above).
 - MCIL logo asset — the header currently sets the wordmark in type.
 - The rest of the site: About, Products, MCIL Advantage, Investors, Media,
   Careers, Contact.

@@ -101,7 +101,7 @@ export default function Hero() {
 
       {/* Legibility scrim: heavier at the bottom-left where the wordmark sits. */}
       <div
-        className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/35 to-black/10"
+        className="absolute inset-0 bg-gradient-to-r from-black/78 via-black/45 to-black/15"
         aria-hidden
       />
       <div

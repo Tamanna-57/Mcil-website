@@ -47,10 +47,10 @@ body {
 /* Slow push-in on the active background plate. */
 @keyframes hero-kenburns {
   from {
-    transform: scale(1.06) translate3d(0, 0, 0);
+    transform: scale(1.02) translate3d(0, 0, 0);
   }
   to {
-    transform: scale(1.16) translate3d(-1.2%, -0.8%, 0);
+    transform: scale(1.12) translate3d(-1%, -0.6%, 0);
   }
 }
 
