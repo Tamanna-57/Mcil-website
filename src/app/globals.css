@@ -1,0 +1,232 @@
+@import "tailwindcss";
+
+/* ------------------------------------------------------------------ */
+/* Design tokens                                                       */
+/* ------------------------------------------------------------------ */
+
+:root {
+  --background: #ffffff;
+  --foreground: #101114;
+
+  /* MCIL palette — steel blues against a near-black ground */
+  --steel-900: #0b0d10;
+  --steel-800: #14171c;
+  --steel-100: #e6eaef;
+  --accent: #1d4ed8;
+
+  /* Hero rhythm. One slide = sweep-in, hold, sweep-out, rest. */
+  --hero-slide-duration: 6000ms;
+  --hero-fade-duration: 1400ms;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-steel-900: var(--steel-900);
+  --color-steel-800: var(--steel-800);
+  --color-steel-100: var(--steel-100);
+  --color-accent: var(--accent);
+  --font-sans: var(--font-inter);
+  --font-display: var(--font-montserrat);
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-inter), Arial, Helvetica, sans-serif;
+}
+
+/* ------------------------------------------------------------------ */
+/* Hero animations                                                     */
+/* ------------------------------------------------------------------ */
+
+/* Slow push-in on the active background plate. */
+@keyframes hero-kenburns {
+  from {
+    transform: scale(1.06) translate3d(0, 0, 0);
+  }
+  to {
+    transform: scale(1.16) translate3d(-1.2%, -0.8%, 0);
+  }
+}
+
+/*
+ * The black bar that wipes across the locked half of the wordmark.
+ * Wipes in from the left, holds, then wipes off to the right, then rests.
+ */
+@keyframes hero-highlight {
+  0% {
+    clip-path: inset(0 100% 0 0);
+  }
+  16% {
+    clip-path: inset(0 0 0 0);
+  }
+  48% {
+    clip-path: inset(0 0 0 0);
+  }
+  64% {
+    clip-path: inset(0 0 0 100%);
+  }
+  100% {
+    clip-path: inset(0 0 0 100%);
+  }
+}
+
+/* Outgoing sector word rolls up and fades. */
+@keyframes hero-word-out {
+  from {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(-0.55em);
+  }
+}
+
+/* Incoming sector word rises into place. */
+@keyframes hero-word-in {
+  from {
+    opacity: 0;
+    transform: translateY(0.55em);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* First-paint reveal for the headline block. */
+@keyframes hero-rise {
+  from {
+    opacity: 0;
+    transform: translateY(1.25rem);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes hero-scroll-cue {
+  0%,
+  100% {
+    transform: translateY(0);
+    opacity: 0.55;
+  }
+  50% {
+    transform: translateY(6px);
+    opacity: 1;
+  }
+}
+
+/* Respect the OS setting: hold every slide still, keep the crossfade. */
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  .hero-plate,
+  .hero-highlight::before,
+  .hero-word,
+  .hero-rise,
+  .hero-scroll-cue {
+    animation: none !important;
+  }
+
+  .hero-highlight::before {
+    clip-path: inset(0 0 0 0);
+  }
+}
+
+/* ------------------------------------------------------------------ */
+/* Hero element styles                                                 */
+/* ------------------------------------------------------------------ */
+
+/* Push-in plate. Paused until its slide becomes active; Hero.tsx rewinds
+   and plays it on activation so every slide starts the move from scratch. */
+.hero-plate {
+  animation: hero-kenburns calc(var(--hero-slide-duration) + var(--hero-fade-duration))
+    linear both paused;
+  will-change: transform;
+}
+
+/* Headline sizing. The longest line — "METAL COATINGS INDIA | PRECISION
+   STRIPS" — measures ~22.4em in Montserrat, so on wide viewports the type is
+   sized off the viewport to keep the whole lockup on a single line like the
+   reference. Below 1024px the sector word drops to a second line and the type
+   grows back to a readable size. */
+.hero-headline {
+  font-size: clamp(1.5rem, 6.2vw, 3.25rem);
+}
+
+.hero-wordmark {
+  white-space: nowrap;
+}
+
+@media (min-width: 1024px) {
+  .hero-headline {
+    font-size: min(3.9vw, 4.5rem);
+    white-space: nowrap;
+  }
+}
+
+/* Black bar behind the locked half of the wordmark. */
+.hero-highlight {
+  padding-inline: 0.08em;
+}
+
+.hero-highlight::before {
+  content: "";
+  position: absolute;
+  inset: -0.1em -0.02em -0.16em -0.02em;
+  z-index: 0;
+  background: #000;
+  animation: hero-highlight 4400ms cubic-bezier(0.76, 0, 0.24, 1) 600ms infinite;
+  clip-path: inset(0 100% 0 0);
+}
+
+.hero-word {
+  display: inline-block;
+}
+
+.hero-word-in {
+  animation: hero-word-in 600ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.hero-word-out {
+  animation: hero-word-out 600ms cubic-bezier(0.55, 0, 1, 0.45) both;
+}
+
+.hero-rise {
+  animation: hero-rise 900ms cubic-bezier(0.22, 1, 0.36, 1) 150ms both;
+}
+
+.hero-indicator {
+  animation: hero-indicator var(--hero-slide-duration) linear both;
+}
+
+@keyframes hero-indicator {
+  from {
+    width: 0%;
+  }
+  to {
+    width: 100%;
+  }
+}
+
+.hero-scroll-cue {
+  animation: hero-scroll-cue 2200ms ease-in-out infinite;
+}
+
+/* With reduced motion the indicator should read as full, not empty. */
+@media (prefers-reduced-motion: reduce) {
+  .hero-indicator {
+    animation: none !important;
+    width: 100%;
+  }
+}
