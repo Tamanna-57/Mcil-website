@@ -15,25 +15,25 @@ export type HeroSlide = {
 export const heroSlides: HeroSlide[] = [
   {
     sector: "Precision Strips",
-    image: "/images/hero/hero-1.jpg",
+    image: "/images/hero-1.jpg",
     alt: "Operators finishing steel sections on the MCIL shop floor",
     position: "50% 55%",
   },
   {
     sector: "Cold Rolled",
-    image: "/images/hero/hero-2.jpg",
+    image: "/images/hero-2.jpg",
     alt: "Cold rolled steel coils stacked along the finished goods bay",
     position: "50% 50%",
   },
   {
     sector: "Galvanised",
-    image: "/images/hero/hero-3.jpg",
+    image: "/images/hero-3.jpg",
     alt: "Bundled galvanised steel stock staged for dispatch",
     position: "50% 50%",
   },
   {
     sector: "HRPO Coils",
-    image: "/images/hero/hero-4.jpg",
+    image: "/images/hero-4.jpg",
     alt: "Hot rolled pickled and oiled coils in the warehouse at sunrise",
     position: "50% 50%",
   },

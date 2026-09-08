@@ -54,9 +54,10 @@ type grows back to a readable size. If you lengthen a sector word past
 
 ## ⚠️ Hero images are placeholders
 
-`public/images/hero/hero-1..4.jpg` are generated colour plates, not the real
-photographs. See [`public/images/hero/README.md`](public/images/hero/README.md)
-for the swap-in list and the framing guidelines.
+`public/images/hero-1..4.jpg` are generated steel-toned plates, not the real
+photographs. See [`public/images/README.md`](public/images/README.md) for the
+swap-in list and framing guidelines — save the real photos over those four
+filenames and nothing else needs to change.
 
 ## Still to do
 
