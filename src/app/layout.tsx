@@ -1,13 +1,17 @@
 import type { Metadata } from "next";
-import { Inter, Montserrat } from "next/font/google";
+import { Josefin_Sans, Montserrat } from "next/font/google";
 import SiteHeader from "@/components/SiteHeader";
 import "./globals.css";
 
-const inter = Inter({
-  variable: "--font-inter",
+/* Display face: thin, geometric, high-waisted. Carries the large headlines
+   and the counter figures, always at light weight with open tracking. */
+const josefin = Josefin_Sans({
+  variable: "--font-josefin",
   subsets: ["latin"],
   display: "swap",
 });
+
+/* Everything else — nav, buttons, chips, labels, body copy. */
 
 const montserrat = Montserrat({
   variable: "--font-montserrat",
@@ -25,7 +29,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
       lang="en"
-      className={`${inter.variable} ${montserrat.variable} h-full antialiased`}
+      className={`${josefin.variable} ${montserrat.variable} h-full antialiased`}
     >
       <body className="min-h-full">
         <SiteHeader />

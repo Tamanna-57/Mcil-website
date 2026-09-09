@@ -13,16 +13,13 @@ export default function Hero() {
   const [outgoing, setOutgoing] = useState<number | null>(null);
   const plateRefs = useRef<(HTMLDivElement | null)[]>([]);
 
-  const goTo = useCallback(
-    (next: number) => {
-      setIndex((current) => {
-        if (next === current) return current;
-        setOutgoing(current);
-        return next;
-      });
-    },
-    [],
-  );
+  const goTo = useCallback((next: number) => {
+    setIndex((current) => {
+      if (next === current) return current;
+      setOutgoing(current);
+      return next;
+    });
+  }, []);
 
   /* Advance on a timer, but hold while the tab is in the background so a
      viewer coming back does not land mid-crossfade. */
@@ -46,7 +43,10 @@ export default function Hero() {
   /* Clear the outgoing word once its roll-out has finished. */
   useEffect(() => {
     if (outgoing === null) return;
-    const timer = window.setTimeout(() => setOutgoing(null), HERO_WORD_DURATION);
+    const timer = window.setTimeout(
+      () => setOutgoing(null),
+      HERO_WORD_DURATION,
+    );
     return () => window.clearTimeout(timer);
   }, [outgoing]);
 
@@ -112,7 +112,7 @@ export default function Hero() {
       {/* Wordmark */}
       <div className="relative z-10 flex h-full items-center">
         <div className="hero-rise w-full px-6 sm:px-10 lg:px-[6.5vw]">
-          <h1 className="hero-headline font-display leading-[1.05] tracking-[-0.01em] text-white uppercase">
+          <h1 className="hero-headline font-display leading-[1.05] text-white uppercase">
             {/* The wordmark never breaks; only the sector word may drop to
                 its own line on narrow viewports. */}
             <span className="hero-wordmark">
@@ -120,7 +120,9 @@ export default function Hero() {
               <span className="hero-highlight relative inline-block font-light">
                 <span className="relative z-10">Coatings India</span>
               </span>
-              <span className="mx-[0.3em] font-light text-white/85 max-lg:hidden">|</span>
+              <span className="mx-[0.3em] font-light text-white/85 max-lg:hidden">
+                |
+              </span>
             </span>
             <span className="relative inline-block align-baseline">
               {outgoing !== null && (

@@ -26,8 +26,14 @@
   --color-steel-800: var(--steel-800);
   --color-steel-100: var(--steel-100);
   --color-accent: var(--accent);
-  --font-sans: var(--font-inter);
-  --font-display: var(--font-montserrat);
+  /* Two roles, applied consistently across the site:
+       font-display — Josefin Sans. Large, thin, openly tracked. Hero
+         headlines, section titles, counter figures. Never below ~1.5rem and
+         never above 300 weight.
+       font-sans    — Montserrat. Everything else: nav, buttons, chips,
+         eyebrows, labels, body copy, and any figure that needs real weight. */
+  --font-sans: var(--font-montserrat);
+  --font-display: var(--font-josefin);
 }
 
 html {
@@ -37,7 +43,15 @@ html {
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: var(--font-inter), Arial, Helvetica, sans-serif;
+  font-family: var(--font-montserrat), Arial, Helvetica, sans-serif;
+}
+
+/* Josefin Sans sits small on the em; large display type needs the extra
+   tracking to breathe and the tighter leading to stay as one block. */
+.type-display {
+  font-family: var(--font-josefin), Arial, Helvetica, sans-serif;
+  font-weight: 300;
+  letter-spacing: 0.08em;
 }
 
 /* ------------------------------------------------------------------ */
@@ -165,13 +179,14 @@ body {
   will-change: transform;
 }
 
-/* Headline sizing. The longest line — "METAL COATINGS INDIA | PRECISION
-   STRIPS" — measures ~22.4em in Montserrat, so on wide viewports the type is
-   sized off the viewport to keep the whole lockup on a single line like the
-   reference. Below 1024px the sector word drops to a second line and the type
-   grows back to a readable size. */
+/* Headline sizing. In Josefin Sans at 0.04em tracking the longest line —
+   "METAL COATINGS INDIA | PRECISION STRIPS" — measures ~23.8em, so at 87vw of
+   usable width the type has to sit at or under 3.66vw to stay on one row.
+   Below 1024px the sector word drops to a second line and the type grows back
+   to a readable size. Re-measure if the display face or tracking changes. */
 .hero-headline {
   font-size: clamp(1.5rem, 6.2vw, 3.25rem);
+  letter-spacing: 0.04em;
 }
 
 .hero-wordmark {
@@ -180,7 +195,7 @@ body {
 
 @media (min-width: 1024px) {
   .hero-headline {
-    font-size: min(3.9vw, 4.5rem);
+    font-size: min(3.6vw, 4.2rem);
     white-space: nowrap;
   }
 }
@@ -317,13 +332,13 @@ body {
    clamped back to something readable on small ones. */
 .ir-headline {
   font-size: clamp(2rem, 7vw, 2.75rem);
-  line-height: 1.06;
-  letter-spacing: -0.01em;
+  line-height: 1.1;
+  letter-spacing: 0.06em;
 }
 
 @media (min-width: 1024px) {
   .ir-headline {
-    font-size: min(3.4vw, 3.5rem);
+    font-size: min(3.6vw, 3.75rem);
   }
 }
 

@@ -11,7 +11,7 @@ export default function Home() {
         id="about"
         className="bg-white px-6 py-24 sm:px-10 lg:px-[6.5vw]"
       >
-        <p className="font-display text-xs tracking-[0.2em] text-accent uppercase">
+        <p className="text-xs font-semibold tracking-[0.2em] text-accent uppercase">
           About MCIL
         </p>
         <h2 className="mt-4 max-w-3xl font-display text-3xl leading-tight font-light text-steel-900 sm:text-4xl">

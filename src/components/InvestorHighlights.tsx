@@ -32,7 +32,7 @@ export default function InvestorHighlights() {
           observer.disconnect();
         }
       },
-      { threshold: 0.25 },
+      { threshold: 0.2 },
     );
     observer.observe(el);
     return () => observer.disconnect();
@@ -42,33 +42,41 @@ export default function InvestorHighlights() {
     <section
       ref={sectionRef}
       id="highlights"
-      className="bg-white px-6 py-24 sm:px-10 lg:px-[6.5vw] lg:py-32"
+      className="flex min-h-[100svh] flex-col justify-center bg-white px-6 py-20 sm:px-10 lg:px-[6.5vw]"
     >
-      <div className="mx-auto max-w-4xl text-center">
-        <h2
-          className="hl-reveal font-display text-[clamp(1.6rem,4.6vw,2.9rem)] leading-tight font-light tracking-[0.06em] text-steel-900 uppercase"
-          data-visible={started}
-        >
-          {highlightsHeading.title}
-        </h2>
+      <div className="mx-auto w-full max-w-6xl">
+        <header className="text-center">
+          <h2
+            className="hl-reveal type-display text-[clamp(1.7rem,5.4vw,3.9rem)] leading-[1.15] text-steel-900 uppercase"
+            data-visible={started}
+          >
+            {highlightsHeading.title}
+          </h2>
+          <p
+            className="hl-reveal mt-5 text-sm tracking-[0.04em] text-steel-900/60 sm:text-base"
+            data-visible={started}
+            style={{ animationDelay: "120ms" }}
+          >
+            {highlightsHeading.standfirst}
+          </p>
+        </header>
+
+        {/* Hairline quadrants. The rules give the whitespace structure so the
+            band reads as composed rather than sparse. */}
+        <dl className="mt-12 grid grid-cols-1 sm:grid-cols-2 lg:mt-16">
+          {highlights.map((item, i) => (
+            <Stat key={item.label} item={item} started={started} index={i} />
+          ))}
+        </dl>
+
         <p
-          className="hl-reveal mt-4 text-base text-steel-900/65"
+          className="hl-reveal mt-12 text-center text-xs tracking-[0.03em] text-steel-900/45"
           data-visible={started}
-          style={{ animationDelay: "120ms" }}
+          style={{ animationDelay: "900ms" }}
         >
-          {highlightsHeading.standfirst}
+          Placeholder figures — pending audited results.
         </p>
       </div>
-
-      <dl className="mx-auto mt-16 grid max-w-4xl gap-x-12 gap-y-14 sm:grid-cols-2 lg:mt-20 lg:gap-y-16">
-        {highlights.map((item, i) => (
-          <Stat key={item.label} item={item} started={started} index={i} />
-        ))}
-      </dl>
-
-      <p className="mx-auto mt-16 max-w-4xl text-center text-xs text-steel-900/50">
-        Placeholder figures — pending audited results.
-      </p>
     </section>
   );
 }
@@ -86,9 +94,19 @@ function Stat({
   const shown = useCountUp(item.value, started, index * 140);
   const final = format(item.value, decimals, item);
 
+  /* Rules run between the quadrants only, never around the outside. */
+  const rules = [
+    "border-steel-900/10",
+    index % 2 === 0 ? "sm:border-r" : "",
+    index < highlights.length - 2 ? "sm:border-b" : "",
+    index > 0 ? "border-t sm:border-t-0" : "",
+  ]
+    .filter(Boolean)
+    .join(" ");
+
   return (
     <div
-      className="hl-reveal text-center"
+      className={`hl-reveal px-6 py-10 text-center sm:py-12 ${rules}`}
       data-visible={started}
       style={{ animationDelay: `${220 + index * 110}ms` }}
     >
@@ -96,12 +114,12 @@ function Stat({
           value once, from the sibling below. */}
       <dd
         aria-hidden
-        className="font-display text-[clamp(1.9rem,5vw,3rem)] leading-none font-light tracking-[0.03em] text-steel-900 uppercase tabular-nums"
+        className="type-display text-[clamp(2.1rem,5.6vw,4rem)] leading-none tracking-[0.05em] text-steel-900 uppercase tabular-nums"
       >
         {format(shown, decimals, item)}
       </dd>
       <dd className="sr-only">{final}</dd>
-      <dt className="mt-4 text-sm text-steel-900/65 sm:text-base">
+      <dt className="mt-5 text-sm tracking-[0.06em] text-steel-900/60 sm:text-base">
         {item.label}
       </dt>
     </div>
@@ -125,8 +143,7 @@ function format(
 
 /**
  * Climbs from zero to `target` once `active` turns true, easing out so the
- * figure settles rather than stopping dead. Returns the target immediately when
- * the viewer has asked for reduced motion.
+ * figure settles rather than stopping dead.
  */
 function useCountUp(target: number, active: boolean, delay = 0) {
   const [value, setValue] = useState(0);

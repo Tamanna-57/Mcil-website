@@ -120,7 +120,7 @@ function Copy({ slide }: { slide: InvestorSlide }) {
   return (
     <div className="max-w-xl">
       <p
-        className="ir-in font-display text-[11px] font-semibold tracking-[0.22em] text-[var(--ir-soft)] uppercase sm:text-xs"
+        className="ir-in text-[11px] font-semibold tracking-[0.22em] text-[var(--ir-soft)] uppercase sm:text-xs"
         style={{ animationDelay: "80ms" }}
       >
         {slide.eyebrow}
@@ -150,7 +150,7 @@ function Copy({ slide }: { slide: InvestorSlide }) {
       <div className="ir-in mt-9" style={{ animationDelay: "540ms" }}>
         <a
           href={slide.cta.href}
-          className="ir-cta group inline-flex items-center gap-3 px-7 py-3.5 font-display text-[13px] font-semibold tracking-[0.1em] text-white uppercase"
+          className="ir-cta group inline-flex items-center gap-3 px-7 py-3.5 text-[13px] font-semibold tracking-[0.1em] text-white uppercase"
         >
           {slide.cta.label}
           <svg
@@ -184,7 +184,7 @@ function Metrics({ slide }: { slide: InvestorSlide }) {
           }
         >
           <h2
-            className="ir-in font-display text-xl leading-tight font-semibold text-white sm:text-2xl"
+            className="ir-in text-xl leading-tight font-semibold text-white sm:text-2xl"
             style={{ animationDelay: `${300 + gi * 90}ms` }}
           >
             {group.heading}
@@ -218,7 +218,7 @@ function Metric({ metric, delay }: { metric: HeroMetric; delay: number }) {
   return (
     <div>
       <dt
-        className="ir-chip ir-in relative inline-block font-display text-sm font-bold tracking-[0.06em] text-white uppercase sm:text-base"
+        className="ir-chip ir-in relative inline-block text-sm font-bold tracking-[0.06em] text-white uppercase sm:text-base"
         style={{ animationDelay: `${delay}ms` }}
       >
         <span className="relative z-10">{metric.label}</span>
@@ -228,11 +228,11 @@ function Metric({ metric, delay }: { metric: HeroMetric; delay: number }) {
         style={{ animationDelay: `${delay + 70}ms` }}
       >
         {metric.prefix ? (
-          <span className="font-display text-lg font-light text-white/85 sm:text-xl">
+          <span className="text-lg font-light text-white/85 sm:text-xl">
             {metric.prefix}
           </span>
         ) : null}
-        <span className="font-display text-3xl leading-none font-bold text-white sm:text-[2.1rem]">
+        <span className="text-3xl leading-none font-bold text-white sm:text-[2.1rem]">
           {metric.trend ? (
             <span aria-hidden className="mr-0.5">
               {metric.trend === "up" ? "↑" : "↓"}
@@ -267,10 +267,10 @@ function Banner({ slide }: { slide: InvestorSlide }) {
                 i > 0 ? "border-l border-white/30 pl-6 sm:pl-10" : ""
               }`}
             >
-              <span className="font-display text-[11px] font-semibold tracking-[0.14em] text-white/85 uppercase">
+              <span className="text-[11px] font-semibold tracking-[0.14em] text-white/85 uppercase">
                 {stat.label}
               </span>
-              <span className="font-display text-2xl leading-none font-bold text-white sm:text-3xl">
+              <span className="text-2xl leading-none font-bold text-white sm:text-3xl">
                 {stat.trend ? (
                   <span aria-hidden className="mr-0.5">
                     {stat.trend === "up" ? "↑" : "↓"}
