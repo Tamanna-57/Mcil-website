@@ -112,7 +112,7 @@ export default function InvestorPerformance() {
                   role="tab"
                   aria-selected={active}
                   onClick={() => setMetricId(m.id)}
-                  className={`block w-full cursor-pointer border-b border-steel-900/15 py-4 text-left text-sm tracking-[0.08em] uppercase transition-colors sm:text-base ${
+                  className={`block w-full cursor-pointer border-b border-steel-900/15 py-4 text-left text-sm font-semibold tracking-[0.08em] uppercase transition-colors sm:text-base ${
                     active
                       ? "text-[var(--ir-accent)]"
                       : "text-steel-900/80 hover:text-steel-900"
@@ -158,7 +158,7 @@ function Chart({
   visible: boolean;
 }) {
   return (
-    <div className="rounded-lg border border-steel-900/12 px-4 pt-8 pb-5 sm:px-8 sm:pt-10">
+    <div className="rounded-lg border border-steel-900/30 px-4 pt-8 pb-5 sm:px-8 sm:pt-10">
       <div
         className="flex h-[15rem] items-end gap-2 sm:h-[18rem] sm:gap-6 lg:h-[20rem]"
         role="img"
@@ -182,7 +182,7 @@ function Chart({
               {format(point.value, metric.kind, currency, decimals)}
             </span>
             <div
-              className="perf-bar mx-auto w-full max-w-[4.5rem] sm:max-w-[6rem]"
+              className="perf-bar mx-auto w-full max-w-[3.25rem] sm:max-w-[4.5rem]"
               style={{
                 height: visible ? `${(point.value / scaleMax) * 100}%` : "0%",
                 transitionDelay: `${i * BAR_STAGGER}ms`,

@@ -355,23 +355,45 @@ body {
   padding-block: 0.1em;
 }
 
+/*
+ * Glass rather than a solid fill: a translucent wash of the accent over a
+ * blurred crop of the photograph behind it, with a hairline inner highlight
+ * along the top edge. The tint stays heavy enough to hold white text at AA.
+ * Rendered as box-shadow, not border, so the pseudo-element's inset box is
+ * unchanged and the wipe still lines up with the type.
+ */
 .ir-chip::before {
   content: "";
   position: absolute;
   inset: 0;
   z-index: 0;
-  background: var(--ir-accent);
+  background: color-mix(in srgb, var(--ir-accent) 62%, transparent);
+  -webkit-backdrop-filter: blur(14px) saturate(140%);
+  backdrop-filter: blur(14px) saturate(140%);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.28),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.14);
   animation: ir-wipe 520ms cubic-bezier(0.76, 0, 0.24, 1) both;
   animation-delay: inherit;
 }
 
 .ir-cta {
-  background: var(--ir-accent);
-  transition: background-color 250ms ease, transform 250ms ease;
+  background: color-mix(in srgb, var(--ir-accent) 55%, transparent);
+  -webkit-backdrop-filter: blur(16px) saturate(140%);
+  backdrop-filter: blur(16px) saturate(140%);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.3),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.16);
+  transition:
+    background-color 250ms ease,
+    box-shadow 250ms ease;
 }
 
 .ir-cta:hover {
-  background: var(--ir-accent-strong);
+  background: color-mix(in srgb, var(--ir-accent) 78%, transparent);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.38),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.24);
 }
 
 .ir-cta:focus-visible {
@@ -382,9 +404,14 @@ body {
 .ir-banner {
   background: linear-gradient(
     100deg,
-    var(--ir-accent) 0%,
-    var(--ir-accent-strong) 100%
+    color-mix(in srgb, var(--ir-accent) 58%, transparent) 0%,
+    color-mix(in srgb, var(--ir-accent-strong) 62%, transparent) 100%
   );
+  -webkit-backdrop-filter: blur(20px) saturate(140%);
+  backdrop-filter: blur(20px) saturate(140%);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.26),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.14);
   animation: ir-wipe 760ms cubic-bezier(0.76, 0, 0.24, 1) 700ms both;
 }
 
@@ -414,13 +441,15 @@ body {
 }
 
 .ir-arrow-solid {
-  border: 1px solid var(--ir-accent);
-  background: var(--ir-accent);
+  border: 1px solid rgba(255, 255, 255, 0.28);
+  background: color-mix(in srgb, var(--ir-accent) 58%, transparent);
+  -webkit-backdrop-filter: blur(14px) saturate(140%);
+  backdrop-filter: blur(14px) saturate(140%);
 }
 
 .ir-arrow-solid:hover {
-  background: var(--ir-accent-strong);
-  border-color: var(--ir-accent-strong);
+  background: color-mix(in srgb, var(--ir-accent) 82%, transparent);
+  border-color: rgba(255, 255, 255, 0.45);
 }
 
 .ir-progress {
@@ -541,5 +570,23 @@ body {
   .perf-bar,
   .perf-label {
     transition: none !important;
+  }
+}
+
+/* Without backdrop-filter the translucent tints would leave white text sitting
+   on raw photography, so those browsers get the solid fills back. */
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .ir-chip::before,
+  .ir-cta,
+  .ir-arrow-solid {
+    background: var(--ir-accent);
+  }
+
+  .ir-banner {
+    background: linear-gradient(
+      100deg,
+      var(--ir-accent) 0%,
+      var(--ir-accent-strong) 100%
+    );
   }
 }
