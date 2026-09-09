@@ -40,7 +40,11 @@ export const heroSlides: HeroSlide[] = [
 ];
 
 /** Milliseconds each slide holds before advancing. Mirrors --hero-slide-duration. */
-export const HERO_SLIDE_DURATION = 6000;
+export const HERO_SLIDE_DURATION = 4500;
 
-/** Milliseconds the outgoing sector word takes to roll away. */
-export const HERO_WORD_DURATION = 600;
+/**
+ * Milliseconds for the whole sector word swap: the outgoing word leaves, then
+ * the incoming one arrives. Kept in step with the .hero-word-out / .hero-word-in
+ * timings in src/app/globals.css.
+ */
+export const HERO_WORD_DURATION = 740;

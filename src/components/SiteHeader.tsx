@@ -4,12 +4,12 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 
 const navLinks = [
-  { label: "About Us", href: "#about" },
-  { label: "Products", href: "#products" },
-  { label: "MCIL Advantage", href: "#advantage" },
-  { label: "Investors", href: "#investors" },
-  { label: "Media", href: "#media" },
-  { label: "Careers", href: "#careers" },
+  { label: "About Us", href: "/#about" },
+  { label: "Products", href: "/#products" },
+  { label: "MCIL Advantage", href: "/#advantage" },
+  { label: "Investors", href: "/investors" },
+  { label: "Media", href: "/#media" },
+  { label: "Careers", href: "/#careers" },
 ];
 
 export default function SiteHeader() {
@@ -34,7 +34,7 @@ export default function SiteHeader() {
       <div className="flex items-center justify-between gap-6 px-6 py-4 sm:px-10 lg:px-[3vw]">
         <Link
           href="/"
-          className="font-display text-lg font-extrabold tracking-[0.14em] text-white uppercase"
+          className="text-lg font-bold tracking-[0.16em] text-white uppercase"
         >
           MCIL
         </Link>

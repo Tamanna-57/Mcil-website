@@ -15,8 +15,8 @@
   --accent: #1d4ed8;
 
   /* Hero rhythm. One slide = sweep-in, hold, sweep-out, rest. */
-  --hero-slide-duration: 6000ms;
-  --hero-fade-duration: 1400ms;
+  --hero-slide-duration: 4500ms;
+  --hero-fade-duration: 1000ms;
 }
 
 @theme inline {
@@ -26,8 +26,14 @@
   --color-steel-800: var(--steel-800);
   --color-steel-100: var(--steel-100);
   --color-accent: var(--accent);
-  --font-sans: var(--font-inter);
-  --font-display: var(--font-montserrat);
+  /* Two roles, applied consistently across the site:
+       font-display — Josefin Sans. Large, thin, openly tracked. Hero
+         headlines, section titles, counter figures. Never below ~1.5rem and
+         never above 300 weight.
+       font-sans    — Montserrat. Everything else: nav, buttons, chips,
+         eyebrows, labels, body copy, and any figure that needs real weight. */
+  --font-sans: var(--font-montserrat);
+  --font-display: var(--font-josefin);
 }
 
 html {
@@ -37,7 +43,15 @@ html {
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: var(--font-inter), Arial, Helvetica, sans-serif;
+  font-family: var(--font-montserrat), Arial, Helvetica, sans-serif;
+}
+
+/* Josefin Sans sits small on the em; large display type needs the extra
+   tracking to breathe and the tighter leading to stay as one block. */
+.type-display {
+  font-family: var(--font-josefin), Arial, Helvetica, sans-serif;
+  font-weight: 300;
+  letter-spacing: 0.08em;
 }
 
 /* ------------------------------------------------------------------ */
@@ -76,7 +90,12 @@ body {
   }
 }
 
-/* Outgoing sector word rolls up and fades. */
+/*
+ * Sector word swap. The two words are staged rather than crossfaded: the
+ * outgoing word is fully gone before the incoming one starts. Crossfading them
+ * left both legible at once, and with words of very different lengths
+ * ("Precision Strips" over "Galvanised") that read as garbled text.
+ */
 @keyframes hero-word-out {
   from {
     opacity: 1;
@@ -84,15 +103,14 @@ body {
   }
   to {
     opacity: 0;
-    transform: translateY(-0.55em);
+    transform: translateY(-0.32em);
   }
 }
 
-/* Incoming sector word rises into place. */
 @keyframes hero-word-in {
   from {
     opacity: 0;
-    transform: translateY(0.55em);
+    transform: translateY(0.32em);
   }
   to {
     opacity: 1;
@@ -141,6 +159,12 @@ body {
   .hero-highlight::before {
     clip-path: inset(0 0 0 0);
   }
+
+  /* With the swap animations off the outgoing word would otherwise sit on top
+     of the incoming one at full opacity until it unmounts. */
+  .hero-word-out {
+    display: none !important;
+  }
 }
 
 /* ------------------------------------------------------------------ */
@@ -155,13 +179,14 @@ body {
   will-change: transform;
 }
 
-/* Headline sizing. The longest line — "METAL COATINGS INDIA | PRECISION
-   STRIPS" — measures ~22.4em in Montserrat, so on wide viewports the type is
-   sized off the viewport to keep the whole lockup on a single line like the
-   reference. Below 1024px the sector word drops to a second line and the type
-   grows back to a readable size. */
+/* Headline sizing. In Josefin Sans at 0.04em tracking the longest line —
+   "METAL COATINGS INDIA | PRECISION STRIPS" — measures ~23.8em, so at 87vw of
+   usable width the type has to sit at or under 3.66vw to stay on one row.
+   Below 1024px the sector word drops to a second line and the type grows back
+   to a readable size. Re-measure if the display face or tracking changes. */
 .hero-headline {
   font-size: clamp(1.5rem, 6.2vw, 3.25rem);
+  letter-spacing: 0.04em;
 }
 
 .hero-wordmark {
@@ -170,7 +195,7 @@ body {
 
 @media (min-width: 1024px) {
   .hero-headline {
-    font-size: min(3.9vw, 4.5rem);
+    font-size: min(3.6vw, 4.2rem);
     white-space: nowrap;
   }
 }
@@ -186,7 +211,7 @@ body {
   inset: -0.1em -0.02em -0.16em -0.02em;
   z-index: 0;
   background: #000;
-  animation: hero-highlight 4400ms cubic-bezier(0.76, 0, 0.24, 1) 600ms infinite;
+  animation: hero-highlight 3400ms cubic-bezier(0.76, 0, 0.24, 1) 500ms infinite;
   clip-path: inset(0 100% 0 0);
 }
 
@@ -194,12 +219,15 @@ body {
   display: inline-block;
 }
 
-.hero-word-in {
-  animation: hero-word-in 600ms cubic-bezier(0.22, 1, 0.36, 1) both;
+/* Leaves first — ease-in, so it accelerates away. */
+.hero-word-out {
+  animation: hero-word-out 300ms cubic-bezier(0.4, 0, 1, 1) both;
 }
 
-.hero-word-out {
-  animation: hero-word-out 600ms cubic-bezier(0.55, 0, 1, 0.45) both;
+/* Arrives only after the outgoing word has cleared — hence the delay, which
+   must stay in step with HERO_WORD_DURATION in src/lib/hero-slides.ts. */
+.hero-word-in {
+  animation: hero-word-in 420ms cubic-bezier(0, 0, 0.2, 1) 320ms both;
 }
 
 .hero-rise {
@@ -228,5 +256,218 @@ body {
   .hero-indicator {
     animation: none !important;
     width: 100%;
+  }
+}
+
+/* ------------------------------------------------------------------ */
+/* Investor Relations hero                                             */
+/* ------------------------------------------------------------------ */
+
+/*
+ * The reference (mahindra.com) fills its chips, CTA and banner with brand red.
+ * MCIL's is a steel blue instead: it belongs to the same family as --accent on
+ * the homepage, and reads as cool-rolled steel against the warm warehouse
+ * photography rather than fighting it.
+ */
+:root {
+  --ir-accent: #0d5aa7;
+  --ir-accent-strong: #073f78;
+  --ir-soft: #9ecbeb;
+  --ir-slide-duration: 5500ms;
+  --ir-fade-duration: 800ms;
+}
+
+@keyframes ir-kenburns {
+  from {
+    transform: scale(1.02) translate3d(0, 0, 0);
+  }
+  to {
+    transform: scale(1.1) translate3d(-0.8%, -0.5%, 0);
+  }
+}
+
+/* Staggered reveal for every piece of slide content. */
+@keyframes ir-in {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Chips and the banner wipe open left to right, the same gesture as the
+   highlight bar on the homepage wordmark. */
+@keyframes ir-wipe {
+  from {
+    clip-path: inset(0 100% 0 0);
+  }
+  to {
+    clip-path: inset(0 0 0 0);
+  }
+}
+
+@keyframes ir-progress {
+  from {
+    width: 0%;
+  }
+  to {
+    width: 100%;
+  }
+}
+
+.ir-plate {
+  animation: ir-kenburns calc(var(--ir-slide-duration) + var(--ir-fade-duration))
+    linear both paused;
+  will-change: transform;
+}
+
+.ir-in {
+  animation: ir-in 620ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+/* Headline sizing mirrors the homepage: viewport-driven on wide screens,
+   clamped back to something readable on small ones. */
+.ir-headline {
+  font-size: clamp(2rem, 7vw, 2.75rem);
+  line-height: 1.1;
+  letter-spacing: 0.06em;
+}
+
+@media (min-width: 1024px) {
+  .ir-headline {
+    font-size: min(3.6vw, 3.75rem);
+  }
+}
+
+.ir-chip {
+  padding-inline: 0.4em;
+  padding-block: 0.1em;
+}
+
+.ir-chip::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  background: var(--ir-accent);
+  animation: ir-wipe 520ms cubic-bezier(0.76, 0, 0.24, 1) both;
+  animation-delay: inherit;
+}
+
+.ir-cta {
+  background: var(--ir-accent);
+  transition: background-color 250ms ease, transform 250ms ease;
+}
+
+.ir-cta:hover {
+  background: var(--ir-accent-strong);
+}
+
+.ir-cta:focus-visible {
+  outline: 2px solid #fff;
+  outline-offset: 3px;
+}
+
+.ir-banner {
+  background: linear-gradient(
+    100deg,
+    var(--ir-accent) 0%,
+    var(--ir-accent-strong) 100%
+  );
+  animation: ir-wipe 760ms cubic-bezier(0.76, 0, 0.24, 1) 700ms both;
+}
+
+.ir-arrow {
+  display: grid;
+  place-items: center;
+  width: 42px;
+  height: 42px;
+  cursor: pointer;
+  color: #fff;
+  transition: background-color 220ms ease, border-color 220ms ease;
+}
+
+.ir-arrow:focus-visible {
+  outline: 2px solid #fff;
+  outline-offset: 2px;
+}
+
+.ir-arrow-ghost {
+  border: 1px solid rgba(255, 255, 255, 0.55);
+  background: transparent;
+}
+
+.ir-arrow-ghost:hover {
+  background: rgba(255, 255, 255, 0.16);
+  border-color: #fff;
+}
+
+.ir-arrow-solid {
+  border: 1px solid var(--ir-accent);
+  background: var(--ir-accent);
+}
+
+.ir-arrow-solid:hover {
+  background: var(--ir-accent-strong);
+  border-color: var(--ir-accent-strong);
+}
+
+.ir-progress {
+  animation: ir-progress var(--ir-slide-duration) linear both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ir-plate,
+  .ir-in,
+  .ir-chip::before,
+  .ir-banner,
+  .ir-progress {
+    animation: none !important;
+  }
+
+  .ir-chip::before,
+  .ir-banner {
+    clip-path: inset(0 0 0 0);
+  }
+
+  .ir-progress {
+    width: 100%;
+  }
+}
+
+/* ------------------------------------------------------------------ */
+/* Investor highlights band                                            */
+/* ------------------------------------------------------------------ */
+
+/* Held invisible until the band scrolls into view, then rises in behind the
+   counters. data-visible is flipped by the same IntersectionObserver that
+   starts the count, so type and figures arrive together. */
+.hl-reveal {
+  opacity: 0;
+}
+
+.hl-reveal[data-visible="true"] {
+  animation: hl-reveal 700ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@keyframes hl-reveal {
+  from {
+    opacity: 0;
+    transform: translateY(18px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hl-reveal,
+  .hl-reveal[data-visible="true"] {
+    animation: none !important;
+    opacity: 1;
   }
 }
