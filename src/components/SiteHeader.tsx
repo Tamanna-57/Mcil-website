@@ -4,12 +4,12 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 
 const navLinks = [
-  { label: "About Us", href: "#about" },
-  { label: "Products", href: "#products" },
-  { label: "MCIL Advantage", href: "#advantage" },
-  { label: "Investors", href: "#investors" },
-  { label: "Media", href: "#media" },
-  { label: "Careers", href: "#careers" },
+  { label: "About Us", href: "/#about" },
+  { label: "Products", href: "/#products" },
+  { label: "MCIL Advantage", href: "/#advantage" },
+  { label: "Investors", href: "/investors" },
+  { label: "Media", href: "/#media" },
+  { label: "Careers", href: "/#careers" },
 ];
 
 export default function SiteHeader() {

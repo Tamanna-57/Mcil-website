@@ -243,3 +243,180 @@ body {
     width: 100%;
   }
 }
+
+/* ------------------------------------------------------------------ */
+/* Investor Relations hero                                             */
+/* ------------------------------------------------------------------ */
+
+/*
+ * The reference (mahindra.com) fills its chips, CTA and banner with brand red.
+ * MCIL's is a steel blue instead: it belongs to the same family as --accent on
+ * the homepage, and reads as cool-rolled steel against the warm warehouse
+ * photography rather than fighting it.
+ */
+:root {
+  --ir-accent: #0d5aa7;
+  --ir-accent-strong: #073f78;
+  --ir-soft: #9ecbeb;
+  --ir-slide-duration: 8000ms;
+}
+
+@keyframes ir-kenburns {
+  from {
+    transform: scale(1.02) translate3d(0, 0, 0);
+  }
+  to {
+    transform: scale(1.1) translate3d(-0.8%, -0.5%, 0);
+  }
+}
+
+/* Staggered reveal for every piece of slide content. */
+@keyframes ir-in {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Chips and the banner wipe open left to right, the same gesture as the
+   highlight bar on the homepage wordmark. */
+@keyframes ir-wipe {
+  from {
+    clip-path: inset(0 100% 0 0);
+  }
+  to {
+    clip-path: inset(0 0 0 0);
+  }
+}
+
+@keyframes ir-progress {
+  from {
+    width: 0%;
+  }
+  to {
+    width: 100%;
+  }
+}
+
+.ir-plate {
+  animation: ir-kenburns calc(var(--ir-slide-duration) + 1000ms) linear both paused;
+  will-change: transform;
+}
+
+.ir-in {
+  animation: ir-in 620ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+/* Headline sizing mirrors the homepage: viewport-driven on wide screens,
+   clamped back to something readable on small ones. */
+.ir-headline {
+  font-size: clamp(2rem, 7vw, 2.75rem);
+  line-height: 1.06;
+  letter-spacing: -0.01em;
+}
+
+@media (min-width: 1024px) {
+  .ir-headline {
+    font-size: min(3.4vw, 3.5rem);
+  }
+}
+
+.ir-chip {
+  padding-inline: 0.4em;
+  padding-block: 0.1em;
+}
+
+.ir-chip::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  background: var(--ir-accent);
+  animation: ir-wipe 520ms cubic-bezier(0.76, 0, 0.24, 1) both;
+  animation-delay: inherit;
+}
+
+.ir-cta {
+  background: var(--ir-accent);
+  transition: background-color 250ms ease, transform 250ms ease;
+}
+
+.ir-cta:hover {
+  background: var(--ir-accent-strong);
+}
+
+.ir-cta:focus-visible {
+  outline: 2px solid #fff;
+  outline-offset: 3px;
+}
+
+.ir-banner {
+  background: linear-gradient(
+    100deg,
+    var(--ir-accent) 0%,
+    var(--ir-accent-strong) 100%
+  );
+  animation: ir-wipe 760ms cubic-bezier(0.76, 0, 0.24, 1) 700ms both;
+}
+
+.ir-arrow {
+  display: grid;
+  place-items: center;
+  width: 42px;
+  height: 42px;
+  cursor: pointer;
+  color: #fff;
+  transition: background-color 220ms ease, border-color 220ms ease;
+}
+
+.ir-arrow:focus-visible {
+  outline: 2px solid #fff;
+  outline-offset: 2px;
+}
+
+.ir-arrow-ghost {
+  border: 1px solid rgba(255, 255, 255, 0.55);
+  background: transparent;
+}
+
+.ir-arrow-ghost:hover {
+  background: rgba(255, 255, 255, 0.16);
+  border-color: #fff;
+}
+
+.ir-arrow-solid {
+  border: 1px solid var(--ir-accent);
+  background: var(--ir-accent);
+}
+
+.ir-arrow-solid:hover {
+  background: var(--ir-accent-strong);
+  border-color: var(--ir-accent-strong);
+}
+
+.ir-progress {
+  animation: ir-progress var(--ir-slide-duration) linear both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ir-plate,
+  .ir-in,
+  .ir-chip::before,
+  .ir-banner,
+  .ir-progress {
+    animation: none !important;
+  }
+
+  .ir-chip::before,
+  .ir-banner {
+    clip-path: inset(0 0 0 0);
+  }
+
+  .ir-progress {
+    width: 100%;
+  }
+}
