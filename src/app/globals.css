@@ -54,6 +54,14 @@ body {
   letter-spacing: 0.08em;
 }
 
+/* Figures carry more weight than headings do — in the reference the counter
+   numbers read noticeably heavier than the thin title above them. */
+.type-figure {
+  font-family: var(--font-josefin), Arial, Helvetica, sans-serif;
+  font-weight: 500;
+  letter-spacing: 0.05em;
+}
+
 /* ------------------------------------------------------------------ */
 /* Hero animations                                                     */
 /* ------------------------------------------------------------------ */
@@ -469,5 +477,69 @@ body {
   .hl-reveal[data-visible="true"] {
     animation: none !important;
     opacity: 1;
+  }
+}
+
+/* ------------------------------------------------------------------ */
+/* Performance chart                                                   */
+/* ------------------------------------------------------------------ */
+
+/*
+ * Bars grow by animating height rather than scaleY: the value label sits above
+ * the bar in the same flex column, so a height change carries the label up with
+ * it, where a transform would leave it stranded. Six bars is well within what
+ * layout animation can afford.
+ */
+.perf-bar {
+  background: var(--ir-accent);
+  height: 0;
+  transition: height var(--perf-grow, 850ms) cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* Labels catch up just after their bar has settled. */
+.perf-label {
+  opacity: 0;
+  transition: opacity 420ms ease;
+}
+
+.perf-label[data-visible="true"] {
+  opacity: 1;
+}
+
+/* Switching metric re-runs the same transition, so bars morph between series
+   instead of jumping. */
+
+.perf-radio {
+  display: inline-block;
+  width: 18px;
+  height: 18px;
+  border: 1.5px solid var(--color-steel-900, #0b0d10);
+  border-radius: 9999px;
+  position: relative;
+  transition:
+    border-color 200ms ease,
+    box-shadow 200ms ease;
+}
+
+.peer:checked + .perf-radio {
+  border-color: var(--ir-accent);
+}
+
+.peer:checked + .perf-radio::after {
+  content: "";
+  position: absolute;
+  inset: 3px;
+  border-radius: 9999px;
+  background: var(--ir-accent);
+}
+
+.peer:focus-visible + .perf-radio {
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--ir-accent) 35%, transparent);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .perf-bar,
+  .perf-label {
+    transition: none !important;
   }
 }

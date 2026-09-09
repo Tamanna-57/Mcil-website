@@ -114,7 +114,7 @@ function Stat({
           value once, from the sibling below. */}
       <dd
         aria-hidden
-        className="type-display text-[clamp(2.1rem,5.6vw,4rem)] leading-none tracking-[0.05em] text-steel-900 uppercase tabular-nums"
+        className="type-figure text-[clamp(2.1rem,5.6vw,4rem)] leading-none text-steel-900 uppercase tabular-nums"
       >
         {format(shown, decimals, item)}
       </dd>
