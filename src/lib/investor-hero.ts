@@ -131,4 +131,4 @@ export const investorSlides: InvestorSlide[] = [
 ];
 
 /** Milliseconds each slide holds before advancing. Mirrors --ir-slide-duration. */
-export const IR_SLIDE_DURATION = 8000;
+export const IR_SLIDE_DURATION = 5500;

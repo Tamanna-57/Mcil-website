@@ -15,8 +15,8 @@
   --accent: #1d4ed8;
 
   /* Hero rhythm. One slide = sweep-in, hold, sweep-out, rest. */
-  --hero-slide-duration: 6000ms;
-  --hero-fade-duration: 1400ms;
+  --hero-slide-duration: 4500ms;
+  --hero-fade-duration: 1000ms;
 }
 
 @theme inline {
@@ -196,7 +196,7 @@ body {
   inset: -0.1em -0.02em -0.16em -0.02em;
   z-index: 0;
   background: #000;
-  animation: hero-highlight 4400ms cubic-bezier(0.76, 0, 0.24, 1) 600ms infinite;
+  animation: hero-highlight 3400ms cubic-bezier(0.76, 0, 0.24, 1) 500ms infinite;
   clip-path: inset(0 100% 0 0);
 }
 
@@ -258,7 +258,8 @@ body {
   --ir-accent: #0d5aa7;
   --ir-accent-strong: #073f78;
   --ir-soft: #9ecbeb;
-  --ir-slide-duration: 8000ms;
+  --ir-slide-duration: 5500ms;
+  --ir-fade-duration: 800ms;
 }
 
 @keyframes ir-kenburns {
@@ -303,7 +304,8 @@ body {
 }
 
 .ir-plate {
-  animation: ir-kenburns calc(var(--ir-slide-duration) + 1000ms) linear both paused;
+  animation: ir-kenburns calc(var(--ir-slide-duration) + var(--ir-fade-duration))
+    linear both paused;
   will-change: transform;
 }
 

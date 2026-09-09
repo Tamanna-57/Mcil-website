@@ -40,7 +40,7 @@ export const heroSlides: HeroSlide[] = [
 ];
 
 /** Milliseconds each slide holds before advancing. Mirrors --hero-slide-duration. */
-export const HERO_SLIDE_DURATION = 6000;
+export const HERO_SLIDE_DURATION = 4500;
 
 /**
  * Milliseconds for the whole sector word swap: the outgoing word leaves, then

@@ -52,8 +52,11 @@ export default function InvestorHero() {
       {investorSlides.map((s, i) => (
         <div
           key={s.id}
-          className="absolute inset-0 transition-opacity duration-1000 ease-[cubic-bezier(0.4,0,0.2,1)] motion-reduce:transition-none"
-          style={{ opacity: i === index ? 1 : 0 }}
+          className="absolute inset-0 transition-opacity ease-[cubic-bezier(0.4,0,0.2,1)] motion-reduce:transition-none"
+          style={{
+            opacity: i === index ? 1 : 0,
+            transitionDuration: "var(--ir-fade-duration)",
+          }}
           aria-hidden={i !== index}
         >
           <div
