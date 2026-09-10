@@ -701,9 +701,10 @@ body {
 @media (max-height: 720px) {
   .ap-panel {
     padding: 1.15rem;
+    margin-top: 1rem;
   }
 
-  .ap-figure {
-    aspect-ratio: 2 / 1;
+  .ap-title {
+    font-size: clamp(1.2rem, 2.8vw, 1.6rem);
   }
 }
