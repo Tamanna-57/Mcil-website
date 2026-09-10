@@ -9,7 +9,7 @@ export default function Home() {
             revamp lands here. */}
       <section
         id="about"
-        className="bg-white px-6 py-24 sm:px-10 lg:px-[6.5vw]"
+        className="bg-background px-6 py-24 sm:px-10 lg:px-[6.5vw]"
       >
         <p className="text-xs font-semibold tracking-[0.2em] text-accent uppercase">
           About MCIL
@@ -18,7 +18,7 @@ export default function Home() {
           A public limited company promoted by the Khandelwal family in December
           1994, manufacturing cold rolled steel strips, coils and HRPO steel.
         </h2>
-        <p className="mt-6 max-w-2xl text-base leading-relaxed text-steel-900/70">
+        <p className="mt-6 max-w-2xl text-base leading-relaxed text-steel-800">
           MCIL supplies auto components, white goods, electrical equipment and
           power transmission manufacturers, and is BIS certified under IS:
           513:2008 (Licence no. CM/L-9512364723).

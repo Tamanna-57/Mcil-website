@@ -5,14 +5,28 @@
 /* ------------------------------------------------------------------ */
 
 :root {
-  --background: #ffffff;
-  --foreground: #101114;
+  /*
+   * Palette. Soft blues over an almost-white page, navy for type, one warm
+   * accent. The steel-* names are kept so existing utilities keep working —
+   * they now point at the navy/slate end of this palette rather than the old
+   * near-black one.
+   */
+  --brand: #7497c6;
+  --brand-light: #b7ccef;
+  --brand-pale: #cadbf5;
+  --brand-deep: #4a6fa5;
 
-  /* MCIL palette — steel blues against a near-black ground */
-  --steel-900: #0b0d10;
-  --steel-800: #14171c;
-  --steel-100: #e6eaef;
-  --accent: #1d4ed8;
+  --background: #f5f7f9;
+  --surface: #ffffff;
+  --foreground: #1a192f;
+
+  --steel-900: #1a192f;
+  --steel-800: #454455;
+  --steel-100: #cadbf5;
+
+  /* Warm accent. Low contrast on white by design — decorative eyebrows and
+     marks only, never body copy. */
+  --accent: #d99a5b;
 
   /* Hero rhythm. One slide = sweep-in, hold, sweep-out, rest. */
   --hero-slide-duration: 4500ms;
@@ -26,6 +40,11 @@
   --color-steel-800: var(--steel-800);
   --color-steel-100: var(--steel-100);
   --color-accent: var(--accent);
+  --color-surface: var(--surface);
+  --color-brand: var(--brand);
+  --color-brand-light: var(--brand-light);
+  --color-brand-pale: var(--brand-pale);
+  --color-brand-deep: var(--brand-deep);
   /* Two roles, applied consistently across the site:
        font-display — Josefin Sans. Large, thin, openly tracked. Hero
          headlines, section titles, counter figures. Never below ~1.5rem and
@@ -278,9 +297,9 @@ body {
  * photography rather than fighting it.
  */
 :root {
-  --ir-accent: #0d5aa7;
-  --ir-accent-strong: #073f78;
-  --ir-soft: #9ecbeb;
+  --ir-accent: var(--brand);
+  --ir-accent-strong: var(--brand-deep);
+  --ir-soft: var(--brand-pale);
   --ir-slide-duration: 5500ms;
   --ir-fade-duration: 800ms;
 }
@@ -588,5 +607,23 @@ body {
       var(--ir-accent) 0%,
       var(--ir-accent-strong) 100%
     );
+  }
+}
+
+/* Bento supporting graphics. Tracks and the gauge arc fill in behind the
+   counters, on the same trigger. */
+.hl-track {
+  width: 0;
+  transition: width 900ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.hl-arc {
+  transition: stroke-dashoffset 1100ms cubic-bezier(0.22, 1, 0.36, 1) 420ms;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hl-track,
+  .hl-arc {
+    transition: none !important;
   }
 }
