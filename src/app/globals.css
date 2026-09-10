@@ -627,3 +627,44 @@ body {
     transition: none !important;
   }
 }
+
+/* ------------------------------------------------------------------ */
+/* About — scroll-driven process                                       */
+/* ------------------------------------------------------------------ */
+
+/* Photographs travel horizontally between steps: the outgoing plate carries on
+   to the left while the incoming one arrives from the right, so a step change
+   reads as one continuous movement rather than a crossfade in place. */
+.ap-plate {
+  transition:
+    transform 700ms cubic-bezier(0.22, 1, 0.36, 1),
+    opacity 520ms ease;
+  will-change: transform, opacity;
+}
+
+/* Step copy re-enters on each change; the block is keyed so this replays. */
+.ap-in {
+  animation: ap-in 520ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@keyframes ap-in {
+  from {
+    opacity: 0;
+    transform: translateX(18px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ap-plate {
+    transition: opacity 200ms ease !important;
+    transform: none !important;
+  }
+
+  .ap-in {
+    animation: none !important;
+  }
+}
