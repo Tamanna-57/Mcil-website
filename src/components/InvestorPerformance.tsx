@@ -63,14 +63,14 @@ export default function InvestorPerformance() {
     <section
       ref={sectionRef}
       id="performance"
-      className="flex min-h-[100svh] flex-col justify-center bg-white px-6 py-20 sm:px-10 lg:px-[6.5vw]"
+      className="flex min-h-[100svh] flex-col justify-center bg-background px-6 py-20 sm:px-10 lg:px-[6.5vw]"
     >
       <div className="mx-auto w-full max-w-6xl">
         <header className="text-center">
           <h2 className="type-display text-[clamp(1.7rem,5.4vw,3.9rem)] leading-[1.15] text-steel-900 uppercase">
             {performanceHeading.title}
           </h2>
-          <p className="mt-4 text-sm tracking-[0.04em] text-steel-900/60 sm:text-base">
+          <p className="mt-4 text-sm tracking-[0.04em] text-steel-800 sm:text-base">
             {performanceHeading.standfirst}
           </p>
         </header>
@@ -112,9 +112,9 @@ export default function InvestorPerformance() {
                   role="tab"
                   aria-selected={active}
                   onClick={() => setMetricId(m.id)}
-                  className={`block w-full cursor-pointer border-b border-steel-900/15 py-4 text-left text-sm font-semibold tracking-[0.08em] uppercase transition-colors sm:text-base ${
+                  className={`block w-full cursor-pointer border-b border-steel-900/12 py-4 text-left text-sm font-semibold tracking-[0.08em] uppercase transition-colors sm:text-base ${
                     active
-                      ? "text-[var(--ir-accent)]"
+                      ? "text-brand-deep"
                       : "text-steel-900/80 hover:text-steel-900"
                   }`}
                 >
@@ -133,7 +133,7 @@ export default function InvestorPerformance() {
           />
         </div>
 
-        <p className="mt-8 text-center text-xs text-steel-900/45 lg:text-right">
+        <p className="mt-8 text-center text-xs text-steel-800/70 lg:text-right">
           Placeholder figures — pending audited results.
           {currency === "usd"
             ? ` Converted at US$${USD_MN_PER_INR_CR} mn per ₹1 crore.`
@@ -158,7 +158,7 @@ function Chart({
   visible: boolean;
 }) {
   return (
-    <div className="rounded-lg border border-steel-900/30 px-4 pt-8 pb-5 sm:px-8 sm:pt-10">
+    <div className="rounded-2xl bg-surface px-4 pt-8 pb-5 ring-1 ring-steel-900/12 sm:px-8 sm:pt-10">
       <div
         className="flex h-[15rem] items-end gap-2 sm:h-[18rem] sm:gap-6 lg:h-[20rem]"
         role="img"
@@ -192,7 +192,7 @@ function Chart({
         ))}
       </div>
 
-      <div className="mt-0 border-t border-steel-900/25" />
+      <div className="mt-0 border-t border-steel-900/20" />
 
       <div className="flex gap-2 sm:gap-6">
         {metric.points.map((point) => (
