@@ -201,7 +201,10 @@ function Stage({ current }: { current: number }) {
               fill
               sizes="(min-width: 1024px) 58vw, 92vw"
               priority={i === 0}
-              className="object-cover"
+              /* Anchored to the top: the step number and title are burned into
+                 the top-left of each photograph, so a centred crop cuts them
+                 off as soon as the frame is wider than the 3:2 source. */
+              className="object-cover object-top"
             />
           </div>
         );
