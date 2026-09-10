@@ -1,11 +1,15 @@
 /**
  * "Highlights" bento on the investor page.
  *
- * ⚠️ PLACEHOLDER DATA, as with investor-hero.ts. mcil.net publishes no headline
- * figures, so these are plausible numbers for a cold rolled steel maker of
- * MCIL's size. The values line up with investor-performance.ts so the page
- * stays internally consistent — keep them in step when the audited numbers
- * land. Only `value`, `decimals`, `prefix` and `suffix` drive the counter.
+ * Installed capacity is REAL — 7,400 TPA, per MCIL's own disclosures (3,200
+ * TPA at commissioning, raised on adding the galvanising line).
+ *
+ * ⚠️ The financial figures are still PLACEHOLDER. MCIL's results are published
+ * only as scanned PDFs, so nothing machine-readable was available; these are
+ * scaled to be plausible against the real 7,400 TPA rather than left at the
+ * group-sized numbers they started as. They line up with
+ * investor-performance.ts — keep the two in step when audited numbers land.
+ * Only `value`, `decimals`, `prefix` and `suffix` drive the counter.
  */
 
 export type Bar = { label: string; percent: number };
@@ -59,21 +63,22 @@ export const highlights: Highlight[] = [
   },
   {
     id: "revenue",
-    value: 486,
+    value: 44,
     prefix: "₹ ",
     suffix: " Cr",
     title: "Revenue",
-    body: "FY26 turnover, up 24% on the prior year on stronger despatch volumes.",
+    body: "FY26 turnover, up 10% on the prior year on stronger despatch volumes.",
     visual: "gauge",
-    gauge: { fill: 0.8, caption: "+24% year on year" },
+    gauge: { fill: 0.7, caption: "+10% year on year" },
   },
   {
     id: "pat",
-    value: 34,
+    value: 1.8,
+    decimals: 1,
     prefix: "₹ ",
     suffix: " Cr",
     title: "Profit After Tax",
-    body: "Margin expansion of 140 bps lifted profit 2.1x over FY25.",
+    body: "Margin expansion of 90 bps lifted profit 20% over FY25.",
     visual: "bars",
     bars: [
       { label: "Auto Components", percent: 46 },
@@ -83,11 +88,10 @@ export const highlights: Highlight[] = [
   },
   {
     id: "installed",
-    value: 1.2,
-    decimals: 1,
-    suffix: " Lakh MT",
+    value: 7400,
+    suffix: " TPA",
     title: "Installed Capacity",
-    body: "Across cold rolling, HRPO and galvanising lines, supplying manufacturers nationwide.",
+    body: "Commissioned at 3,200 TPA and raised to 7,400 TPA on adding the galvanising line at Faridabad.",
     visual: "thumbs",
     cta: { label: "View Financials", href: "#performance" },
   },

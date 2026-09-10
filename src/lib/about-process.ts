@@ -63,7 +63,7 @@ export const processSteps: ProcessStep[] = [
     body: "Finished coils are annealed, skin-passed to the required temper, oiled and wrapped. Each carries its heat number and test certificate through to despatch.",
     facts: [
       { label: "Certification", value: "BIS IS: 513:2008" },
-      { label: "Despatch", value: "Pan-India" },
+      { label: "Works", value: "Faridabad, Haryana" },
     ],
     image: "/images/process-4.jpg",
     alt: "Finished cold rolled coils lined up for despatch",
