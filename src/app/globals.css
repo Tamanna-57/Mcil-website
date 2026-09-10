@@ -29,6 +29,9 @@
   --accent: #d99a5b;
 
   /* Hero rhythm. One slide = sweep-in, hold, sweep-out, rest. */
+  /* Height of the fixed site header; sticky sections reserve it. */
+  --header-h: 68px;
+
   --hero-slide-duration: 4500ms;
   --hero-fade-duration: 1000ms;
 }
@@ -666,5 +669,41 @@ body {
 
   .ap-in {
     animation: none !important;
+  }
+}
+
+/*
+ * The process panel is pinned to the full viewport, but the header is fixed on
+ * top of it. Reserve that height so the pill bar cannot slide underneath, and
+ * tighten the panel on short windows — at 640px of content a 700px-tall window
+ * was clipping the top of the card.
+ */
+.ap-pin {
+  padding-top: calc(var(--header-h) + 1.75rem);
+  padding-bottom: 1.75rem;
+}
+
+@media (max-height: 860px) {
+  .ap-title {
+    font-size: clamp(1.35rem, 3.2vw, 1.9rem);
+  }
+
+  .ap-panel {
+    padding: 1.5rem;
+    margin-top: 1.25rem;
+  }
+
+  .ap-figure {
+    aspect-ratio: 16 / 9;
+  }
+}
+
+@media (max-height: 720px) {
+  .ap-panel {
+    padding: 1.15rem;
+  }
+
+  .ap-figure {
+    aspect-ratio: 2 / 1;
   }
 }

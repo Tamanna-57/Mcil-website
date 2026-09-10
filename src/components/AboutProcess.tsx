@@ -72,13 +72,13 @@ export default function AboutProcess() {
         ref={trackRef}
         style={{ height: `${processSteps.length * SCROLL_PER_STEP}vh` }}
       >
-        <div className="sticky top-0 flex h-[100svh] items-center px-4 py-20 sm:px-8 lg:px-[5vw]">
+        <div className="ap-pin sticky top-0 flex h-[100svh] items-center px-4 sm:px-8 lg:px-[5vw]">
           <div className="mx-auto w-full max-w-6xl">
             <header className="text-center">
               <p className="text-[11px] font-semibold tracking-[0.24em] text-accent uppercase">
                 [ Process ]
               </p>
-              <h2 className="type-display mt-3 text-[clamp(1.5rem,4vw,2.6rem)] leading-[1.15] text-steel-900 uppercase">
+              <h2 className="ap-title type-display mt-3 text-[clamp(1.5rem,4vw,2.6rem)] leading-[1.15] text-steel-900 uppercase">
                 How a coil is made
               </h2>
             </header>
@@ -112,7 +112,7 @@ export default function AboutProcess() {
               </div>
             </div>
 
-            <div className="mt-6 grid items-center gap-8 rounded-3xl bg-surface p-5 ring-1 ring-steel-900/10 sm:p-7 lg:grid-cols-[minmax(0,0.78fr)_minmax(0,1fr)] lg:gap-12 lg:p-9">
+            <div className="ap-panel mt-6 grid items-center gap-8 rounded-3xl bg-surface p-5 ring-1 ring-steel-900/10 sm:p-7 lg:grid-cols-[minmax(0,0.78fr)_minmax(0,1fr)] lg:gap-12 lg:p-9">
               <Copy step={active} index={step} />
               <Stage current={step} />
             </div>
@@ -178,7 +178,7 @@ function Copy({ step, index }: { step: ProcessStep; index: number }) {
  */
 function Stage({ current }: { current: number }) {
   return (
-    <div className="relative order-1 aspect-[16/10] overflow-hidden rounded-2xl bg-steel-900/5 lg:order-2">
+    <div className="ap-figure relative order-1 aspect-[16/10] overflow-hidden rounded-2xl bg-steel-900/5 lg:order-2">
       {processSteps.map((s, i) => {
         const offset = i - current;
         return (

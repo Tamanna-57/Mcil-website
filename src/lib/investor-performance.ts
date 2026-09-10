@@ -1,11 +1,12 @@
 /**
  * "Performance over the years" chart on the investor page.
  *
- * ⚠️ PLACEHOLDER DATA. mcil.net publishes no historical figures, so this is a
- * plausible six-year run for a cold rolled steel maker of MCIL's size. The
- * FY26 endpoints line up with the highlights band above (revenue ₹486 Cr,
- * PAT ₹34 Cr, EBITDA margin 9.8%) so the page stays internally consistent —
- * keep them in step when the audited numbers land.
+ * ⚠️ PLACEHOLDER DATA. MCIL publishes results only as scanned PDFs, so no
+ * machine-readable history was available. This is a plausible six-year run for
+ * a plant of MCIL's real 7,400 TPA capacity. The FY26 endpoints line up with
+ * the bento above (revenue ₹44 Cr, PAT ₹1.8 Cr, EBITDA margin 9.1%) so the
+ * page stays internally consistent — keep them in step when audited numbers
+ * land.
  */
 
 export type MetricKind = "currency" | "percent";
@@ -31,12 +32,12 @@ export const performanceMetrics: PerformanceMetric[] = [
     label: "Revenue",
     kind: "currency",
     points: [
-      { year: 2021, value: 268 },
-      { year: 2022, value: 312 },
-      { year: 2023, value: 359 },
-      { year: 2024, value: 402 },
-      { year: 2025, value: 441 },
-      { year: 2026, value: 486 },
+      { year: 2021, value: 26 },
+      { year: 2022, value: 30 },
+      { year: 2023, value: 34 },
+      { year: 2024, value: 37 },
+      { year: 2025, value: 40 },
+      { year: 2026, value: 44 },
     ],
   },
   {
@@ -44,12 +45,12 @@ export const performanceMetrics: PerformanceMetric[] = [
     label: "EBITDA",
     kind: "currency",
     points: [
-      { year: 2021, value: 18.2 },
-      { year: 2022, value: 22.6 },
-      { year: 2023, value: 27.9 },
-      { year: 2024, value: 33.4 },
-      { year: 2025, value: 39.8 },
-      { year: 2026, value: 47.6 },
+      { year: 2021, value: 1.6 },
+      { year: 2022, value: 2.0 },
+      { year: 2023, value: 2.4 },
+      { year: 2024, value: 2.8 },
+      { year: 2025, value: 3.3 },
+      { year: 2026, value: 4.0 },
     ],
   },
   {
@@ -57,12 +58,12 @@ export const performanceMetrics: PerformanceMetric[] = [
     label: "PAT",
     kind: "currency",
     points: [
-      { year: 2021, value: 8.4 },
-      { year: 2022, value: 11.2 },
-      { year: 2023, value: 15.1 },
-      { year: 2024, value: 20.3 },
-      { year: 2025, value: 26.7 },
-      { year: 2026, value: 34.0 },
+      { year: 2021, value: 0.5 },
+      { year: 2022, value: 0.7 },
+      { year: 2023, value: 0.9 },
+      { year: 2024, value: 1.2 },
+      { year: 2025, value: 1.5 },
+      { year: 2026, value: 1.8 },
     ],
   },
   {
@@ -70,12 +71,12 @@ export const performanceMetrics: PerformanceMetric[] = [
     label: "EBITDA Margin",
     kind: "percent",
     points: [
-      { year: 2021, value: 6.8 },
-      { year: 2022, value: 7.2 },
-      { year: 2023, value: 7.8 },
-      { year: 2024, value: 8.3 },
-      { year: 2025, value: 9.0 },
-      { year: 2026, value: 9.8 },
+      { year: 2021, value: 6.2 },
+      { year: 2022, value: 6.7 },
+      { year: 2023, value: 7.1 },
+      { year: 2024, value: 7.6 },
+      { year: 2025, value: 8.2 },
+      { year: 2026, value: 9.1 },
     ],
   },
   {
@@ -84,11 +85,11 @@ export const performanceMetrics: PerformanceMetric[] = [
     kind: "percent",
     points: [
       { year: 2021, value: 10 },
-      { year: 2022, value: 12 },
+      { year: 2022, value: 10 },
       { year: 2023, value: 12 },
-      { year: 2024, value: 15 },
+      { year: 2024, value: 12 },
       { year: 2025, value: 15 },
-      { year: 2026, value: 18 },
+      { year: 2026, value: 15 },
     ],
   },
 ];
