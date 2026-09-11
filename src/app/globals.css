@@ -750,8 +750,58 @@ body {
    sliding keeps the type still while the panel grows past it. */
 .mega-panel {
   overflow: hidden;
-  border-top: 1px solid color-mix(in srgb, var(--steel-900) 12%, transparent);
+  border-top: 1px solid color-mix(in srgb, #fff 45%, transparent);
+  box-shadow: 0 24px 60px -24px
+    color-mix(in srgb, var(--steel-900) 55%, transparent);
   animation: mega-drop 320ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+/* The two faces of the panel are tinted glass rather than flat fills, so the
+   photograph behind carries through and the panel reads as part of the page
+   instead of a white card dropped on top of it. */
+.mega-face {
+  backdrop-filter: blur(26px) saturate(165%);
+  -webkit-backdrop-filter: blur(26px) saturate(165%);
+}
+
+/* Left face: the lighter end of the palette, so the display type has the
+   contrast it needs. */
+.mega-face--lead {
+  background: linear-gradient(
+    155deg,
+    color-mix(in srgb, var(--surface) 86%, transparent),
+    color-mix(in srgb, var(--brand-pale) 90%, transparent)
+  );
+  box-shadow: inset 0 1px 0 color-mix(in srgb, #fff 60%, transparent);
+}
+
+/* Right face: a shade deeper, which separates the link columns from the
+   headline without a hard rule between them. */
+.mega-face--links {
+  background: linear-gradient(
+    200deg,
+    color-mix(in srgb, var(--brand-pale) 86%, transparent),
+    color-mix(in srgb, var(--brand-light) 90%, transparent)
+  );
+  box-shadow: inset 1px 1px 0 color-mix(in srgb, #fff 45%, transparent);
+}
+
+/* Hairline between the two link columns, in white rather than ink — ink reads
+   as a crack in the glass. */
+.mega-divider {
+  border-color: color-mix(in srgb, #fff 65%, transparent);
+}
+
+/* Without backdrop-filter the tints would sit as washed-out films over the
+   hero, so fall back to opaque panels. */
+@supports not (backdrop-filter: blur(1px)) {
+  .mega-face--lead {
+    background: var(--surface);
+  }
+
+  .mega-face--links {
+    background: var(--brand-pale);
+  }
 }
 
 @keyframes mega-drop {
