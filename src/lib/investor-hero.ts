@@ -1,14 +1,9 @@
 /**
  * Investor Relations hero.
  *
- * ⚠️ EVERY NUMBER IN THIS FILE IS PLACEHOLDER DATA. mcil.net/investors.aspx
- * publishes only document categories — Policies/Codes & Unclaimed Dividend,
- * Stock Exchange Compliance, Letters Sent to Stock Exchange, and Financials —
- * with no headline figures to lift. The metrics below are plausible for a cold
- * rolled steel maker of MCIL's size and exist so the layout can be reviewed.
- * Replace them with audited results before this goes anywhere near production.
- *
- * The CTA targets map to the four real categories from the live site.
+ * REAL FIGURES for FY2025-26, from MCIL's annual report. See
+ * investor-performance.ts for the full sourcing note — the three investor
+ * files share one series and must stay in step.
  */
 
 export type HeroMetric = {
@@ -57,7 +52,7 @@ export type InvestorSlide = {
 export const investorSlides: InvestorSlide[] = [
   {
     id: "results",
-    eyebrow: "MCIL FY26 Results",
+    eyebrow: "MCIL FY 2025-26 Results",
     headline: ["Strength in", "every coil"],
     cta: { label: "View Financials", href: "#financials" },
     image: "/images/hero-4.jpg",
@@ -67,43 +62,55 @@ export const investorSlides: InvestorSlide[] = [
       {
         heading: "Operating Performance",
         metrics: [
-          { label: "Despatches", prefix: "Vol", value: "18%", trend: "up" },
-          {
-            label: "Capacity",
-            prefix: "Utilisation",
-            value: "82%",
-            note: "Cold rolling and HRPO lines combined",
-          },
-        ],
-        footnote: "Led by auto component and white goods demand",
-      },
-      {
-        heading: "Financial Momentum",
-        metrics: [
           {
             label: "Revenue",
-            prefix: "YoY",
-            value: "24%",
-            trend: "up",
-            note: "FY26 over FY25",
+            prefix: "₹",
+            value: "148.98 Cr",
+            trend: "down",
+            note: "From ₹160.25 Cr in FY25",
           },
           {
             label: "EBITDA",
-            prefix: "YoY",
-            value: "31%",
-            trend: "up",
-            note: "Margin expansion of 140 bps",
+            prefix: "₹",
+            value: "3.51 Cr",
+            trend: "down",
+            note: "2.4% of revenue",
           },
-          { label: "PAT", prefix: "YoY", value: "2.1x", trend: "up" },
+        ],
+        footnote: "Revenue eased with steel prices through the year",
+      },
+      {
+        heading: "Returns to Shareholders",
+        metrics: [
+          {
+            label: "PAT",
+            prefix: "₹",
+            value: "2.40 Cr",
+            trend: "up",
+            note: "₹239.97 lakh against ₹236.96 lakh",
+          },
+          {
+            label: "EPS",
+            prefix: "₹",
+            value: "3.28",
+            trend: "up",
+            note: "Basic and diluted, from ₹3.23",
+          },
+          {
+            label: "Dividend",
+            prefix: "₹",
+            value: "1.00",
+            note: "Per equity share",
+          },
         ],
       },
     ],
     banner: {
       stats: [
-        { label: "FY26 Revenue", value: "24%", trend: "up" },
-        { label: "EBITDA Margin", value: "9.8%" },
+        { label: "FY26 Revenue", value: "₹ 148.98 Cr" },
+        { label: "Profit After Tax", value: "₹ 2.40 Cr" },
       ],
-      footnote: "*Placeholder figures — pending audited results",
+      footnote: "FY2025-26, as reported",
     },
   },
   {

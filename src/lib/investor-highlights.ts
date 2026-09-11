@@ -1,18 +1,21 @@
 /**
  * "Highlights" bento on the investor page.
  *
- * Installed capacity is REAL — 7,400 TPA, per MCIL's own disclosures (3,200
- * TPA at commissioning, raised on adding the galvanising line).
+ * REAL FIGURES for FY2025-26, from MCIL's annual report and the published
+ * annual P&L (BSE 531810). See investor-performance.ts for the full sourcing
+ * note; the two files share the same series and must stay in step.
  *
- * ⚠️ The financial figures are still PLACEHOLDER. MCIL's results are published
- * only as scanned PDFs, so nothing machine-readable was available; these are
- * scaled to be plausible against the real 7,400 TPA rather than left at the
- * group-sized numbers they started as. They line up with
- * investor-performance.ts — keep the two in step when audited numbers land.
- * Only `value`, `decimals`, `prefix` and `suffix` drive the counter.
+ * Nothing here is invented. Where a figure could not be sourced — plant
+ * capacity, end-market split — the card was changed rather than filled in.
  */
 
-export type Bar = { label: string; percent: number };
+export type Bar = {
+  label: string;
+  /** Bar width, 0-100. For series that are not percentages this is scaled. */
+  percent: number;
+  /** Optional label shown instead of "<percent>%", e.g. "₹ 3.28". */
+  display?: string;
+};
 
 export type Highlight = {
   id: string;
@@ -22,7 +25,7 @@ export type Highlight = {
   decimals?: number;
   /** Rendered before the figure, e.g. "₹ ". */
   prefix?: string;
-  /** Rendered after the figure. Set small when it should sit as a superscript. */
+  /** Rendered after the figure. */
   suffix?: string;
   /** Whether the suffix is set small and raised, as "%" is in the reference. */
   suffixSmall?: boolean;
@@ -30,6 +33,8 @@ export type Highlight = {
   body: string;
   /** Which supporting graphic the card carries. */
   visual: "mix" | "gauge" | "bars" | "thumbs";
+  /** Heading above the panel on the tall card. */
+  panelTitle?: string;
   /** visual: "gauge" — arc fill 0-1, plus its caption. */
   gauge?: { fill: number; caption: string };
   /** visual: "bars" and "mix". */
@@ -39,61 +44,66 @@ export type Highlight = {
 };
 
 export const highlightsHeading = {
-  eyebrow: "FY26",
-  title: "Strength in numbers",
+  eyebrow: "FY 2025-26",
+  title: "The year in numbers",
   standfirst:
-    "Six years of steady expansion across cold rolling, HRPO and galvanising.",
+    "Revenue eased with steel prices while profit and the dividend held steady.",
 };
 
 export const highlights: Highlight[] = [
   {
-    id: "capacity",
-    value: 82,
-    suffix: "%",
-    suffixSmall: true,
-    title: "Running Near Capacity",
-    body: "Cold rolling and HRPO lines held above four-fifths of design capacity through the year.",
-    visual: "mix",
-    bars: [
-      { label: "Cold Rolled", percent: 46 },
-      { label: "HRPO", percent: 24 },
-      { label: "Galvanised", percent: 18 },
-      { label: "Precision Strips", percent: 12 },
-    ],
-  },
-  {
     id: "revenue",
-    value: 44,
+    value: 148.98,
+    decimals: 2,
     prefix: "₹ ",
     suffix: " Cr",
-    title: "Revenue",
-    body: "FY26 turnover, up 10% on the prior year on stronger despatch volumes.",
-    visual: "gauge",
-    gauge: { fill: 0.7, caption: "+10% year on year" },
+    title: "Revenue from Operations",
+    body: "Down 7% on FY25 as steel prices softened through the year, against ₹160.25 Cr in the prior year.",
+    visual: "mix",
+    panelTitle: "Revenue by Year (₹ Cr)",
+    bars: [
+      { label: "FY 2023", percent: 88, display: "170" },
+      { label: "FY 2024", percent: 87, display: "168" },
+      { label: "FY 2025", percent: 83, display: "160.3" },
+      { label: "FY 2026", percent: 77, display: "149.0" },
+    ],
   },
   {
     id: "pat",
-    value: 1.8,
-    decimals: 1,
+    value: 2.4,
+    decimals: 2,
     prefix: "₹ ",
     suffix: " Cr",
     title: "Profit After Tax",
-    body: "Margin expansion of 90 bps lifted profit 20% over FY25.",
+    body: "Held steady at ₹239.97 lakh against ₹236.96 lakh, helped by a sharp fall in finance costs.",
+    visual: "gauge",
+    gauge: { fill: 0.47, caption: "2.4% EBITDA margin" },
+  },
+  {
+    id: "eps",
+    value: 3.28,
+    decimals: 2,
+    prefix: "₹ ",
+    title: "Earnings Per Share",
+    body: "Basic and diluted, up from ₹3.23 in FY25 on 73.27 lakh equity shares.",
     visual: "bars",
     bars: [
-      { label: "Auto Components", percent: 46 },
-      { label: "White Goods", percent: 28 },
-      { label: "Electrical & Power", percent: 26 },
+      { label: "FY 2023", percent: 100, display: "₹ 3.77" },
+      { label: "FY 2024", percent: 90, display: "₹ 3.41" },
+      { label: "FY 2025", percent: 86, display: "₹ 3.23" },
+      { label: "FY 2026", percent: 87, display: "₹ 3.28" },
     ],
   },
   {
-    id: "installed",
-    value: 7400,
-    suffix: " TPA",
-    title: "Installed Capacity",
-    body: "Commissioned at 3,200 TPA and raised to 7,400 TPA on adding the galvanising line at Faridabad.",
+    id: "dividend",
+    value: 1,
+    decimals: 2,
+    prefix: "₹ ",
+    suffix: " per share",
+    title: "Dividend Declared",
+    body: "10% on face value, a total payout of ₹73.27 lakh — 30.53% of profit after tax.",
     visual: "thumbs",
-    cta: { label: "View Financials", href: "#performance" },
+    cta: { label: "See the Six-Year Trend", href: "#performance" },
   },
 ];
 
