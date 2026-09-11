@@ -204,8 +204,9 @@ body {
 /* Push-in plate. Paused until its slide becomes active; Hero.tsx rewinds
    and plays it on activation so every slide starts the move from scratch. */
 .hero-plate {
-  animation: hero-kenburns calc(var(--hero-slide-duration) + var(--hero-fade-duration))
-    linear both paused;
+  animation: hero-kenburns
+    calc(var(--hero-slide-duration) + var(--hero-fade-duration)) linear both
+    paused;
   will-change: transform;
 }
 
@@ -349,8 +350,8 @@ body {
 }
 
 .ir-plate {
-  animation: ir-kenburns calc(var(--ir-slide-duration) + var(--ir-fade-duration))
-    linear both paused;
+  animation: ir-kenburns
+    calc(var(--ir-slide-duration) + var(--ir-fade-duration)) linear both paused;
   will-change: transform;
 }
 
@@ -444,7 +445,9 @@ body {
   height: 42px;
   cursor: pointer;
   color: #fff;
-  transition: background-color 220ms ease, border-color 220ms ease;
+  transition:
+    background-color 220ms ease,
+    border-color 220ms ease;
 }
 
 .ir-arrow:focus-visible {
@@ -597,7 +600,9 @@ body {
 
 /* Without backdrop-filter the translucent tints would leave white text sitting
    on raw photography, so those browsers get the solid fills back. */
-@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+@supports not (
+  (backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))
+) {
   .ir-chip::before,
   .ir-cta,
   .ir-arrow-solid {
@@ -707,4 +712,15 @@ body {
   .ap-title {
     font-size: clamp(1.2rem, 2.8vw, 1.6rem);
   }
+}
+
+/* ------------------------------------------------------------------ */
+/* Team cards                                                          */
+/* ------------------------------------------------------------------ */
+
+/* One warm card among the blues, so the grid is not a single hue. The accent
+   itself is too light to carry text, so the card takes a wash of it and keeps
+   the palette's dark ink. */
+.team-card-sand {
+  background: color-mix(in srgb, var(--accent) 17%, var(--surface));
 }

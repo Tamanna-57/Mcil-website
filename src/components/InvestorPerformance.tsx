@@ -54,8 +54,6 @@ export default function InvestorPerformance() {
   );
 
   /* One decimal setting for the whole series — mixing "26.7 Cr" with "34 Cr"
-     down the same axis reads as a mistake. */
-  /* One decimal setting for the whole series — mixing "26.7 Cr" with "34 Cr"
      down the same axis reads as a mistake — but only as many places as the
      series actually needs, so whole-crore years are not padded to "94.00". */
   const decimals = useMemo(

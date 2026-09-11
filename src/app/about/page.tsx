@@ -3,6 +3,7 @@ import Image from "next/image";
 import Link from "next/link";
 import AboutIntro from "@/components/AboutIntro";
 import AboutProcess from "@/components/AboutProcess";
+import AboutTeam from "@/components/AboutTeam";
 
 export const metadata: Metadata = {
   title: "About Us — Metal Coatings (India) Ltd",
@@ -45,6 +46,8 @@ export default function AboutPage() {
       <AboutProcess />
 
       <AboutIntro />
+
+      <AboutTeam />
 
       {/* Closing */}
       <section className="bg-background px-6 pb-24 sm:px-10 lg:px-[6.5vw]">
