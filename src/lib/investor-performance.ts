@@ -1,12 +1,19 @@
 /**
  * "Performance over the years" chart on the investor page.
  *
- * ⚠️ PLACEHOLDER DATA. MCIL publishes results only as scanned PDFs, so no
- * machine-readable history was available. This is a plausible six-year run for
- * a plant of MCIL's real 7,400 TPA capacity. The FY26 endpoints line up with
- * the bento above (revenue ₹44 Cr, PAT ₹1.8 Cr, EBITDA margin 9.1%) so the
- * page stays internally consistent — keep them in step when audited numbers
- * land.
+ * REAL FIGURES. Sources:
+ *  - FY2025-26 and FY2024-25 from MCIL's FY2025-26 annual report: revenue from
+ *    operations ₹14,897.55 / ₹16,025.02 lakh, EBITDA ₹350.96 / ₹604.29 lakh,
+ *    PAT ₹239.97 / ₹236.96 lakh, EPS ₹3.28 / ₹3.23, dividend ₹1 per share
+ *    (30.53% of PAT).
+ *  - FY2020-21 to FY2023-24 from the published annual P&L (BSE 531810).
+ *    PAT for those years is EPS x 73.27 lakh shares — the share count implied
+ *    by the FY26 dividend (₹73.27 lakh paid at ₹1 per share), which reproduces
+ *    both reported PAT figures to the paisa.
+ *
+ * EBITDA and margin use one definition across the whole series so the trend is
+ * comparable year to year; that makes FY25 and FY26 read a little under the
+ * annual report's own EBITDA, which is struck after other income.
  */
 
 export type MetricKind = "currency" | "percent";
@@ -32,12 +39,12 @@ export const performanceMetrics: PerformanceMetric[] = [
     label: "Revenue",
     kind: "currency",
     points: [
-      { year: 2021, value: 26 },
-      { year: 2022, value: 30 },
-      { year: 2023, value: 34 },
-      { year: 2024, value: 37 },
-      { year: 2025, value: 40 },
-      { year: 2026, value: 44 },
+      { year: 2021, value: 94 },
+      { year: 2022, value: 142 },
+      { year: 2023, value: 170 },
+      { year: 2024, value: 168 },
+      { year: 2025, value: 160.3 },
+      { year: 2026, value: 149.0 },
     ],
   },
   {
@@ -45,12 +52,12 @@ export const performanceMetrics: PerformanceMetric[] = [
     label: "EBITDA",
     kind: "currency",
     points: [
-      { year: 2021, value: 1.6 },
-      { year: 2022, value: 2.0 },
-      { year: 2023, value: 2.4 },
-      { year: 2024, value: 2.8 },
-      { year: 2025, value: 3.3 },
-      { year: 2026, value: 4.0 },
+      { year: 2021, value: 3.2 },
+      { year: 2022, value: 3.1 },
+      { year: 2023, value: 3.7 },
+      { year: 2024, value: 3.2 },
+      { year: 2025, value: 5.3 },
+      { year: 2026, value: 3.5 },
     ],
   },
   {
@@ -58,12 +65,25 @@ export const performanceMetrics: PerformanceMetric[] = [
     label: "PAT",
     kind: "currency",
     points: [
-      { year: 2021, value: 0.5 },
-      { year: 2022, value: 0.7 },
-      { year: 2023, value: 0.9 },
-      { year: 2024, value: 1.2 },
-      { year: 2025, value: 1.5 },
-      { year: 2026, value: 1.8 },
+      { year: 2021, value: 2.57 },
+      { year: 2022, value: 2.82 },
+      { year: 2023, value: 2.76 },
+      { year: 2024, value: 2.5 },
+      { year: 2025, value: 2.37 },
+      { year: 2026, value: 2.4 },
+    ],
+  },
+  {
+    id: "eps",
+    label: "EPS",
+    kind: "currency",
+    points: [
+      { year: 2021, value: 3.51 },
+      { year: 2022, value: 3.85 },
+      { year: 2023, value: 3.77 },
+      { year: 2024, value: 3.41 },
+      { year: 2025, value: 3.23 },
+      { year: 2026, value: 3.28 },
     ],
   },
   {
@@ -71,12 +91,12 @@ export const performanceMetrics: PerformanceMetric[] = [
     label: "EBITDA Margin",
     kind: "percent",
     points: [
-      { year: 2021, value: 6.2 },
-      { year: 2022, value: 6.7 },
-      { year: 2023, value: 7.1 },
-      { year: 2024, value: 7.6 },
-      { year: 2025, value: 8.2 },
-      { year: 2026, value: 9.1 },
+      { year: 2021, value: 3.4 },
+      { year: 2022, value: 2.2 },
+      { year: 2023, value: 2.2 },
+      { year: 2024, value: 1.9 },
+      { year: 2025, value: 3.3 },
+      { year: 2026, value: 2.4 },
     ],
   },
   {
@@ -84,12 +104,12 @@ export const performanceMetrics: PerformanceMetric[] = [
     label: "Dividend Payout",
     kind: "percent",
     points: [
-      { year: 2021, value: 10 },
-      { year: 2022, value: 10 },
-      { year: 2023, value: 12 },
-      { year: 2024, value: 12 },
-      { year: 2025, value: 15 },
-      { year: 2026, value: 15 },
+      { year: 2021, value: 0 },
+      { year: 2022, value: 0 },
+      { year: 2023, value: 0 },
+      { year: 2024, value: 0 },
+      { year: 2025, value: 31 },
+      { year: 2026, value: 30.5 },
     ],
   },
 ];
@@ -98,6 +118,9 @@ export const performanceHeading = {
   title: "MCIL Highlights",
   standfirst: "Performance over the years.",
 };
+
+/** EPS is per share, not in crore — the chart labels it accordingly. */
+export const PER_SHARE_METRICS = new Set(["eps"]);
 
 /** Milliseconds a bar takes to grow, and the gap between consecutive bars. */
 export const BAR_GROW_DURATION = 850;

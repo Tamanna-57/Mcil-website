@@ -3,6 +3,7 @@
 import { useEffect, useId, useMemo, useRef, useState } from "react";
 import {
   BAR_STAGGER,
+  PER_SHARE_METRICS,
   performanceHeading,
   performanceMetrics,
   USD_MN_PER_INR_CR,
@@ -54,8 +55,17 @@ export default function InvestorPerformance() {
 
   /* One decimal setting for the whole series — mixing "26.7 Cr" with "34 Cr"
      down the same axis reads as a mistake. */
+  /* One decimal setting for the whole series — mixing "26.7 Cr" with "34 Cr"
+     down the same axis reads as a mistake — but only as many places as the
+     series actually needs, so whole-crore years are not padded to "94.00". */
   const decimals = useMemo(
-    () => (metric.points.some((p) => p.value % 1) ? 1 : 0),
+    () =>
+      Math.max(
+        ...metric.points.map((p) => {
+          const frac = String(p.value).split(".")[1];
+          return frac ? Math.min(frac.length, 2) : 0;
+        }),
+      ),
     [metric],
   );
 
@@ -129,12 +139,14 @@ export default function InvestorPerformance() {
             currency={currency}
             scaleMax={scaleMax}
             decimals={decimals}
+            perShare={PER_SHARE_METRICS.has(metric.id)}
             visible={visible}
           />
         </div>
 
         <p className="mt-8 text-center text-xs text-steel-800/70 lg:text-right">
-          Placeholder figures — pending audited results.
+          FY2025-26 as reported; earlier years from the published annual profit
+          and loss.
           {currency === "usd"
             ? ` Converted at US$${USD_MN_PER_INR_CR} mn per ₹1 crore.`
             : ""}
@@ -149,12 +161,14 @@ function Chart({
   currency,
   scaleMax,
   decimals,
+  perShare,
   visible,
 }: {
   metric: PerformanceMetric;
   currency: Currency;
   scaleMax: number;
   decimals: number;
+  perShare: boolean;
   visible: boolean;
 }) {
   return (
@@ -165,7 +179,7 @@ function Chart({
         aria-label={`${metric.label} by financial year, ${metric.points
           .map(
             (p) =>
-              `FY${p.year}: ${format(p.value, metric.kind, currency, decimals)}`,
+              `FY${p.year}: ${format(p.value, metric.kind, currency, decimals, perShare)}`,
           )
           .join(", ")}`}
       >
@@ -179,7 +193,7 @@ function Chart({
               data-visible={visible}
               style={{ transitionDelay: `${i * BAR_STAGGER + 260}ms` }}
             >
-              {format(point.value, metric.kind, currency, decimals)}
+              {format(point.value, metric.kind, currency, decimals, perShare)}
             </span>
             <div
               className="perf-bar mx-auto w-full max-w-[3.25rem] sm:max-w-[4.5rem]"
@@ -213,6 +227,7 @@ function format(
   kind: MetricKind,
   currency: Currency,
   decimals: number,
+  perShare = false,
 ) {
   const fixed = (v: number, d: number, locale: string) =>
     v.toLocaleString(locale, {
@@ -221,6 +236,9 @@ function format(
     });
 
   if (kind === "percent") return `${fixed(value, decimals, "en-IN")}%`;
+
+  /* EPS is a per-share amount, so it neither carries "Cr" nor converts. */
+  if (perShare) return `₹ ${fixed(value, 2, "en-IN")}`;
 
   if (currency === "usd") {
     /* Conversion shrinks the figures by an order of magnitude, so they need a

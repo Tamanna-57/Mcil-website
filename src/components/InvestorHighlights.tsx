@@ -107,7 +107,8 @@ export default function InvestorHighlights() {
           data-visible={started}
           style={{ animationDelay: "820ms" }}
         >
-          Placeholder figures — pending audited results.
+          FY2025-26 figures as reported. Prior years from the published annual
+          profit and loss.
         </p>
       </div>
     </section>
@@ -145,7 +146,11 @@ function Card({
 
       <div className={item.visual === "thumbs" ? "mt-6" : "mt-auto pt-8"}>
         {item.visual === "mix" && (
-          <MixList bars={item.bars ?? []} started={started} />
+          <MixList
+            bars={item.bars ?? []}
+            title={item.panelTitle ?? ""}
+            started={started}
+          />
         )}
         {item.visual === "gauge" && item.gauge && (
           <Gauge
@@ -205,19 +210,29 @@ function Figure({
   );
 }
 
-/** Product mix — a titled panel that fills the tall card's spare height. */
-function MixList({ bars, started }: { bars: Bar[]; started: boolean }) {
+/** Titled panel that fills the tall card's spare height. */
+function MixList({
+  bars,
+  title,
+  started,
+}: {
+  bars: Bar[];
+  title: string;
+  started: boolean;
+}) {
   return (
     <div className="rounded-xl bg-background p-5">
       <p className="text-[11px] font-semibold tracking-[0.16em] text-steel-800/70 uppercase">
-        Product Mix
+        {title}
       </p>
       <ul className="mt-5 space-y-4">
         {bars.map((bar, i) => (
           <li key={bar.label}>
             <div className="flex items-baseline justify-between text-xs text-steel-800">
               <span>{bar.label}</span>
-              <span className="tabular-nums">{bar.percent}%</span>
+              <span className="tabular-nums">
+                {bar.display ?? `${bar.percent}%`}
+              </span>
             </div>
             <span className="mt-2 block h-1.5 rounded-full bg-brand-pale">
               <span
@@ -281,7 +296,9 @@ function BarList({ bars, started }: { bars: Bar[]; started: boolean }) {
         <li key={bar.label}>
           <div className="flex items-baseline justify-between text-xs text-steel-800">
             <span>{bar.label}</span>
-            <span className="tabular-nums">{bar.percent}%</span>
+            <span className="tabular-nums">
+              {bar.display ?? `${bar.percent}%`}
+            </span>
           </div>
           <span className="mt-1.5 block h-1.5 rounded-full bg-brand-pale">
             <span
