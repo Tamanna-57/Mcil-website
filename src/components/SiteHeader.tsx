@@ -238,11 +238,11 @@ function Panel({
       role="region"
       aria-label={item.label}
     >
-      <div className="bg-surface px-[3vw] py-11">
+      <div className="mega-face mega-face--lead px-[3vw] py-11">
         <h2 className="type-display text-[clamp(1.5rem,2.5vw,2.2rem)] leading-tight text-steel-900">
           {title}
         </h2>
-        <div className="mt-5 h-px bg-steel-900/15" />
+        <div className="mt-5 h-px bg-steel-900/20" />
 
         {figures ? (
           <dl className="mt-6">
@@ -272,15 +272,13 @@ function Panel({
         )}
       </div>
 
-      <div className="bg-background px-[3vw] py-11">
+      <div className="mega-face mega-face--links px-[3vw] py-11">
         <ul className="grid gap-x-[3vw] sm:grid-cols-2">
           {links.map((link, i) => (
             <li
               key={link.label}
               className={
-                i % 2 === 1
-                  ? "sm:border-l sm:border-steel-900/10 sm:pl-[3vw]"
-                  : ""
+                i % 2 === 1 ? "mega-divider sm:border-l sm:pl-[3vw]" : ""
               }
             >
               <SubLink link={link} onNavigate={onNavigate} tone="light" />
