@@ -724,3 +724,53 @@ body {
 .team-card-sand {
   background: color-mix(in srgb, var(--accent) 17%, var(--surface));
 }
+
+/* ------------------------------------------------------------------ */
+/* Header drop panels                                                  */
+/* ------------------------------------------------------------------ */
+
+/* The bar under the hovered nav item, drawn from the middle out so it reads
+   as the menu opening rather than a separate hover state. */
+.nav-underline {
+  position: absolute;
+  inset-inline: 0;
+  bottom: 0;
+  height: 2px;
+  background: var(--brand-light);
+  transform: scaleX(0);
+  transform-origin: center;
+  transition: transform 260ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.nav-underline[data-active="true"] {
+  transform: scaleX(1);
+}
+
+/* The panel itself drops from under the header bar. Clipping rather than
+   sliding keeps the type still while the panel grows past it. */
+.mega-panel {
+  overflow: hidden;
+  border-top: 1px solid color-mix(in srgb, var(--steel-900) 12%, transparent);
+  animation: mega-drop 320ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@keyframes mega-drop {
+  from {
+    clip-path: inset(0 0 100% 0);
+    opacity: 0.4;
+  }
+  to {
+    clip-path: inset(0 0 0 0);
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .nav-underline {
+    transition: none;
+  }
+
+  .mega-panel {
+    animation: none;
+  }
+}
