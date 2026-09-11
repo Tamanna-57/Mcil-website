@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import InvestorHero from "@/components/InvestorHero";
 import InvestorHighlights from "@/components/InvestorHighlights";
 import InvestorPerformance from "@/components/InvestorPerformance";
+import InvestorReports from "@/components/InvestorReports";
 
 export const metadata: Metadata = {
   title: "Investors — Metal Coatings (India) Ltd",
@@ -17,6 +18,8 @@ export default function InvestorsPage() {
       <InvestorHighlights />
 
       <InvestorPerformance />
+
+      <InvestorReports />
     </main>
   );
 }

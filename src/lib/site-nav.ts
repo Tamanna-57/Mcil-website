@@ -99,8 +99,12 @@ export const navItems: NavItem[] = [
       links: [
         { label: "The Year in Numbers", href: "/investors#highlights" },
         { label: "Performance Over the Years", href: "/investors#performance" },
-        { label: "Annual Reports", soon: true },
-        { label: "Shareholder Information", soon: true },
+        { label: "Annual Reports & Financials", href: "/investors#financials" },
+        { label: "Stock Exchange Compliance", href: "/investors#compliance" },
+        {
+          label: "Policies, Code & Unclaimed Dividend",
+          href: "/investors#policies",
+        },
       ],
     },
   },

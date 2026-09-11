@@ -32,12 +32,12 @@ The hero section, modelled on the Aditya Birla Group homepage:
 
 ## Editing the hero
 
-| What                                  | Where                          |
-| ------------------------------------- | ------------------------------ |
-| Slide order, sector words, alt text, image focal points | `src/lib/hero-slides.ts` |
-| Timings, keyframes, headline sizing   | `src/app/globals.css`          |
-| Markup and slide state                | `src/components/Hero.tsx`      |
-| Nav links                             | `src/components/SiteHeader.tsx`|
+| What                                                    | Where                           |
+| ------------------------------------------------------- | ------------------------------- |
+| Slide order, sector words, alt text, image focal points | `src/lib/hero-slides.ts`        |
+| Timings, keyframes, headline sizing                     | `src/app/globals.css`           |
+| Markup and slide state                                  | `src/components/Hero.tsx`       |
+| Nav links                                               | `src/components/SiteHeader.tsx` |
 
 Slide duration lives in two places that must stay in sync:
 `HERO_SLIDE_DURATION` in `src/lib/hero-slides.ts` and `--hero-slide-duration`
@@ -63,9 +63,38 @@ the same filename; no code change is needed.
 displays and look softer than the other two. Higher-resolution originals are
 worth dropping in if they exist.
 
+## Investor documents — "Latest Reports"
+
+The document library at the foot of `/investors` mirrors the four categories on
+the live mcil.net investor section, each with its real sub-categories:
+
+| Category                            | Sub-categories                                                                                             |
+| ----------------------------------- | ---------------------------------------------------------------------------------------------------------- |
+| Financials                          | Annual Report & Audited Financial Results, Unaudited Financial Results                                     |
+| Stock Exchange Compliance           | Integrated Filing, Shareholding Pattern, Corporate Governance, Secretarial Compliance, AGM, and eight more |
+| Letters Sent to Stock Exchange      | Intimation, Outcome, Newspaper Publication, Others                                                         |
+| Policies, Code & Unclaimed Dividend | Policies, Code, Unclaimed Dividend, Investor Forms                                                         |
+
+The rows are **placeholders** — titles and dates are shaped like the real
+filings, but no file is attached yet. To publish a document:
+
+1. Drop the PDF under `public/`, e.g. `public/docs/annual-report-2026.pdf`.
+2. Set `href` on its row in `src/lib/investor-reports.ts`
+   (`href: "/docs/annual-report-2026.pdf"`).
+
+A row with an `href` renders a live download; a row without one keeps the same
+Download control, inert. Nothing links back to mcil.net.
+
+Rows sort newest-first on `date`, so entries can be added in any order, and
+`REPORTS_PAGE_SIZE` sets how many show before "View All" expands the list in
+place.
+
+Each category is also an anchor — `/investors#financials`, `#compliance`,
+`#letters`, `#policies` — which scrolls to the band and opens that tab.
+
 ## Still to do
 
 - Higher-resolution originals for `hero-1` and `hero-4` (above).
 - MCIL logo asset — the header currently sets the wordmark in type.
-- The rest of the site: About, Products, MCIL Advantage, Investors, Media,
-  Careers, Contact.
+- The rest of the site: Products, Media, Careers, Contact.
+- Real PDFs behind the investor document rows (above).
