@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
+import ContactCard from "@/components/ContactCard";
 import ContactDetails from "@/components/ContactDetails";
-import ContactForm from "@/components/ContactForm";
-import ContactMap from "@/components/ContactMap";
 
 export const metadata: Metadata = {
   title: "Contact Us — Metal Coatings (India) Ltd",
@@ -12,9 +11,19 @@ export const metadata: Metadata = {
 export default function ContactPage() {
   return (
     <main>
-      <ContactMap />
+      {/* A short dark band: it carries the eyebrow, and it is what the fixed
+          header's white type sits on before the card scrolls up under it. */}
+      <section className="bg-steel-900 px-6 pt-32 pb-40 text-center sm:px-10 lg:px-[6.5vw] lg:pb-44">
+        <p className="text-[11px] font-semibold tracking-[0.24em] text-brand-pale uppercase">
+          [ Contact Us ]
+        </p>
+        <p className="mx-auto mt-4 max-w-md text-sm text-white/70">
+          Registered office in New Delhi, works in Faridabad — and someone at
+          the end of both numbers.
+        </p>
+      </section>
 
-      <ContactForm />
+      <ContactCard />
 
       <ContactDetails />
     </main>

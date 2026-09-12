@@ -20,8 +20,17 @@ export type ContactLocation = {
   mapUrl: string;
 };
 
-function embedSrc(query: string, zoom: number) {
-  return `https://www.google.com/maps?q=${encodeURIComponent(query)}&z=${zoom}&output=embed`;
+/*
+ * The keyless embed, addressed directly rather than through the familiar
+ * `maps?q=...&output=embed` form. That one answers 301 to this URL and carries
+ * `X-Frame-Options: SAMEORIGIN` on the redirect itself, which is a needless
+ * thing to ask a browser to forgive inside an iframe; this URL answers 200
+ * with no framing header at all. `pb` is Google's packed parameter string —
+ * `!1m2!2m1!1s` is "search for the text that follows".
+ */
+function embedSrc(query: string) {
+  const q = encodeURIComponent(query).replace(/%20/g, "+");
+  return `https://www.google.com/maps/embed?origin=mfe&pb=!1m2!2m1!1s${q}`;
 }
 
 const queries = {
@@ -52,7 +61,5 @@ export const locations: ContactLocation[] = [
 ];
 
 export function mapEmbed(location: ContactLocation) {
-  /* The works sits in an industrial estate that needs the wider frame to make
-     sense of; the office is one building on a known street. */
-  return embedSrc(location.mapQuery, location.id === "works" ? 15 : 16);
+  return embedSrc(location.mapQuery);
 }
