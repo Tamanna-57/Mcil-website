@@ -62,7 +62,7 @@ export default function AboutPage() {
             </p>
           </div>
           <Link
-            href="/#contact"
+            href="/contact"
             className="inline-flex shrink-0 items-center gap-2.5 rounded-full bg-white px-6 py-3 text-[13px] font-semibold text-steel-900 transition-colors hover:bg-brand-pale"
           >
             Talk to Us

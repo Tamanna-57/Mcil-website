@@ -1,8 +1,11 @@
 import Hero from "@/components/Hero";
+import SiteIntro from "@/components/SiteIntro";
 
 export default function Home() {
   return (
     <main>
+      <SiteIntro />
+
       <Hero />
 
       {/* Placeholder landing zone for the scroll cue — the rest of the

@@ -13,9 +13,47 @@ export default function SiteHeader() {
   const [mobileOpenId, setMobileOpenId] = useState<string | null>(null);
   const closeTimer = useRef<number | undefined>(undefined);
 
-  /* The bar is opaque at every scroll position; this only decides whether it
-     casts a shadow, which is what separates it from the page once the page has
-     moved under it. */
+  /*
+   * The drop panel stays mounted while it is open, so moving between nav items
+   * used to swap its children with nothing in between — the box never moved and
+   * only the words changed, which is what made it read as a glitch rather than
+   * a transition.
+   *
+   * Three pieces of state instead of one:
+   *   openId    — which item the pointer is on; null closes the panel
+   *   shownId   — what is drawn, which outlives openId so the panel can
+   *               collapse with its content still in it
+   *   leavingId — the panel being replaced, kept for one beat so the two
+   *               cross-fade instead of cutting
+   */
+  const [shownId, setShownId] = useState<string | null>(null);
+  const [leavingId, setLeavingId] = useState<string | null>(null);
+  const [panelHeight, setPanelHeight] = useState(0);
+  const openIdRef = useRef<string | null>(null);
+  const swapTimer = useRef<number | undefined>(undefined);
+  const clearTimer = useRef<number | undefined>(undefined);
+  const resizeObserver = useRef<ResizeObserver | null>(null);
+
+  /* The open panel's own height drives the container, so switching between a
+     panel of prose and a panel of figures eases between the two rather than
+     jumping. */
+  const measurePanel = useCallback((node: HTMLDivElement | null) => {
+    resizeObserver.current?.disconnect();
+    resizeObserver.current = null;
+    if (!node) return;
+
+    setPanelHeight(node.offsetHeight);
+    const observer = new ResizeObserver((entries) => {
+      const box = entries[0]?.borderBoxSize?.[0];
+      setPanelHeight(box ? box.blockSize : entries[0].contentRect.height);
+    });
+    observer.observe(node);
+    resizeObserver.current = observer;
+  }, []);
+
+  /* The bar is opaque at every scroll position, so this only decides whether
+     it casts a shadow — which is all scroll has left to say once the bar no
+     longer changes colour. */
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 24);
     onScroll();
@@ -23,38 +61,74 @@ export default function SiteHeader() {
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
-  useEffect(() => () => window.clearTimeout(closeTimer.current), []);
+  useEffect(
+    () => () => {
+      window.clearTimeout(closeTimer.current);
+      window.clearTimeout(swapTimer.current);
+      window.clearTimeout(clearTimer.current);
+      resizeObserver.current?.disconnect();
+    },
+    [],
+  );
+
+  const open = useCallback((id: string) => {
+    window.clearTimeout(closeTimer.current);
+    window.clearTimeout(clearTimer.current);
+
+    const current = openIdRef.current;
+    if (current === id) return;
+
+    /* Moving between two open panels: hold the old one for the length of the
+       cross-fade so it can fade out under the new one. */
+    if (current !== null) {
+      setLeavingId(current);
+      window.clearTimeout(swapTimer.current);
+      swapTimer.current = window.setTimeout(() => setLeavingId(null), 300);
+    }
+
+    openIdRef.current = id;
+    setOpenId(id);
+    setShownId(id);
+  }, []);
+
+  /* Closing keeps the content mounted until the panel has finished collapsing;
+     clearing it immediately would empty the box on the way down. */
+  const startClose = useCallback(() => {
+    openIdRef.current = null;
+    setOpenId(null);
+    setLeavingId(null);
+    window.clearTimeout(clearTimer.current);
+    clearTimer.current = window.setTimeout(() => {
+      setShownId(null);
+      /* Back to nothing, so the next open grows from zero rather than popping
+         straight to the height the last panel happened to have. */
+      setPanelHeight(0);
+    }, 460);
+  }, []);
 
   /* A short grace period on the way out: the pointer crosses a few pixels of
      header chrome between the nav row and the panel, and dropping the menu
      there would make it feel twitchy. */
-  const open = useCallback((id: string) => {
-    window.clearTimeout(closeTimer.current);
-    setOpenId(id);
-  }, []);
-
   const scheduleClose = useCallback(() => {
     window.clearTimeout(closeTimer.current);
-    closeTimer.current = window.setTimeout(() => setOpenId(null), 130);
-  }, []);
+    closeTimer.current = window.setTimeout(startClose, 130);
+  }, [startClose]);
 
   const closeNow = useCallback(() => {
     window.clearTimeout(closeTimer.current);
-    setOpenId(null);
-  }, []);
+    startClose();
+  }, [startClose]);
 
   const openItem = navItems.find((item) => item.id === openId) ?? null;
+  const shownItem = navItems.find((item) => item.id === shownId) ?? null;
+  const leavingItem = navItems.find((item) => item.id === leavingId) ?? null;
 
-  /*
-   * Brand navy, always. It used to be transparent until the page scrolled,
-   * which worked over the hero photography and left white nav type on a white
-   * page everywhere else — invisible on About, Investors and Products until
-   * you scrolled or opened a menu.
-   */
+  /* Brand navy on every route, at every scroll position — see .site-header in
+     globals.css for why the two-state bar went. */
   return (
     <header
-      className={`fixed inset-x-0 top-0 z-50 bg-navy transition-shadow duration-300 ${
-        scrolled ? "shadow-[0_10px_30px_-18px_rgba(0,0,0,0.65)]" : ""
+      className={`site-header fixed inset-x-0 top-0 z-50 transition-shadow duration-300 ${
+        scrolled ? "site-header--lifted" : ""
       }`}
       onMouseLeave={scheduleClose}
       onKeyDown={(e) => {
@@ -82,7 +156,7 @@ export default function SiteHeader() {
               style={{ height: LOGO_HEIGHT }}
             />
           ) : (
-            <span className="text-lg font-bold tracking-[0.16em] text-white uppercase">
+            <span className="text-lg font-bold tracking-[0.16em] text-[color:var(--nav-ink)] uppercase">
               MCIL
             </span>
           )}
@@ -102,7 +176,7 @@ export default function SiteHeader() {
             type="button"
             aria-label="Search"
             onFocus={closeNow}
-            className="cursor-pointer text-white/90 transition-colors hover:text-white"
+            className="cursor-pointer text-[color:var(--nav-ink-soft)] transition-colors hover:text-[color:var(--nav-ink)]"
           >
             <SearchIcon />
           </button>
@@ -110,7 +184,7 @@ export default function SiteHeader() {
           <button
             type="button"
             onFocus={closeNow}
-            className="cursor-pointer border border-white/60 px-5 py-1.5 text-[11px] tracking-[0.12em] text-white uppercase transition-colors hover:bg-white hover:text-steel-900"
+            className="cursor-pointer border border-[color:var(--nav-line)] px-5 py-1.5 text-[11px] tracking-[0.12em] text-[color:var(--nav-ink)] uppercase transition-colors hover:bg-[color:var(--nav-hover-ground)] hover:text-[color:var(--nav-hover-ink)]"
           >
             English
           </button>
@@ -122,7 +196,7 @@ export default function SiteHeader() {
           aria-expanded={menuOpen}
           aria-controls="mobile-nav"
           aria-label={menuOpen ? "Close menu" : "Open menu"}
-          className="cursor-pointer text-white lg:hidden"
+          className="cursor-pointer text-[color:var(--nav-ink)] transition-colors duration-300 lg:hidden"
         >
           {menuOpen ? <CloseIcon /> : <MenuIcon />}
         </button>
@@ -130,12 +204,27 @@ export default function SiteHeader() {
 
       {/* Drop panel. Kept inside <header> so the pointer never leaves the
           element that owns the close timer. */}
-      {openItem && (
+      {shownItem && (
         <div
           className="mega-panel hidden lg:block"
-          onMouseEnter={() => open(openItem.id)}
+          data-open={openItem !== null}
+          style={{ height: openItem ? panelHeight : 0 }}
+          onMouseEnter={() => openItem && open(openItem.id)}
         >
-          <Panel item={openItem} onNavigate={closeNow} />
+          <div className="mega-stack">
+            {leavingItem && (
+              <div className="mega-layer mega-layer--out" aria-hidden>
+                <Panel item={leavingItem} onNavigate={closeNow} />
+              </div>
+            )}
+            <div
+              key={shownItem.id}
+              ref={measurePanel}
+              className="mega-layer mega-layer--in"
+            >
+              <Panel item={shownItem} onNavigate={closeNow} />
+            </div>
+          </div>
         </div>
       )}
 
@@ -143,23 +232,26 @@ export default function SiteHeader() {
         <nav
           id="mobile-nav"
           aria-label="Primary"
-          className="max-h-[calc(100svh-var(--header-h))] overflow-y-auto border-t border-white/10 px-6 pb-6 sm:px-10 lg:hidden"
+          className="max-h-[calc(100svh-var(--header-h))] overflow-y-auto border-t border-[color:var(--nav-rule)] px-6 pb-6 sm:px-10 lg:hidden"
         >
           {navItems.map((item) => {
             const expanded = mobileOpenId === item.id;
             return (
-              <div key={item.id} className="border-b border-white/10">
+              <div
+                key={item.id}
+                className="border-b border-[color:var(--nav-rule)]"
+              >
                 <div className="flex items-center justify-between gap-4">
                   {item.href ? (
                     <Link
                       href={item.href}
                       onClick={() => setMenuOpen(false)}
-                      className="flex-1 py-4 text-sm tracking-[0.08em] text-white/90 uppercase"
+                      className="flex-1 py-4 text-sm tracking-[0.08em] text-[color:var(--nav-ink)] uppercase"
                     >
                       {item.label}
                     </Link>
                   ) : (
-                    <span className="flex-1 py-4 text-sm tracking-[0.08em] text-white/90 uppercase">
+                    <span className="flex-1 py-4 text-sm tracking-[0.08em] text-[color:var(--nav-ink)] uppercase">
                       {item.label}
                     </span>
                   )}
@@ -168,7 +260,7 @@ export default function SiteHeader() {
                     aria-expanded={expanded}
                     aria-label={`${expanded ? "Hide" : "Show"} ${item.label} links`}
                     onClick={() => setMobileOpenId(expanded ? null : item.id)}
-                    className={`shrink-0 cursor-pointer p-2 text-xl leading-none text-white/70 transition-transform duration-300 ${
+                    className={`shrink-0 cursor-pointer p-2 text-xl leading-none text-[color:var(--nav-ink-soft)] transition-transform duration-300 ${
                       expanded ? "rotate-45" : ""
                     }`}
                   >
@@ -186,7 +278,7 @@ export default function SiteHeader() {
                           <SubLink
                             link={link}
                             onNavigate={() => setMenuOpen(false)}
-                            tone="dark"
+                            tone="bar"
                           />
                         </li>
                       ))}
@@ -220,7 +312,9 @@ function NavTrigger({
   );
 
   const className = `relative cursor-pointer pb-1.5 text-[13px] tracking-[0.08em] uppercase transition-colors ${
-    active ? "text-white" : "text-white/90 hover:text-white"
+    active
+      ? "text-[color:var(--nav-ink)]"
+      : "text-[color:var(--nav-ink-soft)] hover:text-[color:var(--nav-ink)]"
   }`;
 
   if (item.href) {
@@ -309,7 +403,7 @@ function Panel({
                 i % 2 === 1 ? "mega-divider sm:border-l sm:pl-[3vw]" : ""
               }
             >
-              <SubLink link={link} onNavigate={onNavigate} tone="light" />
+              <SubLink link={link} onNavigate={onNavigate} tone="panel" />
             </li>
           ))}
         </ul>
@@ -325,18 +419,18 @@ function SubLink({
 }: {
   link: NavLink;
   onNavigate: () => void;
-  tone: "light" | "dark";
+  tone: "panel" | "bar";
 }) {
-  const dark = tone === "dark";
-  const row = dark
+  const bar = tone === "bar";
+  const row = bar
     ? "flex items-center justify-between gap-3 py-2.5 text-sm"
     : "flex items-center justify-between gap-3 border-b py-4 text-base";
-  const rule = dark ? "" : "border-steel-900/12";
+  const rule = bar ? "" : "border-steel-900/12";
 
   if (link.soon || !link.href) {
     return (
       <span
-        className={`${row} ${rule} ${dark ? "text-white/40" : "text-steel-800/45"}`}
+        className={`${row} ${rule} ${bar ? "opacity-45" : "text-steel-800/45"}`}
       >
         {link.label}
         <span className="rounded-full border border-current px-2 py-0.5 text-[9px] font-semibold tracking-[0.12em] uppercase">
@@ -347,8 +441,8 @@ function SubLink({
   }
 
   const className = `${row} ${rule} transition-colors ${
-    dark
-      ? "text-white/70 hover:text-white"
+    bar
+      ? "text-[color:var(--nav-ink-soft)] hover:text-[color:var(--nav-ink)]"
       : "text-steel-900 hover:text-brand-deep"
   }`;
 

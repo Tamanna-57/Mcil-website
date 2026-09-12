@@ -29,7 +29,7 @@
   --accent: #d99a5b;
 
   /*
-   * Brand navy — the ground the MCIL logo is set on. The header carries it on
+   * Brand navy — the ground the MCIL logo is set on. The bar carries it on
    * every page and at every scroll position, so the logo always sits on its
    * own colour rather than on a tint of whatever is behind it.
    *
@@ -37,6 +37,17 @@
    * this is the one line to change.
    */
   --navy: #1c2c47;
+
+  /* Frosted glass. White first, with only enough of the brand blue in it to
+     keep the chrome in the same family as the rest of the page — a tint, not
+     a colour. --glass-veil is the same white at the opacity the blur wants;
+     --glass-line is the hairline that gives a pane its edge.
+
+     The bar itself is navy now, so these are the drop panel's: it hangs off
+     the bar as a pane of glass rather than continuing it. */
+  --glass-white: color-mix(in srgb, var(--brand-pale) 12%, #fff);
+  --glass-veil: color-mix(in srgb, var(--glass-white) 84%, transparent);
+  --glass-line: color-mix(in srgb, var(--steel-900) 9%, transparent);
 
   /* Hero rhythm. One slide = sweep-in, hold, sweep-out, rest. */
   /* Height of the fixed site header; sticky sections reserve it. */
@@ -737,8 +748,41 @@ body {
 }
 
 /* ------------------------------------------------------------------ */
-/* Header drop panels                                                  */
+/* Header bar and drop panels                                          */
 /* ------------------------------------------------------------------ */
+
+/*
+ * One state, brand navy, on every route and at every scroll position.
+ *
+ * It used to be two: chrome over the hero photography, frosted white once
+ * scrolled or opened. That read well on the landing page and left white nav
+ * type on a white page everywhere else — nothing visible on About, Investors
+ * or Products until you scrolled or opened a menu. (/contact was carved out
+ * by hand, which is what made the other three look like the oversight they
+ * were.) The bar is also the logo's ground, so it has to be the logo's colour
+ * rather than a tint of whatever happens to sit behind it.
+ *
+ * The ink tokens are kept: the markup still paints with them, so recolouring
+ * the bar stays a matter of these seven values and not of touching the
+ * markup.
+ */
+.site-header {
+  --nav-ink: #fff;
+  --nav-ink-soft: color-mix(in srgb, #fff 88%, transparent);
+  --nav-line: color-mix(in srgb, #fff 60%, transparent);
+  --nav-rule: color-mix(in srgb, #fff 14%, transparent);
+  --nav-mark: var(--brand-light);
+  --nav-hover-ground: #fff;
+  --nav-hover-ink: var(--steel-900);
+
+  background: var(--navy);
+}
+
+/* Opaque, so the only thing left for scroll to say is that the page has
+   started moving underneath it. */
+.site-header--lifted {
+  box-shadow: 0 10px 30px -18px rgba(0, 0, 0, 0.65);
+}
 
 /* The bar under the hovered nav item, drawn from the middle out so it reads
    as the menu opening rather than a separate hover state. */
@@ -747,7 +791,7 @@ body {
   inset-inline: 0;
   bottom: 0;
   height: 2px;
-  background: var(--brand-light);
+  background: var(--nav-mark);
   transform: scaleX(0);
   transform-origin: center;
   transition: transform 260ms cubic-bezier(0.22, 1, 0.36, 1);
@@ -757,72 +801,767 @@ body {
   transform: scaleX(1);
 }
 
-/* The panel itself drops from under the header bar. Clipping rather than
-   sliding keeps the type still while the panel grows past it. */
+/*
+ * The panel drops from under the bar as a pane of glass. It no longer
+ * continues the bar — that is navy — so the bar's lower edge is where the
+ * chrome ends and the panel begins.
+ *
+ * Its height is driven from the open panel's measured height rather than left
+ * to auto: opening eases it down from nothing, closing eases it back, and
+ * moving between two items eases between their two heights instead of the box
+ * standing still while its words change.
+ *
+ * Visibility is switched at the far end of the collapse, so the links inside a
+ * closed panel cannot be reached by the keyboard while it sits at zero height.
+ */
 .mega-panel {
   overflow: hidden;
-  border-top: 1px solid color-mix(in srgb, #fff 45%, transparent);
-  box-shadow: 0 24px 60px -24px
-    color-mix(in srgb, var(--steel-900) 55%, transparent);
-  animation: mega-drop 320ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  visibility: hidden;
+  box-shadow: 0 22px 50px -30px
+    color-mix(in srgb, var(--steel-900) 45%, transparent);
+  transition:
+    height 420ms cubic-bezier(0.22, 1, 0.36, 1),
+    visibility 0s linear 420ms;
 }
 
-/* The two faces of the panel are tinted glass rather than flat fills, so the
-   photograph behind carries through and the panel reads as part of the page
-   instead of a white card dropped on top of it. */
+.mega-panel[data-open="true"] {
+  visibility: visible;
+  transition:
+    height 420ms cubic-bezier(0.22, 1, 0.36, 1),
+    visibility 0s;
+}
+
+/* The two panels are stacked so one can fade out under the other. Only the
+   incoming layer is in flow — it is what the height is measured from. */
+.mega-stack {
+  position: relative;
+}
+
+.mega-layer--out {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  animation: mega-layer-out 260ms cubic-bezier(0.4, 0, 1, 1) both;
+}
+
+.mega-layer--in {
+  animation: mega-layer-in 380ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
 .mega-face {
-  backdrop-filter: blur(26px) saturate(165%);
-  -webkit-backdrop-filter: blur(26px) saturate(165%);
+  -webkit-backdrop-filter: blur(34px) saturate(180%);
+  backdrop-filter: blur(34px) saturate(180%);
 }
 
-/* Left face: the lighter end of the palette, so the display type has the
-   contrast it needs. */
+/* Left face: the lighter of the two, so the display type on it has the
+   contrast it needs against the navy bar directly above. */
 .mega-face--lead {
-  background: linear-gradient(
-    155deg,
-    color-mix(in srgb, var(--surface) 86%, transparent),
-    color-mix(in srgb, var(--brand-pale) 90%, transparent)
-  );
-  box-shadow: inset 0 1px 0 color-mix(in srgb, #fff 60%, transparent);
+  background: var(--glass-veil);
+  box-shadow: inset 0 1px 0 color-mix(in srgb, #fff 70%, transparent);
 }
 
-/* Right face: a shade deeper, which separates the link columns from the
-   headline without a hard rule between them. */
+/* Right face: one step of blue deeper — just enough to set the link columns
+   apart from the headline without a rule between them. */
 .mega-face--links {
-  background: linear-gradient(
-    200deg,
-    color-mix(in srgb, var(--brand-pale) 86%, transparent),
-    color-mix(in srgb, var(--brand-light) 90%, transparent)
+  background: color-mix(
+    in srgb,
+    color-mix(in srgb, var(--brand-pale) 30%, #fff) 86%,
+    transparent
   );
-  box-shadow: inset 1px 1px 0 color-mix(in srgb, #fff 45%, transparent);
+  box-shadow:
+    inset 1px 0 0 var(--glass-line),
+    inset 0 1px 0 color-mix(in srgb, #fff 70%, transparent);
 }
 
-/* Hairline between the two link columns, in white rather than ink — ink reads
-   as a crack in the glass. */
+/* Hairline between the two link columns. Faint ink, not white: white on a
+   near-white pane reads as a gap rather than a division. */
 .mega-divider {
-  border-color: color-mix(in srgb, #fff 65%, transparent);
+  border-color: var(--glass-line);
 }
 
 /* Without backdrop-filter the tints would sit as washed-out films over the
-   hero, so fall back to opaque panels. */
-@supports not (backdrop-filter: blur(1px)) {
+   hero, so fall back to opaque panes. */
+@supports not (
+  (backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))
+) {
   .mega-face--lead {
-    background: var(--surface);
+    background: var(--glass-white);
   }
 
   .mega-face--links {
-    background: var(--brand-pale);
+    background: color-mix(in srgb, var(--brand-pale) 30%, #fff);
   }
 }
 
-@keyframes mega-drop {
+/* ------------------------------------------------------------------ */
+/* Contact page                                                        */
+/* ------------------------------------------------------------------ */
+
+/* ------------------------------------------------------------------ */
+/* Opening sequence                                                    */
+/* ------------------------------------------------------------------ */
+
+/*
+ * The curtain. Deep blue rather than white for two reasons: the logo is white
+ * artwork, which would disappear on a white ground, and the home page opens on
+ * a dark photograph — so the curtain lifts into the hero instead of flashing
+ * against it.
+ */
+.intro {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: grid;
+  place-items: center;
+  padding: 1.5rem;
+  background:
+    radial-gradient(
+      80% 65% at 50% 45%,
+      color-mix(in srgb, var(--brand-deep) 62%, transparent),
+      transparent 72%
+    ),
+    linear-gradient(
+      165deg,
+      color-mix(in srgb, var(--brand-deep) 28%, var(--steel-900)),
+      var(--steel-900) 55%,
+      #12111f
+    );
+}
+
+/*
+ * Handing over: the curtain dissolves into the page rather than wiping off it.
+ * The lockup goes first and faster — blooming out and softening — so the logo
+ * has already left by the time the colour field finishes fading, which reads
+ * as one dissolve rather than two things leaving together.
+ *
+ * The blur is on the lockup, not on the full-viewport ground: blurring a
+ * fixed element the size of the screen is a lot to ask of a phone for an
+ * effect that is only really visible on the mark.
+ */
+.intro[data-leaving="true"] {
+  animation: intro-dissolve 900ms cubic-bezier(0.37, 0, 0.28, 1) both;
+  pointer-events: none;
+}
+
+.intro[data-leaving="true"] .intro-lockup {
+  animation: intro-lockup-dissolve 620ms cubic-bezier(0.4, 0, 0.3, 1) both;
+}
+
+/*
+ * The stage is the logo's own box, and every piece is placed at the coordinate
+ * it occupies in the artwork — so when the arcs finish, the pieces have not
+ * been arranged into something logo-shaped, they ARE the logo.
+ *
+ * --u is one artwork pixel. Everything below is expressed in the file's own
+ * pixels multiplied by it, which is why the numbers here match the measured
+ * ones in SiteIntro.tsx exactly.
+ */
+.intro-lockup {
+  --u: clamp(0.16px, 0.027vw, 0.4px);
+  --fly: clamp(230px, 46vmin, 560px);
+
+  position: relative;
+  width: calc(var(--logo-w) * var(--u));
+  height: calc(var(--logo-h) * var(--u));
+}
+
+/* Each piece is a window onto the one artwork file: same image, offset so only
+   its own glyph shows. One request, five pieces, no slicing into files. */
+.intro-letter,
+.intro-tagline {
+  position: absolute;
+  left: calc(var(--x) * var(--u));
+  top: calc(var(--y) * var(--u));
+  width: calc(var(--w) * var(--u));
+  height: calc(var(--h) * var(--u));
+  background-image: url("/images/mcil-logo.png");
+  background-repeat: no-repeat;
+  background-size: calc(2022 * var(--u)) calc(778 * var(--u));
+  background-position: calc(var(--bx) * var(--u) * -1)
+    calc(var(--by) * var(--u) * -1);
+}
+
+/*
+ * The four letters fly together rather than in sequence: four arcs turning the
+ * same way at the same time is what reads as one circle.
+ *
+ * Each rule carries the whole shorthand, name included. A nameless
+ * `animation: 1150ms ... both` on the shared class, with the name set per
+ * corner, is minified to `animation: none` — the duration and delay go with
+ * it, and nothing moves at all.
+ */
+.intro-letter[data-corner="tl"] {
+  animation: intro-fly-tl 1500ms linear 200ms both;
+}
+
+.intro-letter[data-corner="tr"] {
+  animation: intro-fly-tr 1500ms linear 200ms both;
+}
+
+.intro-letter[data-corner="bl"] {
+  animation: intro-fly-bl 1500ms linear 200ms both;
+}
+
+.intro-letter[data-corner="br"] {
+  animation: intro-fly-br 1500ms linear 200ms both;
+}
+
+/* The line underneath arrives only once the word has settled. */
+.intro-tagline {
+  animation: intro-tag 1150ms cubic-bezier(0.33, 0.8, 0.3, 1) 1720ms both;
+}
+
+@keyframes intro-dissolve {
   from {
-    clip-path: inset(0 0 100% 0);
-    opacity: 0.4;
+    opacity: 1;
+    transform: scale(1);
   }
   to {
-    clip-path: inset(0 0 0 0);
+    opacity: 0;
+    transform: scale(1.03);
+  }
+}
+
+@keyframes intro-lockup-dissolve {
+  from {
     opacity: 1;
+    filter: blur(0);
+    transform: scale(1);
+  }
+  to {
+    opacity: 0;
+    filter: blur(9px);
+    transform: scale(1.09);
+  }
+}
+
+@keyframes intro-tag {
+  0% {
+    opacity: 0;
+    clip-path: inset(0 50% 0 50%);
+    filter: blur(7px);
+    transform: translateY(calc(10 * var(--u))) scale(0.97);
+  }
+  45% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 1;
+    clip-path: inset(0 0 0 0);
+    filter: blur(0);
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes intro-fly-tl {
+  0% {
+    opacity: 0;
+    transform: translate(calc(-0.7071 * var(--fly)), calc(-0.7071 * var(--fly)))
+      rotate(-70deg) scale(0.55);
+  }
+  12% {
+    opacity: 1;
+  }
+  5% {
+    transform: translate(calc(-0.7062 * var(--fly)), calc(-0.7073 * var(--fly)))
+      rotate(-69.97deg) scale(0.5502);
+  }
+  10% {
+    transform: translate(calc(-0.6998 * var(--fly)), calc(-0.7087 * var(--fly)))
+      rotate(-69.72deg) scale(0.5518);
+  }
+  15% {
+    transform: translate(calc(-0.6826 * var(--fly)), calc(-0.7122 * var(--fly)))
+      rotate(-69.06deg) scale(0.5561);
+  }
+  20% {
+    transform: translate(calc(-0.6492 * var(--fly)), calc(-0.718 * var(--fly)))
+      rotate(-67.76deg) scale(0.5644);
+  }
+  25% {
+    transform: translate(calc(-0.5947 * var(--fly)), calc(-0.7247 * var(--fly)))
+      rotate(-65.62deg) scale(0.5781);
+  }
+  30% {
+    transform: translate(calc(-0.5152 * var(--fly)), calc(-0.7282 * var(--fly)))
+      rotate(-62.44deg) scale(0.5986);
+  }
+  35% {
+    transform: translate(calc(-0.4088 * var(--fly)), calc(-0.7206 * var(--fly)))
+      rotate(-58deg) scale(0.6272);
+  }
+  40% {
+    transform: translate(calc(-0.2782 * var(--fly)), calc(-0.69 * var(--fly)))
+      rotate(-52.08deg) scale(0.6652);
+  }
+  45% {
+    transform: translate(calc(-0.1342 * var(--fly)), calc(-0.6212 * var(--fly)))
+      rotate(-44.48deg) scale(0.714);
+  }
+  50% {
+    transform: translate(calc(-0 * var(--fly)), calc(-0.5 * var(--fly)))
+      rotate(-35deg) scale(0.775);
+  }
+  55% {
+    transform: translate(calc(0.077 * var(--fly)), calc(-0.3563 * var(--fly)))
+      rotate(-25.51deg) scale(0.836);
+  }
+  60% {
+    transform: translate(calc(0.0957 * var(--fly)), calc(-0.2374 * var(--fly)))
+      rotate(-17.92deg) scale(0.8848);
+  }
+  65% {
+    transform: translate(calc(0.0846 * var(--fly)), calc(-0.1492 * var(--fly)))
+      rotate(-12deg) scale(0.9228);
+  }
+  70% {
+    transform: translate(calc(0.0624 * var(--fly)), calc(-0.0882 * var(--fly)))
+      rotate(-7.56deg) scale(0.9514);
+  }
+  75% {
+    transform: translate(calc(0.0396 * var(--fly)), calc(-0.0483 * var(--fly)))
+      rotate(-4.38deg) scale(0.9719);
+  }
+  80% {
+    transform: translate(calc(0.0215 * var(--fly)), calc(-0.0237 * var(--fly)))
+      rotate(-2.24deg) scale(0.9856);
+  }
+  85% {
+    transform: translate(calc(0.0093 * var(--fly)), calc(-0.0097 * var(--fly)))
+      rotate(-0.94deg) scale(0.9939);
+  }
+  90% {
+    transform: translate(calc(0.0028 * var(--fly)), calc(-0.0028 * var(--fly)))
+      rotate(-0.28deg) scale(0.9982);
+  }
+  95% {
+    transform: translate(calc(0.0004 * var(--fly)), calc(-0.0004 * var(--fly)))
+      rotate(-0.04deg) scale(0.9998);
+  }
+  100% {
+    transform: translate(calc(0 * var(--fly)), calc(-0 * var(--fly)))
+      rotate(-0deg) scale(1);
+  }
+}
+
+@keyframes intro-fly-tr {
+  0% {
+    opacity: 0;
+    transform: translate(calc(0.7071 * var(--fly)), calc(-0.7071 * var(--fly)))
+      rotate(-70deg) scale(0.55);
+  }
+  12% {
+    opacity: 1;
+  }
+  5% {
+    transform: translate(calc(0.7073 * var(--fly)), calc(-0.7062 * var(--fly)))
+      rotate(-69.97deg) scale(0.5502);
+  }
+  10% {
+    transform: translate(calc(0.7087 * var(--fly)), calc(-0.6998 * var(--fly)))
+      rotate(-69.72deg) scale(0.5518);
+  }
+  15% {
+    transform: translate(calc(0.7122 * var(--fly)), calc(-0.6826 * var(--fly)))
+      rotate(-69.06deg) scale(0.5561);
+  }
+  20% {
+    transform: translate(calc(0.718 * var(--fly)), calc(-0.6492 * var(--fly)))
+      rotate(-67.76deg) scale(0.5644);
+  }
+  25% {
+    transform: translate(calc(0.7247 * var(--fly)), calc(-0.5947 * var(--fly)))
+      rotate(-65.62deg) scale(0.5781);
+  }
+  30% {
+    transform: translate(calc(0.7282 * var(--fly)), calc(-0.5152 * var(--fly)))
+      rotate(-62.44deg) scale(0.5986);
+  }
+  35% {
+    transform: translate(calc(0.7206 * var(--fly)), calc(-0.4088 * var(--fly)))
+      rotate(-58deg) scale(0.6272);
+  }
+  40% {
+    transform: translate(calc(0.69 * var(--fly)), calc(-0.2782 * var(--fly)))
+      rotate(-52.08deg) scale(0.6652);
+  }
+  45% {
+    transform: translate(calc(0.6212 * var(--fly)), calc(-0.1342 * var(--fly)))
+      rotate(-44.48deg) scale(0.714);
+  }
+  50% {
+    transform: translate(calc(0.5 * var(--fly)), calc(-0 * var(--fly)))
+      rotate(-35deg) scale(0.775);
+  }
+  55% {
+    transform: translate(calc(0.3563 * var(--fly)), calc(0.077 * var(--fly)))
+      rotate(-25.51deg) scale(0.836);
+  }
+  60% {
+    transform: translate(calc(0.2374 * var(--fly)), calc(0.0957 * var(--fly)))
+      rotate(-17.92deg) scale(0.8848);
+  }
+  65% {
+    transform: translate(calc(0.1492 * var(--fly)), calc(0.0846 * var(--fly)))
+      rotate(-12deg) scale(0.9228);
+  }
+  70% {
+    transform: translate(calc(0.0882 * var(--fly)), calc(0.0624 * var(--fly)))
+      rotate(-7.56deg) scale(0.9514);
+  }
+  75% {
+    transform: translate(calc(0.0483 * var(--fly)), calc(0.0396 * var(--fly)))
+      rotate(-4.38deg) scale(0.9719);
+  }
+  80% {
+    transform: translate(calc(0.0237 * var(--fly)), calc(0.0215 * var(--fly)))
+      rotate(-2.24deg) scale(0.9856);
+  }
+  85% {
+    transform: translate(calc(0.0097 * var(--fly)), calc(0.0093 * var(--fly)))
+      rotate(-0.94deg) scale(0.9939);
+  }
+  90% {
+    transform: translate(calc(0.0028 * var(--fly)), calc(0.0028 * var(--fly)))
+      rotate(-0.28deg) scale(0.9982);
+  }
+  95% {
+    transform: translate(calc(0.0004 * var(--fly)), calc(0.0004 * var(--fly)))
+      rotate(-0.04deg) scale(0.9998);
+  }
+  100% {
+    transform: translate(calc(0 * var(--fly)), calc(0 * var(--fly)))
+      rotate(-0deg) scale(1);
+  }
+}
+
+@keyframes intro-fly-bl {
+  0% {
+    opacity: 0;
+    transform: translate(calc(-0.7071 * var(--fly)), calc(0.7071 * var(--fly)))
+      rotate(-70deg) scale(0.55);
+  }
+  12% {
+    opacity: 1;
+  }
+  5% {
+    transform: translate(calc(-0.7073 * var(--fly)), calc(0.7062 * var(--fly)))
+      rotate(-69.97deg) scale(0.5502);
+  }
+  10% {
+    transform: translate(calc(-0.7087 * var(--fly)), calc(0.6998 * var(--fly)))
+      rotate(-69.72deg) scale(0.5518);
+  }
+  15% {
+    transform: translate(calc(-0.7122 * var(--fly)), calc(0.6826 * var(--fly)))
+      rotate(-69.06deg) scale(0.5561);
+  }
+  20% {
+    transform: translate(calc(-0.718 * var(--fly)), calc(0.6492 * var(--fly)))
+      rotate(-67.76deg) scale(0.5644);
+  }
+  25% {
+    transform: translate(calc(-0.7247 * var(--fly)), calc(0.5947 * var(--fly)))
+      rotate(-65.62deg) scale(0.5781);
+  }
+  30% {
+    transform: translate(calc(-0.7282 * var(--fly)), calc(0.5152 * var(--fly)))
+      rotate(-62.44deg) scale(0.5986);
+  }
+  35% {
+    transform: translate(calc(-0.7206 * var(--fly)), calc(0.4088 * var(--fly)))
+      rotate(-58deg) scale(0.6272);
+  }
+  40% {
+    transform: translate(calc(-0.69 * var(--fly)), calc(0.2782 * var(--fly)))
+      rotate(-52.08deg) scale(0.6652);
+  }
+  45% {
+    transform: translate(calc(-0.6212 * var(--fly)), calc(0.1342 * var(--fly)))
+      rotate(-44.48deg) scale(0.714);
+  }
+  50% {
+    transform: translate(calc(-0.5 * var(--fly)), calc(0 * var(--fly)))
+      rotate(-35deg) scale(0.775);
+  }
+  55% {
+    transform: translate(calc(-0.3563 * var(--fly)), calc(-0.077 * var(--fly)))
+      rotate(-25.51deg) scale(0.836);
+  }
+  60% {
+    transform: translate(calc(-0.2374 * var(--fly)), calc(-0.0957 * var(--fly)))
+      rotate(-17.92deg) scale(0.8848);
+  }
+  65% {
+    transform: translate(calc(-0.1492 * var(--fly)), calc(-0.0846 * var(--fly)))
+      rotate(-12deg) scale(0.9228);
+  }
+  70% {
+    transform: translate(calc(-0.0882 * var(--fly)), calc(-0.0624 * var(--fly)))
+      rotate(-7.56deg) scale(0.9514);
+  }
+  75% {
+    transform: translate(calc(-0.0483 * var(--fly)), calc(-0.0396 * var(--fly)))
+      rotate(-4.38deg) scale(0.9719);
+  }
+  80% {
+    transform: translate(calc(-0.0237 * var(--fly)), calc(-0.0215 * var(--fly)))
+      rotate(-2.24deg) scale(0.9856);
+  }
+  85% {
+    transform: translate(calc(-0.0097 * var(--fly)), calc(-0.0093 * var(--fly)))
+      rotate(-0.94deg) scale(0.9939);
+  }
+  90% {
+    transform: translate(calc(-0.0028 * var(--fly)), calc(-0.0028 * var(--fly)))
+      rotate(-0.28deg) scale(0.9982);
+  }
+  95% {
+    transform: translate(calc(-0.0004 * var(--fly)), calc(-0.0004 * var(--fly)))
+      rotate(-0.04deg) scale(0.9998);
+  }
+  100% {
+    transform: translate(calc(-0 * var(--fly)), calc(-0 * var(--fly)))
+      rotate(-0deg) scale(1);
+  }
+}
+
+@keyframes intro-fly-br {
+  0% {
+    opacity: 0;
+    transform: translate(calc(0.7071 * var(--fly)), calc(0.7071 * var(--fly)))
+      rotate(-70deg) scale(0.55);
+  }
+  12% {
+    opacity: 1;
+  }
+  5% {
+    transform: translate(calc(0.7062 * var(--fly)), calc(0.7073 * var(--fly)))
+      rotate(-69.97deg) scale(0.5502);
+  }
+  10% {
+    transform: translate(calc(0.6998 * var(--fly)), calc(0.7087 * var(--fly)))
+      rotate(-69.72deg) scale(0.5518);
+  }
+  15% {
+    transform: translate(calc(0.6826 * var(--fly)), calc(0.7122 * var(--fly)))
+      rotate(-69.06deg) scale(0.5561);
+  }
+  20% {
+    transform: translate(calc(0.6492 * var(--fly)), calc(0.718 * var(--fly)))
+      rotate(-67.76deg) scale(0.5644);
+  }
+  25% {
+    transform: translate(calc(0.5947 * var(--fly)), calc(0.7247 * var(--fly)))
+      rotate(-65.62deg) scale(0.5781);
+  }
+  30% {
+    transform: translate(calc(0.5152 * var(--fly)), calc(0.7282 * var(--fly)))
+      rotate(-62.44deg) scale(0.5986);
+  }
+  35% {
+    transform: translate(calc(0.4088 * var(--fly)), calc(0.7206 * var(--fly)))
+      rotate(-58deg) scale(0.6272);
+  }
+  40% {
+    transform: translate(calc(0.2782 * var(--fly)), calc(0.69 * var(--fly)))
+      rotate(-52.08deg) scale(0.6652);
+  }
+  45% {
+    transform: translate(calc(0.1342 * var(--fly)), calc(0.6212 * var(--fly)))
+      rotate(-44.48deg) scale(0.714);
+  }
+  50% {
+    transform: translate(calc(0 * var(--fly)), calc(0.5 * var(--fly)))
+      rotate(-35deg) scale(0.775);
+  }
+  55% {
+    transform: translate(calc(-0.077 * var(--fly)), calc(0.3563 * var(--fly)))
+      rotate(-25.51deg) scale(0.836);
+  }
+  60% {
+    transform: translate(calc(-0.0957 * var(--fly)), calc(0.2374 * var(--fly)))
+      rotate(-17.92deg) scale(0.8848);
+  }
+  65% {
+    transform: translate(calc(-0.0846 * var(--fly)), calc(0.1492 * var(--fly)))
+      rotate(-12deg) scale(0.9228);
+  }
+  70% {
+    transform: translate(calc(-0.0624 * var(--fly)), calc(0.0882 * var(--fly)))
+      rotate(-7.56deg) scale(0.9514);
+  }
+  75% {
+    transform: translate(calc(-0.0396 * var(--fly)), calc(0.0483 * var(--fly)))
+      rotate(-4.38deg) scale(0.9719);
+  }
+  80% {
+    transform: translate(calc(-0.0215 * var(--fly)), calc(0.0237 * var(--fly)))
+      rotate(-2.24deg) scale(0.9856);
+  }
+  85% {
+    transform: translate(calc(-0.0093 * var(--fly)), calc(0.0097 * var(--fly)))
+      rotate(-0.94deg) scale(0.9939);
+  }
+  90% {
+    transform: translate(calc(-0.0028 * var(--fly)), calc(0.0028 * var(--fly)))
+      rotate(-0.28deg) scale(0.9982);
+  }
+  95% {
+    transform: translate(calc(-0.0004 * var(--fly)), calc(0.0004 * var(--fly)))
+      rotate(-0.04deg) scale(0.9998);
+  }
+  100% {
+    transform: translate(calc(-0 * var(--fly)), calc(0 * var(--fly)))
+      rotate(-0deg) scale(1);
+  }
+}
+
+/* The page's ground: the brand blue as a soft wash rather than a block of it,
+   lightening toward the foot so the small tiles at the bottom sit on almost
+   white. This is what the card and the tiles are glass against. */
+.contact-ground {
+  min-height: 100svh;
+  background:
+    radial-gradient(
+      130% 80% at 50% -10%,
+      color-mix(in srgb, var(--brand-light) 55%, var(--brand-pale)),
+      transparent 65%
+    ),
+    linear-gradient(
+      180deg,
+      var(--brand-pale),
+      color-mix(in srgb, var(--brand-pale) 60%, #fff) 55%,
+      var(--background)
+    );
+}
+
+/* The card is the one solid object on that wash — white, lifted, with a hair
+   of the blue in its edge rather than a grey border. */
+.contact-card {
+  background: var(--surface);
+  box-shadow:
+    0 1px 0 color-mix(in srgb, #fff 90%, transparent) inset,
+    0 2px 6px -2px color-mix(in srgb, var(--brand-deep) 30%, transparent),
+    0 30px 60px -34px color-mix(in srgb, var(--brand-deep) 65%, transparent);
+}
+
+/* The small tiles under it are the glass: the wash reads through them, so they
+   belong to the ground rather than sitting on it as more white cards. */
+.cc-tile {
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  backdrop-filter: blur(20px) saturate(180%);
+  background: color-mix(in srgb, #fff 62%, transparent);
+  box-shadow:
+    inset 0 1px 0 color-mix(in srgb, #fff 80%, transparent),
+    0 10px 26px -20px color-mix(in srgb, var(--brand-deep) 60%, transparent);
+}
+
+@supports not (
+  (backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))
+) {
+  .cc-tile {
+    background: color-mix(in srgb, #fff 88%, var(--brand-pale));
+  }
+}
+
+/* The pills sit on the map, so they are frosted: the blur and the lift belong
+   to every pill, while the fill stays with the markup — otherwise this rule
+   would paint over the active pill's dark ground. */
+.cc-pill {
+  -webkit-backdrop-filter: blur(18px) saturate(180%);
+  backdrop-filter: blur(18px) saturate(180%);
+  box-shadow: 0 8px 20px -12px
+    color-mix(in srgb, var(--steel-900) 70%, transparent);
+}
+
+/* The headline over the map, and the address under the email block, both
+   arrive with the card rather than sitting there from the first paint. */
+.cc-title {
+  animation: cc-rise 700ms cubic-bezier(0.22, 1, 0.36, 1) 120ms both;
+  text-shadow: 0 2px 18px color-mix(in srgb, var(--steel-900) 55%, transparent);
+}
+
+/* The marker on the active location pill. It keeps its space when idle so the
+   pill does not resize as the selection moves. */
+.cc-dot {
+  display: inline-block;
+  width: 0.4rem;
+  height: 0.4rem;
+  margin-right: 0.5rem;
+  border-radius: 9999px;
+  background: currentColor;
+  opacity: 0.35;
+  vertical-align: middle;
+}
+
+.cc-dot[data-active="true"] {
+  opacity: 1;
+  animation: cc-ping 2.4s ease-out infinite;
+}
+
+/* Keyed to the location, so it remounts and replays as the address changes. */
+.cc-swap {
+  animation: cc-rise 420ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+/* Underline fields: the rule thickens on focus rather than growing a ring,
+   which would break the line the form is built on. */
+.cf-input:focus {
+  border-bottom-width: 2px;
+  padding-bottom: calc(0.375rem - 1px);
+}
+
+@keyframes cc-rise {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes cc-ping {
+  0% {
+    box-shadow: 0 0 0 0 color-mix(in srgb, currentColor 55%, transparent);
+  }
+  70%,
+  100% {
+    box-shadow: 0 0 0 0.5rem transparent;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cc-title,
+  .cc-swap,
+  .cc-dot[data-active="true"] {
+    animation: none !important;
+  }
+}
+
+/* The outgoing panel drops away as the incoming one rises through it, so the
+   swap has a direction rather than being a straight dissolve. */
+@keyframes mega-layer-out {
+  from {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+}
+
+@keyframes mega-layer-in {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
   }
 }
 
@@ -831,7 +1570,10 @@ body {
     transition: none;
   }
 
-  .mega-panel {
+  .mega-panel,
+  .mega-layer--in,
+  .mega-layer--out {
+    transition: none;
     animation: none;
   }
 }

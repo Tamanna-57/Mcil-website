@@ -126,6 +126,7 @@ export const navItems: NavItem[] = [
   {
     id: "contact",
     label: "Contact Us",
+    href: "/contact",
     panel: {
       title: "Contact Us",
       /* Both addresses in prose — the accent caption is set in small caps
@@ -148,6 +149,7 @@ export const navItems: NavItem[] = [
           href: `tel:${company.worksPhone.split("/")[0].replace(/\s/g, "")}`,
           external: true,
         },
+        { label: "Find Us on the Map", href: "/contact" },
         { label: "Investor Grievances", soon: true },
       ],
     },
