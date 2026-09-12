@@ -63,6 +63,34 @@ the same filename; no code change is needed.
 displays and look softer than the other two. Higher-resolution originals are
 worth dropping in if they exist.
 
+## Header and the logo
+
+The header is **brand navy on every page and at every scroll position**. It
+used to be transparent until the page scrolled, which read well over the hero
+photography and left white nav type sitting on a white page everywhere else —
+invisible on About, Investors and Products until you scrolled or opened a menu.
+
+The navy lives in one place, `--navy` in `src/app/globals.css`, taken off the
+logo artwork by eye. If the brand sheet gives an exact value, that is the one
+line to change.
+
+### Fitting the logo
+
+The top-left slot renders the artwork as soon as it is pointed at one, and sets
+the wordmark in type until then. To fit it:
+
+1. Save the file into `public/images/` — an **SVG**, or a PNG with a
+   **transparent background**. The square navy-backed version would put a navy
+   block on a navy bar, and any mismatch between the two navies shows as a
+   patch.
+2. In `src/lib/brand.ts`, uncomment `src` and set the artwork's real pixel
+   `width` and `height` (used for the aspect ratio only).
+
+`LOGO_HEIGHT` in the same file is how tall the mark renders, and with the bar's
+padding it is what makes the header 68px — so `--header-h` has to stay in step
+with it. Every page's top padding and the sticky sections are measured off that
+token.
+
 ## Products
 
 `/products` carries one band per product, in the two layouts of the reference:
@@ -135,6 +163,6 @@ Each category is also an anchor — `/investors#financials`, `#compliance`,
 ## Still to do
 
 - Higher-resolution originals for `hero-1` and `hero-4` (above).
-- MCIL logo asset — the header currently sets the wordmark in type.
+- MCIL logo artwork — the header slot is ready for it (see above).
 - The rest of the site: Media, Careers, Contact.
 - Real PDFs behind the investor document rows (above).

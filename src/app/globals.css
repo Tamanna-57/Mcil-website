@@ -28,6 +28,16 @@
      marks only, never body copy. */
   --accent: #d99a5b;
 
+  /*
+   * Brand navy — the ground the MCIL logo is set on. The header carries it on
+   * every page and at every scroll position, so the logo always sits on its
+   * own colour rather than on a tint of whatever is behind it.
+   *
+   * Read off the logo artwork by eye; if the brand sheet gives an exact value,
+   * this is the one line to change.
+   */
+  --navy: #1c2c47;
+
   /* Hero rhythm. One slide = sweep-in, hold, sweep-out, rest. */
   /* Height of the fixed site header; sticky sections reserve it. */
   --header-h: 68px;
@@ -43,6 +53,7 @@
   --color-steel-800: var(--steel-800);
   --color-steel-100: var(--steel-100);
   --color-accent: var(--accent);
+  --color-navy: var(--navy);
   --color-surface: var(--surface);
   --color-brand: var(--brand);
   --color-brand-light: var(--brand-light);

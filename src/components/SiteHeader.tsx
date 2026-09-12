@@ -1,7 +1,9 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
+import { LOGO_HEIGHT, logo } from "@/lib/brand";
 import { navItems, type NavItem, type NavLink } from "@/lib/site-nav";
 
 export default function SiteHeader() {
@@ -11,6 +13,9 @@ export default function SiteHeader() {
   const [mobileOpenId, setMobileOpenId] = useState<string | null>(null);
   const closeTimer = useRef<number | undefined>(undefined);
 
+  /* The bar is opaque at every scroll position; this only decides whether it
+     casts a shadow, which is what separates it from the page once the page has
+     moved under it. */
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 24);
     onScroll();
@@ -39,12 +44,17 @@ export default function SiteHeader() {
   }, []);
 
   const openItem = navItems.find((item) => item.id === openId) ?? null;
-  const solid = scrolled || menuOpen || openId !== null;
 
+  /*
+   * Brand navy, always. It used to be transparent until the page scrolled,
+   * which worked over the hero photography and left white nav type on a white
+   * page everywhere else — invisible on About, Investors and Products until
+   * you scrolled or opened a menu.
+   */
   return (
     <header
-      className={`fixed inset-x-0 top-0 z-50 transition-colors duration-300 ${
-        solid ? "bg-steel-900/95 backdrop-blur-sm" : "bg-transparent"
+      className={`fixed inset-x-0 top-0 z-50 bg-navy transition-shadow duration-300 ${
+        scrolled ? "shadow-[0_10px_30px_-18px_rgba(0,0,0,0.65)]" : ""
       }`}
       onMouseLeave={scheduleClose}
       onKeyDown={(e) => {
@@ -52,12 +62,30 @@ export default function SiteHeader() {
       }}
     >
       <div className="flex items-center justify-between gap-6 px-6 py-4 sm:px-10 lg:px-[3vw]">
+        {/* Fixed height either way, so swapping the wordmark for the artwork
+            cannot change how tall the bar is (and with it --header-h, which
+            every page's top padding is measured against). */}
         <Link
           href="/"
-          className="text-lg font-bold tracking-[0.16em] text-white uppercase"
+          className="flex shrink-0 items-center"
+          style={{ height: LOGO_HEIGHT }}
           onFocus={closeNow}
         >
-          MCIL
+          {logo.src ? (
+            <Image
+              src={logo.src}
+              alt={logo.alt}
+              width={logo.width}
+              height={logo.height}
+              priority
+              className="w-auto"
+              style={{ height: LOGO_HEIGHT }}
+            />
+          ) : (
+            <span className="text-lg font-bold tracking-[0.16em] text-white uppercase">
+              MCIL
+            </span>
+          )}
         </Link>
 
         <nav className="hidden items-center gap-7 lg:flex" aria-label="Primary">
