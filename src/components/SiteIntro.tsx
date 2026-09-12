@@ -1,6 +1,5 @@
 "use client";
 
-import Image from "next/image";
 import { useCallback, useEffect, useState, useSyncExternalStore } from "react";
 
 /* Once per tab. Someone who lands on /about from a link and then clicks
@@ -8,7 +7,43 @@ import { useCallback, useEffect, useState, useSyncExternalStore } from "react";
 const SEEN_KEY = "mcil-intro-seen";
 
 /** Total run before the page is handed over, in step with the CSS timeline. */
-const RUN_MS = 3500;
+const RUN_MS = 2900;
+
+/*
+ * Where each piece of the logo sits inside mcil-logo.png, in the file's own
+ * pixels — measured off its alpha channel, not eyeballed. The stage scales all
+ * five by one unit (--u), so the pieces land in exactly the arrangement the
+ * artwork has and the assembled lockup IS the logo, not a rebuild of it.
+ *
+ * Re-measure these if the logo file is ever replaced.
+ */
+const LOGO = { w: 2022, top: 178, bottom: 660 } as const;
+
+type Piece = {
+  id: string;
+  /** Corner it flies in from — the angle its arc starts at. */
+  corner: "tl" | "tr" | "bl" | "br";
+  x: number;
+  y: number;
+  w: number;
+  h: number;
+};
+
+const LETTERS: Piece[] = [
+  { id: "m", corner: "tl", x: 408, y: 178, w: 442, h: 328 },
+  { id: "c", corner: "tr", x: 852, y: 178, w: 343, h: 328 },
+  { id: "i", corner: "bl", x: 1225, y: 178, w: 152, h: 328 },
+  { id: "l", corner: "br", x: 1427, y: 178, w: 298, h: 328 },
+];
+
+const TAGLINE: Piece = {
+  id: "tag",
+  corner: "tl",
+  x: 120,
+  y: 542,
+  w: 1779,
+  h: 119,
+};
 
 /* Whether to skip the sequence entirely. Read through useSyncExternalStore
    rather than an effect: the server has no session to read, so it renders the
@@ -27,10 +62,31 @@ function shouldSkip() {
 
 const neverSkipOnServer = () => false;
 
+/** A piece of the logo, windowed out of the one artwork file. */
+function LogoPiece({ piece, className }: { piece: Piece; className: string }) {
+  return (
+    <span
+      className={className}
+      style={
+        {
+          "--x": piece.x,
+          "--y": piece.y - LOGO.top,
+          "--w": piece.w,
+          "--h": piece.h,
+          "--bx": piece.x,
+          "--by": piece.y,
+        } as React.CSSProperties
+      }
+      data-corner={piece.corner}
+    />
+  );
+}
+
 /**
- * The opening: four strips arrive from the four sides, close into a coil, the
- * coil turns, and the MCIL logo resolves underneath before the site comes
- * through.
+ * The opening: M, C, I and L start in the four corners, each swings in along
+ * its own arc — all four turning the same way, so the four arcs read as one
+ * circle — and they close into the wordmark. METAL COATINGS (INDIA) LTD then
+ * fades up underneath, and the curtain lifts into the page.
  */
 export default function SiteIntro() {
   const skip = useSyncExternalStore(
@@ -76,66 +132,22 @@ export default function SiteIntro() {
 
   return (
     <div className="intro" data-leaving={leaving} role="presentation">
-      <div className="intro-stage">
-        <svg
-          className="intro-mark"
-          viewBox="0 0 128 120"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="9"
-          strokeLinecap="round"
-          aria-hidden
-        >
-          {/* One coil in four wraps, each entering from the side it forms.
-              The wraps stop short of each other: the four gaps are what make
-              the turn legible — a closed ring is radially symmetric and would
-              look still however fast it span. */}
-          <path
-            className="intro-arc intro-arc--n"
-            d="M64.6 16.2A44 44 0 0 1 103.8 55.4"
-          />
-          <path
-            className="intro-arc intro-arc--e"
-            d="M103.8 64.6A44 44 0 0 1 64.6 103.8"
-          />
-          <path
-            className="intro-arc intro-arc--s"
-            d="M55.4 103.8A44 44 0 0 1 16.2 64.6"
-          />
-          <path
-            className="intro-arc intro-arc--w"
-            d="M16.2 55.4A44 44 0 0 1 55.4 16.2"
-          />
-          {/* A second wrap inside the first — one ring reads as a target,
-              two read as strip wound on itself. Its gaps sit off the outer
-              ones so the two turn against each other. */}
-          <circle
-            className="intro-wrap"
-            cx="60"
-            cy="60"
-            r="29"
-            strokeWidth="8"
-          />
-          {/* The eye of the coil, and the strip end feeding out of it. */}
-          <circle
-            className="intro-eye"
-            cx="60"
-            cy="60"
-            r="11"
-            strokeWidth="7"
-          />
-          <path className="intro-tail" d="M104 60h14" />
-        </svg>
-
-        <Image
-          className="intro-logo"
-          src="/images/mcil-logo.png"
-          alt="Metal Coatings (India) Ltd"
-          width={2022}
-          height={778}
-          priority
-        />
+      <div
+        className="intro-lockup"
+        style={
+          {
+            "--logo-w": LOGO.w,
+            "--logo-h": LOGO.bottom - LOGO.top,
+          } as React.CSSProperties
+        }
+      >
+        {LETTERS.map((letter) => (
+          <LogoPiece key={letter.id} piece={letter} className="intro-letter" />
+        ))}
+        <LogoPiece piece={TAGLINE} className="intro-tagline" />
       </div>
+
+      <span className="sr-only">Metal Coatings (India) Ltd</span>
     </div>
   );
 }

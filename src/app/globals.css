@@ -860,13 +860,10 @@ body {
 /* ------------------------------------------------------------------ */
 
 /*
- * The curtain. Deep blue rather than white for two reasons: MCIL's logo is
- * white artwork, which would disappear on a white ground, and the home page
- * opens on a dark photograph — so the curtain lifts into the hero instead of
- * flashing against it.
- *
- * The mark is drawn in currentColor, so putting the sequence on a light ground
- * later is a matter of this rule's colour and background, not the animation.
+ * The curtain. Deep blue rather than white for two reasons: the logo is white
+ * artwork, which would disappear on a white ground, and the home page opens on
+ * a dark photograph — so the curtain lifts into the hero instead of flashing
+ * against it.
  */
 .intro {
   position: fixed;
@@ -874,11 +871,10 @@ body {
   z-index: 100;
   display: grid;
   place-items: center;
-  padding: 2rem;
-  color: #fff;
+  padding: 1.5rem;
   background:
     radial-gradient(
-      80% 65% at 50% 40%,
+      80% 65% at 50% 45%,
       color-mix(in srgb, var(--brand-deep) 62%, transparent),
       transparent 72%
     ),
@@ -888,7 +884,6 @@ body {
       var(--steel-900) 55%,
       #12111f
     );
-  animation: intro-in 240ms ease both;
 }
 
 /* Handing over: the curtain lifts off the page rather than cutting to it. */
@@ -897,81 +892,68 @@ body {
   pointer-events: none;
 }
 
-.intro-stage {
-  display: grid;
-  justify-items: center;
-  gap: clamp(1.5rem, 3vw, 2.25rem);
+/*
+ * The stage is the logo's own box, and every piece is placed at the coordinate
+ * it occupies in the artwork — so when the arcs finish, the pieces have not
+ * been arranged into something logo-shaped, they ARE the logo.
+ *
+ * --u is one artwork pixel. Everything below is expressed in the file's own
+ * pixels multiplied by it, which is why the numbers here match the measured
+ * ones in SiteIntro.tsx exactly.
+ */
+.intro-lockup {
+  --u: clamp(0.16px, 0.027vw, 0.4px);
+  --fly: clamp(230px, 46vmin, 560px);
+
+  position: relative;
+  width: calc(var(--logo-w) * var(--u));
+  height: calc(var(--logo-h) * var(--u));
 }
 
-/* The coil turns once the four arcs have closed it, carrying the whole mark —
-   arcs, eye and tail — around with it. */
-.intro-mark {
-  width: clamp(124px, 21vw, 196px);
-  height: clamp(116px, 20vw, 184px);
-  animation: intro-spin 1250ms cubic-bezier(0.22, 1, 0.36, 1) 520ms both;
+/* Each piece is a window onto the one artwork file: same image, offset so only
+   its own glyph shows. One request, five pieces, no slicing into files. */
+.intro-letter,
+.intro-tagline {
+  position: absolute;
+  left: calc(var(--x) * var(--u));
+  top: calc(var(--y) * var(--u));
+  width: calc(var(--w) * var(--u));
+  height: calc(var(--h) * var(--u));
+  background-image: url("/images/mcil-logo.png");
+  background-repeat: no-repeat;
+  background-size: calc(2022 * var(--u)) calc(778 * var(--u));
+  background-position: calc(var(--bx) * var(--u) * -1)
+    calc(var(--by) * var(--u) * -1);
 }
 
-/* Each arc arrives from the side of the coil it belongs to and overshoots
-   slightly before it seats — the pieces land with weight rather than fade. */
-.intro-arc {
-  animation: intro-arc 720ms cubic-bezier(0.22, 1.2, 0.36, 1) both;
+/*
+ * The four letters fly together rather than in sequence: four arcs turning the
+ * same way at the same time is what reads as one circle.
+ *
+ * Each rule carries the whole shorthand, name included. A nameless
+ * `animation: 1150ms ... both` on the shared class, with the name set per
+ * corner, is minified to `animation: none` — the duration and delay go with
+ * it, and nothing moves at all.
+ */
+.intro-letter[data-corner="tl"] {
+  animation: intro-fly-tl 1150ms cubic-bezier(0.34, 0.03, 0.2, 1) 160ms both;
 }
 
-.intro-arc--n {
-  --from-x: 0;
-  --from-y: -260px;
+.intro-letter[data-corner="tr"] {
+  animation: intro-fly-tr 1150ms cubic-bezier(0.34, 0.03, 0.2, 1) 160ms both;
 }
 
-.intro-arc--e {
-  --from-x: 260px;
-  --from-y: 0;
-  animation-delay: 130ms;
+.intro-letter[data-corner="bl"] {
+  animation: intro-fly-bl 1150ms cubic-bezier(0.34, 0.03, 0.2, 1) 160ms both;
 }
 
-.intro-arc--s {
-  --from-x: 0;
-  --from-y: 260px;
-  animation-delay: 260ms;
+.intro-letter[data-corner="br"] {
+  animation: intro-fly-br 1150ms cubic-bezier(0.34, 0.03, 0.2, 1) 160ms both;
 }
 
-.intro-arc--w {
-  --from-x: -260px;
-  --from-y: 0;
-  animation-delay: 390ms;
-}
-
-.intro-wrap {
-  /* Two dashes with two gaps, set against the outer ring's four. */
-  stroke-dasharray: 58 24;
-  stroke-dashoffset: 14;
-  transform-origin: 60px 60px;
-  animation: intro-wrap 620ms cubic-bezier(0.22, 1.3, 0.36, 1) 820ms both;
-}
-
-.intro-eye {
-  transform-origin: 60px 60px;
-  animation: intro-eye 520ms cubic-bezier(0.22, 1.4, 0.36, 1) 900ms both;
-}
-
-/* The strip leaving the coil, drawn on after it has stopped turning. */
-.intro-tail {
-  stroke-dasharray: 14;
-  animation: intro-tail 420ms cubic-bezier(0.22, 1, 0.36, 1) 620ms both;
-}
-
-.intro-logo {
-  width: clamp(215px, 36vw, 400px);
-  height: auto;
-  animation: intro-logo 780ms cubic-bezier(0.22, 1, 0.36, 1) 1620ms both;
-}
-
-@keyframes intro-in {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
+/* The line underneath arrives only once the word has settled. */
+.intro-tagline {
+  animation: intro-tag 760ms cubic-bezier(0.22, 1, 0.36, 1) 1480ms both;
 }
 
 @keyframes intro-out {
@@ -985,69 +967,140 @@ body {
   }
 }
 
-@keyframes intro-arc {
+@keyframes intro-tag {
   from {
     opacity: 0;
-    transform: translate(var(--from-x), var(--from-y));
+    transform: translateY(calc(18 * var(--u)));
+    filter: blur(5px);
   }
   to {
     opacity: 1;
-    transform: translate(0, 0);
-  }
-}
-
-@keyframes intro-spin {
-  from {
-    transform: rotate(-540deg) scale(0.8);
-  }
-  to {
-    transform: rotate(0deg) scale(1);
-  }
-}
-
-@keyframes intro-wrap {
-  from {
-    opacity: 0;
-    transform: scale(0.4) rotate(-120deg);
-  }
-  to {
-    opacity: 1;
-    transform: scale(1) rotate(0deg);
-  }
-}
-
-@keyframes intro-eye {
-  from {
-    opacity: 0;
-    transform: scale(0.2);
-  }
-  to {
-    opacity: 1;
-    transform: scale(1);
-  }
-}
-
-@keyframes intro-tail {
-  from {
-    opacity: 0;
-    stroke-dashoffset: 14;
-  }
-  to {
-    opacity: 1;
-    stroke-dashoffset: 0;
-  }
-}
-
-@keyframes intro-logo {
-  from {
-    opacity: 0;
-    transform: translateY(16px) scale(0.96);
-    filter: blur(8px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0) scale(1);
+    transform: translateY(0);
     filter: blur(0);
+  }
+}
+
+@keyframes intro-fly-tl {
+  0% {
+    opacity: 0;
+    transform: translate(calc(-0.707 * var(--fly)), calc(-0.707 * var(--fly)))
+      rotate(-70deg) scale(0.55);
+  }
+  8% {
+    opacity: 1;
+  }
+  20% {
+    transform: translate(calc(-0.372 * var(--fly)), calc(-0.731 * var(--fly)))
+      rotate(-52deg) scale(0.66);
+  }
+  40% {
+    transform: translate(calc(-0.094 * var(--fly)), calc(-0.593 * var(--fly)))
+      rotate(-36deg) scale(0.77);
+  }
+  60% {
+    transform: translate(calc(0.059 * var(--fly)), calc(-0.375 * var(--fly)))
+      rotate(-21deg) scale(0.87);
+  }
+  80% {
+    transform: translate(calc(0.077 * var(--fly)), calc(-0.151 * var(--fly)))
+      rotate(-9deg) scale(0.95);
+  }
+  100% {
+    transform: translate(calc(0 * var(--fly)), calc(-0 * var(--fly)))
+      rotate(0deg) scale(1);
+  }
+}
+
+@keyframes intro-fly-tr {
+  0% {
+    opacity: 0;
+    transform: translate(calc(0.707 * var(--fly)), calc(-0.707 * var(--fly)))
+      rotate(-70deg) scale(0.55);
+  }
+  8% {
+    opacity: 1;
+  }
+  20% {
+    transform: translate(calc(0.731 * var(--fly)), calc(-0.372 * var(--fly)))
+      rotate(-52deg) scale(0.66);
+  }
+  40% {
+    transform: translate(calc(0.593 * var(--fly)), calc(-0.094 * var(--fly)))
+      rotate(-36deg) scale(0.77);
+  }
+  60% {
+    transform: translate(calc(0.375 * var(--fly)), calc(0.059 * var(--fly)))
+      rotate(-21deg) scale(0.87);
+  }
+  80% {
+    transform: translate(calc(0.151 * var(--fly)), calc(0.077 * var(--fly)))
+      rotate(-9deg) scale(0.95);
+  }
+  100% {
+    transform: translate(calc(0 * var(--fly)), calc(0 * var(--fly)))
+      rotate(0deg) scale(1);
+  }
+}
+
+@keyframes intro-fly-bl {
+  0% {
+    opacity: 0;
+    transform: translate(calc(-0.707 * var(--fly)), calc(0.707 * var(--fly)))
+      rotate(-70deg) scale(0.55);
+  }
+  8% {
+    opacity: 1;
+  }
+  20% {
+    transform: translate(calc(-0.731 * var(--fly)), calc(0.372 * var(--fly)))
+      rotate(-52deg) scale(0.66);
+  }
+  40% {
+    transform: translate(calc(-0.593 * var(--fly)), calc(0.094 * var(--fly)))
+      rotate(-36deg) scale(0.77);
+  }
+  60% {
+    transform: translate(calc(-0.375 * var(--fly)), calc(-0.059 * var(--fly)))
+      rotate(-21deg) scale(0.87);
+  }
+  80% {
+    transform: translate(calc(-0.151 * var(--fly)), calc(-0.077 * var(--fly)))
+      rotate(-9deg) scale(0.95);
+  }
+  100% {
+    transform: translate(calc(-0 * var(--fly)), calc(-0 * var(--fly)))
+      rotate(0deg) scale(1);
+  }
+}
+
+@keyframes intro-fly-br {
+  0% {
+    opacity: 0;
+    transform: translate(calc(0.707 * var(--fly)), calc(0.707 * var(--fly)))
+      rotate(-70deg) scale(0.55);
+  }
+  8% {
+    opacity: 1;
+  }
+  20% {
+    transform: translate(calc(0.372 * var(--fly)), calc(0.731 * var(--fly)))
+      rotate(-52deg) scale(0.66);
+  }
+  40% {
+    transform: translate(calc(0.094 * var(--fly)), calc(0.593 * var(--fly)))
+      rotate(-36deg) scale(0.77);
+  }
+  60% {
+    transform: translate(calc(-0.059 * var(--fly)), calc(0.375 * var(--fly)))
+      rotate(-21deg) scale(0.87);
+  }
+  80% {
+    transform: translate(calc(-0.077 * var(--fly)), calc(0.151 * var(--fly)))
+      rotate(-9deg) scale(0.95);
+  }
+  100% {
+    transform: translate(calc(-0 * var(--fly)), calc(0 * var(--fly)))
+      rotate(0deg) scale(1);
   }
 }
 
