@@ -795,14 +795,50 @@ body {
   transform: scaleX(1);
 }
 
-/* The panel drops from under the bar and continues the same pane, so the two
-   read as one sheet of glass rather than a card parked below the header.
-   Clipping rather than sliding keeps the type still while it grows. */
+/*
+ * The panel drops from under the bar and continues the same pane, so the two
+ * read as one sheet of glass rather than a card parked below the header.
+ *
+ * Its height is driven from the open panel's measured height rather than left
+ * to auto: opening eases it down from nothing, closing eases it back, and
+ * moving between two items eases between their two heights instead of the box
+ * standing still while its words change.
+ *
+ * Visibility is switched at the far end of the collapse, so the links inside a
+ * closed panel cannot be reached by the keyboard while it sits at zero height.
+ */
 .mega-panel {
   overflow: hidden;
+  visibility: hidden;
   box-shadow: 0 22px 50px -30px
     color-mix(in srgb, var(--steel-900) 45%, transparent);
-  animation: mega-drop 320ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  transition:
+    height 420ms cubic-bezier(0.22, 1, 0.36, 1),
+    visibility 0s linear 420ms;
+}
+
+.mega-panel[data-open="true"] {
+  visibility: visible;
+  transition:
+    height 420ms cubic-bezier(0.22, 1, 0.36, 1),
+    visibility 0s;
+}
+
+/* The two panels are stacked so one can fade out under the other. Only the
+   incoming layer is in flow — it is what the height is measured from. */
+.mega-stack {
+  position: relative;
+}
+
+.mega-layer--out {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  animation: mega-layer-out 260ms cubic-bezier(0.4, 0, 1, 1) both;
+}
+
+.mega-layer--in {
+  animation: mega-layer-in 380ms cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
 .mega-face {
@@ -1499,14 +1535,27 @@ body {
   }
 }
 
-@keyframes mega-drop {
+/* The outgoing panel drops away as the incoming one rises through it, so the
+   swap has a direction rather than being a straight dissolve. */
+@keyframes mega-layer-out {
   from {
-    clip-path: inset(0 0 100% 0);
-    opacity: 0.4;
+    opacity: 1;
+    transform: translateY(0);
   }
   to {
-    clip-path: inset(0 0 0 0);
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+}
+
+@keyframes mega-layer-in {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
     opacity: 1;
+    transform: translateY(0);
   }
 }
 
@@ -1515,7 +1564,10 @@ body {
     transition: none;
   }
 
-  .mega-panel {
+  .mega-panel,
+  .mega-layer--in,
+  .mega-layer--out {
+    transition: none;
     animation: none;
   }
 }
