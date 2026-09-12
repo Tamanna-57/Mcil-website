@@ -70,21 +70,6 @@ export const navItems: NavItem[] = [
     },
   },
   {
-    id: "advantage",
-    label: "MCIL Advantage",
-    href: "/about#advantage",
-    panel: {
-      title: "The MCIL Advantage",
-      body: "Thickness held across the width rather than sampled, every coil certified, and three decades of supplying auto components, white goods and electrical manufacturers to schedule.",
-      links: [
-        { label: "Precision & Quality", href: "/about#advantage" },
-        { label: "The Process, Step by Step", href: "/about#process" },
-        { label: "The People Behind the Line", href: "/about#team" },
-        { label: "Certifications", soon: true },
-      ],
-    },
-  },
-  {
     id: "investors",
     label: "Investors",
     href: "/investors",
@@ -105,6 +90,21 @@ export const navItems: NavItem[] = [
           label: "Policies, Code & Unclaimed Dividend",
           href: "/investors#policies",
         },
+      ],
+    },
+  },
+  {
+    id: "advantage",
+    label: "MCIL Advantage",
+    href: "/about#advantage",
+    panel: {
+      title: "The MCIL Advantage",
+      body: "Thickness held across the width rather than sampled, every coil certified, and three decades of supplying auto components, white goods and electrical manufacturers to schedule.",
+      links: [
+        { label: "Precision & Quality", href: "/about#advantage" },
+        { label: "The Process, Step by Step", href: "/about#process" },
+        { label: "The People Behind the Line", href: "/about#team" },
+        { label: "Certifications", soon: true },
       ],
     },
   },

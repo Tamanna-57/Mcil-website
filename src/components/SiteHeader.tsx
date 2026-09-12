@@ -145,6 +145,7 @@ export default function SiteHeader() {
           href="/"
           className="text-lg font-bold tracking-[0.16em] text-[color:var(--nav-ink)] uppercase transition-colors duration-300"
           onFocus={closeNow}
+          onClick={closeNow}
         >
           MCIL
         </Link>
@@ -156,6 +157,7 @@ export default function SiteHeader() {
               item={item}
               active={openId === item.id}
               onOpen={() => open(item.id)}
+              onNavigate={closeNow}
             />
           ))}
 
@@ -286,10 +288,12 @@ function NavTrigger({
   item,
   active,
   onOpen,
+  onNavigate,
 }: {
   item: NavItem;
   active: boolean;
   onOpen: () => void;
+  onNavigate: () => void;
 }) {
   const inner = (
     <>
@@ -311,6 +315,9 @@ function NavTrigger({
         className={className}
         onMouseEnter={onOpen}
         onFocus={onOpen}
+        /* The header outlives the route change, so without this the panel
+           follows you onto the new page and sits over its hero. */
+        onClick={onNavigate}
       >
         {inner}
       </Link>
