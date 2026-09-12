@@ -2,12 +2,20 @@
 
 import { useCallback, useEffect, useState, useSyncExternalStore } from "react";
 
-/* Once per tab. Someone who lands on /about from a link and then clicks
-   through to /contact should not sit through it twice. */
-const SEEN_KEY = "mcil-intro-seen";
-
 /** Total run before the page is handed over, in step with the CSS timeline. */
-const RUN_MS = 2900;
+const RUN_MS = 3350;
+
+/*
+ * Once per page load, and only on the landing page — the component is mounted
+ * there, not in the layout, so the other routes never see it at all.
+ *
+ * A module-level flag rather than storage: a reload re-evaluates the module and
+ * the sequence plays again, which is what a reload should do, while clicking
+ * Home from another page does not replay it mid-session. It is only ever read
+ * on the client — on the server this module is shared between requests, so the
+ * server always renders the curtain and the client reconciles it away.
+ */
+let hasPlayedThisLoad = false;
 
 /*
  * Where each piece of the logo sits inside mcil-logo.png, in the file's own
@@ -52,11 +60,7 @@ const TAGLINE: Piece = {
 const neverChanges = () => () => {};
 
 function shouldSkip() {
-  try {
-    if (sessionStorage.getItem(SEEN_KEY) !== null) return true;
-  } catch {
-    /* Private mode: nothing is remembered, so let it play. */
-  }
+  if (hasPlayedThisLoad) return true;
   return window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 }
 
@@ -86,10 +90,13 @@ function LogoPiece({ piece, className }: { piece: Piece; className: string }) {
  * The opening: M, C, I and L start in the four corners, each swings in along
  * its own arc — all four turning the same way, so the four arcs read as one
  * circle — and they close into the wordmark. METAL COATINGS (INDIA) LTD then
- * fades up underneath, and the curtain lifts into the page.
+ * opens from its centre underneath, and the curtain dissolves into the page.
+ *
+ * Mounted by the landing page rather than the layout, so it belongs to that
+ * page and plays on every load of it.
  */
 export default function SiteIntro() {
-  const skip = useSyncExternalStore(
+  const storeSkip = useSyncExternalStore(
     neverChanges,
     shouldSkip,
     neverSkipOnServer,
@@ -97,14 +104,19 @@ export default function SiteIntro() {
   const [done, setDone] = useState(false);
   const [leaving, setLeaving] = useState(false);
 
+  /* Once this instance is on its way out it keeps rendering until the dissolve
+     is over, whatever the store now says. */
+  const skip = storeSkip && !leaving;
+
   const finish = useCallback(() => {
+    /* Claimed here rather than when the run starts. The store snapshot below is
+       re-read on every render, so flipping this mid-run would make the next
+       render skip — which silently cut the exit animation before it drew a
+       single frame. */
+    hasPlayedThisLoad = true;
     setLeaving(true);
-    try {
-      sessionStorage.setItem(SEEN_KEY, "1");
-    } catch {
-      /* Nothing to do — it simply plays again next time. */
-    }
-    window.setTimeout(() => setDone(true), 700);
+    /* Held until the dissolve has finished; unmounting mid-fade would cut it. */
+    window.setTimeout(() => setDone(true), 940);
   }, []);
 
   useEffect(() => {
