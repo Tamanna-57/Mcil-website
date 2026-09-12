@@ -5,6 +5,16 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { LOGO_HEIGHT, LOGO_NAME } from "@/lib/brand";
 import { navItems, type NavItem, type NavLink } from "@/lib/site-nav";
 
+/*
+ * How long the pointer has to rest on a nav item before its panel opens.
+ *
+ * Sweeping along the row to reach the far side of the header should not fire
+ * four panels on the way past, so nothing opens until the pointer settles —
+ * and moving onto a different item closes whatever is open rather than
+ * swapping the contents underneath the pointer.
+ */
+const HOVER_INTENT_MS = 240;
+
 export default function SiteHeader() {
   const [scrolled, setScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
@@ -29,6 +39,7 @@ export default function SiteHeader() {
   const [leavingId, setLeavingId] = useState<string | null>(null);
   const [panelHeight, setPanelHeight] = useState(0);
   const openIdRef = useRef<string | null>(null);
+  const intentTimer = useRef<number | undefined>(undefined);
   const swapTimer = useRef<number | undefined>(undefined);
   const clearTimer = useRef<number | undefined>(undefined);
   const resizeObserver = useRef<ResizeObserver | null>(null);
@@ -115,8 +126,32 @@ export default function SiteHeader() {
 
   const closeNow = useCallback(() => {
     window.clearTimeout(closeTimer.current);
+    window.clearTimeout(intentTimer.current);
     startClose();
   }, [startClose]);
+
+  /*
+   * Pointer arriving on a nav item. Anything already open belongs to another
+   * item, so it goes straight away; this item's panel waits for the pointer to
+   * prove it meant to stop here.
+   */
+  const hoverItem = useCallback(
+    (id: string) => {
+      window.clearTimeout(closeTimer.current);
+      window.clearTimeout(intentTimer.current);
+
+      if (openIdRef.current === id) return;
+      if (openIdRef.current !== null) startClose();
+
+      intentTimer.current = window.setTimeout(() => open(id), HOVER_INTENT_MS);
+    },
+    [open, startClose],
+  );
+
+  /* Left the item before it opened — it was on its way somewhere else. */
+  const cancelHover = useCallback(() => {
+    window.clearTimeout(intentTimer.current);
+  }, []);
 
   const openItem = navItems.find((item) => item.id === openId) ?? null;
   const shownItem = navItems.find((item) => item.id === shownId) ?? null;
@@ -142,6 +177,7 @@ export default function SiteHeader() {
           href="/"
           className="flex shrink-0 items-center"
           onFocus={closeNow}
+          onClick={closeNow}
         >
           <span
             className="site-logo block"
@@ -157,7 +193,10 @@ export default function SiteHeader() {
               key={item.id}
               item={item}
               active={openId === item.id}
+              onHover={() => hoverItem(item.id)}
+              onHoverEnd={cancelHover}
               onOpen={() => open(item.id)}
+              onNavigate={closeNow}
             />
           ))}
 
@@ -198,7 +237,10 @@ export default function SiteHeader() {
           className="mega-panel hidden lg:block"
           data-open={openItem !== null}
           style={{ height: openItem ? panelHeight : 0 }}
-          onMouseEnter={() => openItem && open(openItem.id)}
+          onMouseEnter={() => {
+            window.clearTimeout(closeTimer.current);
+            window.clearTimeout(intentTimer.current);
+          }}
         >
           <div className="mega-stack">
             {leavingItem && (
@@ -287,11 +329,17 @@ export default function SiteHeader() {
 function NavTrigger({
   item,
   active,
+  onHover,
+  onHoverEnd,
   onOpen,
+  onNavigate,
 }: {
   item: NavItem;
   active: boolean;
+  onHover: () => void;
+  onHoverEnd: () => void;
   onOpen: () => void;
+  onNavigate: () => void;
 }) {
   const inner = (
     <>
@@ -311,8 +359,13 @@ function NavTrigger({
       <Link
         href={item.href}
         className={className}
-        onMouseEnter={onOpen}
+        onMouseEnter={onHover}
+        onMouseLeave={onHoverEnd}
+        /* The keyboard cannot rest on anything, so focus opens at once. */
         onFocus={onOpen}
+        /* The header outlives the route change, so without this the panel
+           follows you onto the new page and sits over its hero. */
+        onClick={onNavigate}
       >
         {inner}
       </Link>
@@ -324,7 +377,8 @@ function NavTrigger({
       type="button"
       className={className}
       aria-expanded={active}
-      onMouseEnter={onOpen}
+      onMouseEnter={onHover}
+      onMouseLeave={onHoverEnd}
       onFocus={onOpen}
       onClick={onOpen}
     >
