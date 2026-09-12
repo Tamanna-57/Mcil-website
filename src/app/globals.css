@@ -855,6 +855,202 @@ body {
 /* Contact page                                                        */
 /* ------------------------------------------------------------------ */
 
+/* ------------------------------------------------------------------ */
+/* Opening sequence                                                    */
+/* ------------------------------------------------------------------ */
+
+/*
+ * The curtain. Deep blue rather than white for two reasons: MCIL's logo is
+ * white artwork, which would disappear on a white ground, and the home page
+ * opens on a dark photograph — so the curtain lifts into the hero instead of
+ * flashing against it.
+ *
+ * The mark is drawn in currentColor, so putting the sequence on a light ground
+ * later is a matter of this rule's colour and background, not the animation.
+ */
+.intro {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: grid;
+  place-items: center;
+  padding: 2rem;
+  color: #fff;
+  background:
+    radial-gradient(
+      80% 65% at 50% 40%,
+      color-mix(in srgb, var(--brand-deep) 62%, transparent),
+      transparent 72%
+    ),
+    linear-gradient(
+      165deg,
+      color-mix(in srgb, var(--brand-deep) 28%, var(--steel-900)),
+      var(--steel-900) 55%,
+      #12111f
+    );
+  animation: intro-in 240ms ease both;
+}
+
+/* Handing over: the curtain lifts off the page rather than cutting to it. */
+.intro[data-leaving="true"] {
+  animation: intro-out 700ms cubic-bezier(0.65, 0, 0.35, 1) both;
+  pointer-events: none;
+}
+
+.intro-stage {
+  display: grid;
+  justify-items: center;
+  gap: clamp(1.5rem, 3vw, 2.25rem);
+}
+
+/* The coil turns once the four arcs have closed it, carrying the whole mark —
+   arcs, eye and tail — around with it. */
+.intro-mark {
+  width: clamp(124px, 21vw, 196px);
+  height: clamp(116px, 20vw, 184px);
+  animation: intro-spin 1250ms cubic-bezier(0.22, 1, 0.36, 1) 520ms both;
+}
+
+/* Each arc arrives from the side of the coil it belongs to and overshoots
+   slightly before it seats — the pieces land with weight rather than fade. */
+.intro-arc {
+  animation: intro-arc 720ms cubic-bezier(0.22, 1.2, 0.36, 1) both;
+}
+
+.intro-arc--n {
+  --from-x: 0;
+  --from-y: -260px;
+}
+
+.intro-arc--e {
+  --from-x: 260px;
+  --from-y: 0;
+  animation-delay: 130ms;
+}
+
+.intro-arc--s {
+  --from-x: 0;
+  --from-y: 260px;
+  animation-delay: 260ms;
+}
+
+.intro-arc--w {
+  --from-x: -260px;
+  --from-y: 0;
+  animation-delay: 390ms;
+}
+
+.intro-wrap {
+  /* Two dashes with two gaps, set against the outer ring's four. */
+  stroke-dasharray: 58 24;
+  stroke-dashoffset: 14;
+  transform-origin: 60px 60px;
+  animation: intro-wrap 620ms cubic-bezier(0.22, 1.3, 0.36, 1) 820ms both;
+}
+
+.intro-eye {
+  transform-origin: 60px 60px;
+  animation: intro-eye 520ms cubic-bezier(0.22, 1.4, 0.36, 1) 900ms both;
+}
+
+/* The strip leaving the coil, drawn on after it has stopped turning. */
+.intro-tail {
+  stroke-dasharray: 14;
+  animation: intro-tail 420ms cubic-bezier(0.22, 1, 0.36, 1) 620ms both;
+}
+
+.intro-logo {
+  width: clamp(215px, 36vw, 400px);
+  height: auto;
+  animation: intro-logo 780ms cubic-bezier(0.22, 1, 0.36, 1) 1620ms both;
+}
+
+@keyframes intro-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes intro-out {
+  from {
+    opacity: 1;
+    clip-path: inset(0 0 0 0);
+  }
+  to {
+    opacity: 0;
+    clip-path: inset(0 0 100% 0);
+  }
+}
+
+@keyframes intro-arc {
+  from {
+    opacity: 0;
+    transform: translate(var(--from-x), var(--from-y));
+  }
+  to {
+    opacity: 1;
+    transform: translate(0, 0);
+  }
+}
+
+@keyframes intro-spin {
+  from {
+    transform: rotate(-540deg) scale(0.8);
+  }
+  to {
+    transform: rotate(0deg) scale(1);
+  }
+}
+
+@keyframes intro-wrap {
+  from {
+    opacity: 0;
+    transform: scale(0.4) rotate(-120deg);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) rotate(0deg);
+  }
+}
+
+@keyframes intro-eye {
+  from {
+    opacity: 0;
+    transform: scale(0.2);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes intro-tail {
+  from {
+    opacity: 0;
+    stroke-dashoffset: 14;
+  }
+  to {
+    opacity: 1;
+    stroke-dashoffset: 0;
+  }
+}
+
+@keyframes intro-logo {
+  from {
+    opacity: 0;
+    transform: translateY(16px) scale(0.96);
+    filter: blur(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    filter: blur(0);
+  }
+}
+
 /* The page's ground: the brand blue as a soft wash rather than a block of it,
    lightening toward the foot so the small tiles at the bottom sit on almost
    white. This is what the card and the tiles are glass against. */

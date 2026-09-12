@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Josefin_Sans, Montserrat } from "next/font/google";
 import SiteHeader from "@/components/SiteHeader";
+import SiteIntro from "@/components/SiteIntro";
 import "./globals.css";
 
 /* Display face: thin, geometric, high-waisted. Carries the large headlines
@@ -32,6 +33,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       className={`${josefin.variable} ${montserrat.variable} h-full antialiased`}
     >
       <body className="min-h-full">
+        <SiteIntro />
         <SiteHeader />
         {children}
       </body>
