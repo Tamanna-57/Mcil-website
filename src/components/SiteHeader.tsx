@@ -43,9 +43,9 @@ export default function SiteHeader() {
 
   return (
     <header
-      className={`fixed inset-x-0 top-0 z-50 transition-colors duration-300 ${
-        solid ? "bg-steel-900/95 backdrop-blur-sm" : "bg-transparent"
-      }`}
+      className={`site-header fixed inset-x-0 top-0 z-50 transition-colors duration-300 ${
+        solid ? "site-header--glass" : "bg-transparent"
+      } ${menuOpen ? "site-header--sheet" : ""}`}
       onMouseLeave={scheduleClose}
       onKeyDown={(e) => {
         if (e.key === "Escape") closeNow();
@@ -54,7 +54,7 @@ export default function SiteHeader() {
       <div className="flex items-center justify-between gap-6 px-6 py-4 sm:px-10 lg:px-[3vw]">
         <Link
           href="/"
-          className="text-lg font-bold tracking-[0.16em] text-white uppercase"
+          className="text-lg font-bold tracking-[0.16em] text-[color:var(--nav-ink)] uppercase transition-colors duration-300"
           onFocus={closeNow}
         >
           MCIL
@@ -74,7 +74,7 @@ export default function SiteHeader() {
             type="button"
             aria-label="Search"
             onFocus={closeNow}
-            className="cursor-pointer text-white/90 transition-colors hover:text-white"
+            className="cursor-pointer text-[color:var(--nav-ink-soft)] transition-colors hover:text-[color:var(--nav-ink)]"
           >
             <SearchIcon />
           </button>
@@ -82,7 +82,7 @@ export default function SiteHeader() {
           <button
             type="button"
             onFocus={closeNow}
-            className="cursor-pointer border border-white/60 px-5 py-1.5 text-[11px] tracking-[0.12em] text-white uppercase transition-colors hover:bg-white hover:text-steel-900"
+            className="cursor-pointer border border-[color:var(--nav-line)] px-5 py-1.5 text-[11px] tracking-[0.12em] text-[color:var(--nav-ink)] uppercase transition-colors hover:bg-[color:var(--nav-hover-ground)] hover:text-[color:var(--nav-hover-ink)]"
           >
             English
           </button>
@@ -94,7 +94,7 @@ export default function SiteHeader() {
           aria-expanded={menuOpen}
           aria-controls="mobile-nav"
           aria-label={menuOpen ? "Close menu" : "Open menu"}
-          className="cursor-pointer text-white lg:hidden"
+          className="cursor-pointer text-[color:var(--nav-ink)] transition-colors duration-300 lg:hidden"
         >
           {menuOpen ? <CloseIcon /> : <MenuIcon />}
         </button>
@@ -115,23 +115,26 @@ export default function SiteHeader() {
         <nav
           id="mobile-nav"
           aria-label="Primary"
-          className="max-h-[calc(100svh-var(--header-h))] overflow-y-auto border-t border-white/10 px-6 pb-6 sm:px-10 lg:hidden"
+          className="max-h-[calc(100svh-var(--header-h))] overflow-y-auto border-t border-[color:var(--nav-rule)] px-6 pb-6 sm:px-10 lg:hidden"
         >
           {navItems.map((item) => {
             const expanded = mobileOpenId === item.id;
             return (
-              <div key={item.id} className="border-b border-white/10">
+              <div
+                key={item.id}
+                className="border-b border-[color:var(--nav-rule)]"
+              >
                 <div className="flex items-center justify-between gap-4">
                   {item.href ? (
                     <Link
                       href={item.href}
                       onClick={() => setMenuOpen(false)}
-                      className="flex-1 py-4 text-sm tracking-[0.08em] text-white/90 uppercase"
+                      className="flex-1 py-4 text-sm tracking-[0.08em] text-[color:var(--nav-ink)] uppercase"
                     >
                       {item.label}
                     </Link>
                   ) : (
-                    <span className="flex-1 py-4 text-sm tracking-[0.08em] text-white/90 uppercase">
+                    <span className="flex-1 py-4 text-sm tracking-[0.08em] text-[color:var(--nav-ink)] uppercase">
                       {item.label}
                     </span>
                   )}
@@ -140,7 +143,7 @@ export default function SiteHeader() {
                     aria-expanded={expanded}
                     aria-label={`${expanded ? "Hide" : "Show"} ${item.label} links`}
                     onClick={() => setMobileOpenId(expanded ? null : item.id)}
-                    className={`shrink-0 cursor-pointer p-2 text-xl leading-none text-white/70 transition-transform duration-300 ${
+                    className={`shrink-0 cursor-pointer p-2 text-xl leading-none text-[color:var(--nav-ink-soft)] transition-transform duration-300 ${
                       expanded ? "rotate-45" : ""
                     }`}
                   >
@@ -158,7 +161,7 @@ export default function SiteHeader() {
                           <SubLink
                             link={link}
                             onNavigate={() => setMenuOpen(false)}
-                            tone="dark"
+                            tone="bar"
                           />
                         </li>
                       ))}
@@ -192,7 +195,9 @@ function NavTrigger({
   );
 
   const className = `relative cursor-pointer pb-1.5 text-[13px] tracking-[0.08em] uppercase transition-colors ${
-    active ? "text-white" : "text-white/90 hover:text-white"
+    active
+      ? "text-[color:var(--nav-ink)]"
+      : "text-[color:var(--nav-ink-soft)] hover:text-[color:var(--nav-ink)]"
   }`;
 
   if (item.href) {
@@ -281,7 +286,7 @@ function Panel({
                 i % 2 === 1 ? "mega-divider sm:border-l sm:pl-[3vw]" : ""
               }
             >
-              <SubLink link={link} onNavigate={onNavigate} tone="light" />
+              <SubLink link={link} onNavigate={onNavigate} tone="panel" />
             </li>
           ))}
         </ul>
@@ -297,18 +302,18 @@ function SubLink({
 }: {
   link: NavLink;
   onNavigate: () => void;
-  tone: "light" | "dark";
+  tone: "panel" | "bar";
 }) {
-  const dark = tone === "dark";
-  const row = dark
+  const bar = tone === "bar";
+  const row = bar
     ? "flex items-center justify-between gap-3 py-2.5 text-sm"
     : "flex items-center justify-between gap-3 border-b py-4 text-base";
-  const rule = dark ? "" : "border-steel-900/12";
+  const rule = bar ? "" : "border-steel-900/12";
 
   if (link.soon || !link.href) {
     return (
       <span
-        className={`${row} ${rule} ${dark ? "text-white/40" : "text-steel-800/45"}`}
+        className={`${row} ${rule} ${bar ? "opacity-45" : "text-steel-800/45"}`}
       >
         {link.label}
         <span className="rounded-full border border-current px-2 py-0.5 text-[9px] font-semibold tracking-[0.12em] uppercase">
@@ -319,8 +324,8 @@ function SubLink({
   }
 
   const className = `${row} ${rule} transition-colors ${
-    dark
-      ? "text-white/70 hover:text-white"
+    bar
+      ? "text-[color:var(--nav-ink-soft)] hover:text-[color:var(--nav-ink)]"
       : "text-steel-900 hover:text-brand-deep"
   }`;
 
