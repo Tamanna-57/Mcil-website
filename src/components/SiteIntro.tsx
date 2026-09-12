@@ -2,12 +2,20 @@
 
 import { useCallback, useEffect, useState, useSyncExternalStore } from "react";
 
-/* Once per tab. Someone who lands on /about from a link and then clicks
-   through to /contact should not sit through it twice. */
-const SEEN_KEY = "mcil-intro-seen";
-
 /** Total run before the page is handed over, in step with the CSS timeline. */
-const RUN_MS = 2900;
+const RUN_MS = 3350;
+
+/*
+ * Once per page load, and only on the landing page — the component is mounted
+ * there, not in the layout, so the other routes never see it at all.
+ *
+ * A module-level flag rather than storage: a reload re-evaluates the module and
+ * the sequence plays again, which is what a reload should do, while clicking
+ * Home from another page does not replay it mid-session. It is only ever read
+ * on the client — on the server this module is shared between requests, so the
+ * server always renders the curtain and the client reconciles it away.
+ */
+let hasPlayedThisLoad = false;
 
 /*
  * Where each piece of the logo sits inside mcil-logo.png, in the file's own
@@ -52,11 +60,7 @@ const TAGLINE: Piece = {
 const neverChanges = () => () => {};
 
 function shouldSkip() {
-  try {
-    if (sessionStorage.getItem(SEEN_KEY) !== null) return true;
-  } catch {
-    /* Private mode: nothing is remembered, so let it play. */
-  }
+  if (hasPlayedThisLoad) return true;
   return window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 }
 
@@ -86,7 +90,10 @@ function LogoPiece({ piece, className }: { piece: Piece; className: string }) {
  * The opening: M, C, I and L start in the four corners, each swings in along
  * its own arc — all four turning the same way, so the four arcs read as one
  * circle — and they close into the wordmark. METAL COATINGS (INDIA) LTD then
- * fades up underneath, and the curtain lifts into the page.
+ * opens from its centre underneath, and the curtain lifts into the page.
+ *
+ * Mounted by the landing page rather than the layout, so it belongs to that
+ * page and plays on every load of it.
  */
 export default function SiteIntro() {
   const skip = useSyncExternalStore(
@@ -99,16 +106,15 @@ export default function SiteIntro() {
 
   const finish = useCallback(() => {
     setLeaving(true);
-    try {
-      sessionStorage.setItem(SEEN_KEY, "1");
-    } catch {
-      /* Nothing to do — it simply plays again next time. */
-    }
     window.setTimeout(() => setDone(true), 700);
   }, []);
 
   useEffect(() => {
     if (skip || done || leaving) return;
+
+    /* Claimed as it starts, so a later client-side navigation back to the
+       landing page does not replay it. */
+    hasPlayedThisLoad = true;
 
     /* The curtain covers the page, so the page must not scroll under it. */
     const previous = document.body.style.overflow;
