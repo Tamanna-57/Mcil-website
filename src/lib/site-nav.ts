@@ -57,14 +57,15 @@ export const navItems: NavItem[] = [
   {
     id: "products",
     label: "Products",
+    href: "/products",
     panel: {
       title: "What We Make",
-      body: "Cold rolled strips and coils, HRPO and galvanised steel, rolled on one integrated line and despatched with the heat number and test certificate.",
+      body: "Two products — cold rolled strips and coils, and hot rolled pickled and oiled coils — rolled on one integrated line and despatched with the heat number and test certificate.",
       caption: "BIS certified · " + company.bisLicence,
       links: [
-        { label: "Cold Rolled Strips & Coils", soon: true },
-        { label: "HRPO Steel", soon: true },
-        { label: "Galvanised Steel", soon: true },
+        { label: "Cold Rolled Strips & Coils", href: "/products#cold-rolled" },
+        { label: "HRPO Steel Coils", href: "/products#hrpo" },
+        { label: "How a Coil Is Made", href: "/about#process" },
         { label: "Grades & Tolerances", soon: true },
       ],
     },

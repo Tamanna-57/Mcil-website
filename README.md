@@ -63,6 +63,46 @@ the same filename; no code change is needed.
 displays and look softer than the other two. Higher-resolution originals are
 worth dropping in if they exist.
 
+## Products
+
+`/products` carries one band per product, in the two layouts of the reference:
+
+| Product                    | Layout                                                                                                                |
+| -------------------------- | --------------------------------------------------------------------------------------------------------------------- |
+| Cold Rolled Strips & Coils | The product name set giant across a deep plate, with one photograph inset low and centre-right, lapping over the name |
+| HRPO Steel Coils           | A hairline divider, then four plates hung from one top line, the third lapping over the second                        |
+
+Both bands open on the product name above a short paragraph in the right-hand
+column. The braced span in a product's `body` is what gets underlined — as the
+product name is in the reference:
+
+```ts
+body: "{HRPO steel coils} are hot rolled, pickled and oiled — …",
+```
+
+### Photographs
+
+Each image slot is a `plate`. A plate with `src` renders the photograph; a
+plate without one renders a frame labelled with its `alt`, so an unfilled slot
+reads as pending rather than broken. To fill one, drop the file into
+`public/images/` and set `src` in `src/lib/products.ts`.
+
+Cold Rolled currently reuses `hero-2.jpg`; the four HRPO plates are still
+placeholders waiting on the shots named in their `alt` text.
+
+### Scroll behaviour
+
+Each plate holds itself blank until it is properly on screen and then arrives —
+the inset photograph on the Cold Rolled block lands with an overshoot
+(`.pb-pop`), the gallery plates rise in sequence (`.pb-rise`). The trigger line
+is pulled up off the bottom of the viewport, so a plate that is merely poking
+into view on first paint still waits to be scrolled onto. Both animations are
+held still under `prefers-reduced-motion`.
+
+Geometry is expressed as percentages of the block, taken off the reference, so
+the composition holds at any width. Below `lg` the overlaps are dropped and the
+plates stack — at phone width they collapse into an unreadable pile.
+
 ## Investor documents — "Latest Reports"
 
 The document library at the foot of `/investors` mirrors the four categories on
@@ -96,5 +136,5 @@ Each category is also an anchor — `/investors#financials`, `#compliance`,
 
 - Higher-resolution originals for `hero-1` and `hero-4` (above).
 - MCIL logo asset — the header currently sets the wordmark in type.
-- The rest of the site: Products, Media, Careers, Contact.
+- The rest of the site: Media, Careers, Contact.
 - Real PDFs behind the investor document rows (above).
