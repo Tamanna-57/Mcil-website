@@ -1830,3 +1830,28 @@ body {
     opacity: 1;
   }
 }
+
+/* ------------------------------------------------------------------ */
+/* Header mark                                                         */
+/* ------------------------------------------------------------------ */
+
+/*
+ * The four letters, cropped out of the logo artwork in place rather than
+ * saved off as a second file — the same technique and the same measurements
+ * SiteIntro uses on the same PNG, so the two cannot drift apart. The file is
+ * the full lockup; its tagline at this size would be a smudge, so the bar
+ * takes the letters alone.
+ *
+ * Source geometry, in the file's own pixels: the file is 2022 x 778, and the
+ * four letters occupy x 408 to 1725 (1317 wide) at y 178, 328 tall. Every
+ * figure below is one of those, scaled by --u so the crop follows --logo-h.
+ */
+.site-logo {
+  --u: calc(var(--logo-h) / 328);
+  width: calc(1317 * var(--u));
+  height: var(--logo-h);
+  background-image: url("/images/mcil-logo.png");
+  background-repeat: no-repeat;
+  background-size: calc(2022 * var(--u)) calc(778 * var(--u));
+  background-position: calc(408 * var(--u) * -1) calc(178 * var(--u) * -1);
+}

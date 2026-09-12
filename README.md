@@ -74,22 +74,23 @@ The navy lives in one place, `--navy` in `src/app/globals.css`, taken off the
 logo artwork by eye. If the brand sheet gives an exact value, that is the one
 line to change.
 
-### Fitting the logo
+### The mark
 
-The top-left slot renders the artwork as soon as it is pointed at one, and sets
-the wordmark in type until then. To fit it:
+The mark in the bar is the four letters cropped out of
+`public/images/mcil-logo.png`. That file is the full lockup — letters over a
+tagline — and the tagline at a 36px bar height would be a smudge, so the header
+takes the letters alone.
 
-1. Save the file into `public/images/` — an **SVG**, or a PNG with a
-   **transparent background**. The square navy-backed version would put a navy
-   block on a navy bar, and any mismatch between the two navies shows as a
-   patch.
-2. In `src/lib/brand.ts`, uncomment `src` and set the artwork's real pixel
-   `width` and `height` (used for the aspect ratio only).
+The crop is done in CSS (`.site-logo`), off the same measurements `SiteIntro`
+uses on the same file, so there is no second asset to keep in step. The source
+geometry is written out in the rule: the file is 2022 x 778, the letters occupy
+x 408-1725 at y 178, 328 tall. **Replacing the artwork means re-measuring in
+both places.**
 
-`LOGO_HEIGHT` in the same file is how tall the mark renders, and with the bar's
-padding it is what makes the header 68px — so `--header-h` has to stay in step
-with it. Every page's top padding and the sticky sections are measured off that
-token.
+`LOGO_HEIGHT` in `src/lib/brand.ts` is how tall the mark renders, and with the
+bar's padding it is what makes the header 68px — so `--header-h` has to stay in
+step with it. Every page's top padding and the sticky sections are measured off
+that token.
 
 ## Products
 
@@ -163,6 +164,5 @@ Each category is also an anchor — `/investors#financials`, `#compliance`,
 ## Still to do
 
 - Higher-resolution originals for `hero-1` and `hero-4` (above).
-- MCIL logo artwork — the header slot is ready for it (see above).
 - The rest of the site: Media, Careers, Contact.
 - Real PDFs behind the investor document rows (above).

@@ -1,9 +1,8 @@
 "use client";
 
-import Image from "next/image";
 import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { LOGO_HEIGHT, logo } from "@/lib/brand";
+import { LOGO_HEIGHT, LOGO_NAME } from "@/lib/brand";
 import { navItems, type NavItem, type NavLink } from "@/lib/site-nav";
 
 export default function SiteHeader() {
@@ -136,30 +135,20 @@ export default function SiteHeader() {
       }}
     >
       <div className="flex items-center justify-between gap-6 px-6 py-4 sm:px-10 lg:px-[3vw]">
-        {/* Fixed height either way, so swapping the wordmark for the artwork
-            cannot change how tall the bar is (and with it --header-h, which
-            every page's top padding is measured against). */}
+        {/* The mark is a CSS crop of the logo artwork, so the link carries the
+            company name for anything that cannot see it. Its height is what
+            sets the bar's, and with it --header-h. */}
         <Link
           href="/"
           className="flex shrink-0 items-center"
-          style={{ height: LOGO_HEIGHT }}
           onFocus={closeNow}
         >
-          {logo.src ? (
-            <Image
-              src={logo.src}
-              alt={logo.alt}
-              width={logo.width}
-              height={logo.height}
-              priority
-              className="w-auto"
-              style={{ height: LOGO_HEIGHT }}
-            />
-          ) : (
-            <span className="text-lg font-bold tracking-[0.16em] text-[color:var(--nav-ink)] uppercase">
-              MCIL
-            </span>
-          )}
+          <span
+            className="site-logo block"
+            style={{ "--logo-h": `${LOGO_HEIGHT}px` } as React.CSSProperties}
+            aria-hidden
+          />
+          <span className="sr-only">{LOGO_NAME}</span>
         </Link>
 
         <nav className="hidden items-center gap-7 lg:flex" aria-label="Primary">

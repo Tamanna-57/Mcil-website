@@ -1,30 +1,25 @@
 /**
  * Brand assets.
  *
- * The header is set on `--navy` (see globals.css), the same ground the logo
- * artwork uses, so the mark sits on its own colour on every page.
+ * The header bar is set on `--navy` (globals.css), the ground the logo artwork
+ * itself uses, so the mark sits on its own colour on every page.
  *
- * TO FIT THE LOGO: save the artwork into `public/images/`, then set `src`
- * below along with its real pixel dimensions. Prefer an SVG, or a PNG with a
- * TRANSPARENT background — the square navy-backed version would put a navy
- * block on a navy bar, and any mismatch in the two navies would show as a
- * patch. Until `src` is set the header sets the wordmark in type, as it does
- * today.
+ * The mark in the bar is the four letters cropped out of
+ * `public/images/mcil-logo.png`. That file is the full lockup — letters over a
+ * tagline — and the tagline at a 36px bar height would be a smudge, so the
+ * header takes the letters alone. The crop is done in CSS (`.site-logo`) off
+ * the same measurements `SiteIntro` uses on the same file, so there is no
+ * second asset to keep in step with this one.
+ *
+ * If the artwork is ever replaced, re-measure in both places.
  */
-export const logo: {
-  /** Path under `public/`. Undefined until the artwork is added. */
-  src?: string;
-  alt: string;
-  /** The artwork's own pixel dimensions, for the aspect ratio. */
-  width: number;
-  height: number;
-} = {
-  // src: "/images/mcil-logo.svg",
-  alt: "Metal Coatings (India) Limited",
-  width: 132,
-  height: 34,
-};
 
-/** Rendered height of the logo in the header, px. Sets the header's height
-    together with its padding, so `--header-h` must stay in step with it. */
+/**
+ * Rendered height of the mark, px. With the bar's padding this is what makes
+ * the header 68px, so `--header-h` has to stay in step with it — every page's
+ * top padding and the sticky sections are measured off that token.
+ */
 export const LOGO_HEIGHT = 36;
+
+/** The link's accessible name; the mark itself is a background image. */
+export const LOGO_NAME = "Metal Coatings (India) Limited";
