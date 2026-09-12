@@ -824,3 +824,185 @@ body {
     animation: none;
   }
 }
+
+/* ------------------------------------------------------------------ */
+/* Latest Reports — investor document library                          */
+/* ------------------------------------------------------------------ */
+
+/*
+ * Everything in this band arrives from below. The header, tabs and card ride
+ * the section's own IntersectionObserver (data-visible), while the document
+ * rows animate on mount — the list is keyed on the active tab and chip, so
+ * switching either replays the same rise down the rows.
+ */
+@keyframes rp-rise {
+  from {
+    opacity: 0;
+    transform: translateY(26px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.rp-rise {
+  opacity: 0;
+}
+
+.rp-rise[data-visible="true"] {
+  animation: rp-rise 720ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.rp-row {
+  animation: rp-rise 560ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+/*
+ * The card itself: a pane of tinted glass rather than the flat white surface
+ * the cards above it use, so the document library reads as a layer over the
+ * page. Same vocabulary as the header drop panels and the hero chips — a
+ * translucent gradient, a heavy blur, and a hairline of white along the top
+ * edge standing in for the lit rim of the glass.
+ */
+.rp-card {
+  background: linear-gradient(
+    155deg,
+    color-mix(in srgb, var(--surface) 72%, transparent),
+    color-mix(in srgb, var(--brand-pale) 46%, transparent)
+  );
+  backdrop-filter: blur(26px) saturate(150%);
+  -webkit-backdrop-filter: blur(26px) saturate(150%);
+  box-shadow:
+    inset 0 1px 0 color-mix(in srgb, #fff 75%, transparent),
+    inset 0 0 0 1px color-mix(in srgb, #fff 35%, transparent),
+    0 26px 60px -34px color-mix(in srgb, var(--steel-900) 55%, transparent);
+}
+
+/* Two soft washes of colour behind the card. They are what the blur has to
+   work with; without them the glass would sit on a flat page and read white. */
+.rp-glow {
+  position: absolute;
+  z-index: 0;
+  border-radius: 9999px;
+  filter: blur(90px);
+  pointer-events: none;
+}
+
+.rp-glow--one {
+  top: 12%;
+  left: -8%;
+  width: 34rem;
+  height: 34rem;
+  background: color-mix(in srgb, var(--brand-light) 52%, transparent);
+}
+
+.rp-glow--two {
+  right: -10%;
+  bottom: 4%;
+  width: 28rem;
+  height: 28rem;
+  background: color-mix(in srgb, var(--accent) 26%, transparent);
+}
+
+/* Tab underline, drawn from the middle out like the header nav's. */
+.rp-tab {
+  position: relative;
+}
+
+.rp-tab::after {
+  content: "";
+  position: absolute;
+  inset-inline: 0;
+  bottom: 0;
+  height: 2px;
+  background: var(--brand);
+  transform: scaleX(0);
+  transform-origin: center;
+  transition: transform 280ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.rp-tab[data-active="true"]::after {
+  transform: scaleX(1);
+}
+
+/* Sub-category chips: the same glass, one step lighter, so they sit inside
+   the card rather than on top of it. */
+.rp-chip {
+  color: var(--steel-800);
+  background: color-mix(in srgb, #fff 55%, transparent);
+  box-shadow: inset 0 0 0 1px
+    color-mix(in srgb, var(--steel-900) 10%, transparent);
+}
+
+.rp-chip:hover {
+  color: var(--steel-900);
+  background: color-mix(in srgb, #fff 80%, transparent);
+}
+
+.rp-chip[data-active="true"] {
+  color: #fff;
+  background: color-mix(in srgb, var(--brand-deep) 88%, transparent);
+  box-shadow:
+    inset 0 1px 0 color-mix(in srgb, #fff 30%, transparent),
+    inset 0 0 0 1px color-mix(in srgb, #fff 18%, transparent);
+}
+
+/* Download control. Rendered as a disabled button until a file is attached,
+   and held at full strength either way — the row is a placeholder for a
+   document still being migrated, not a dead control. */
+.rp-download {
+  color: var(--brand-deep);
+  transition: color 200ms ease;
+}
+
+.rp-download:disabled {
+  cursor: default;
+}
+
+.rp-download-arrow {
+  transition: transform 220ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.rp-download:hover:not(:disabled) {
+  color: var(--steel-900);
+}
+
+.rp-download:hover:not(:disabled) .rp-download-arrow {
+  transform: translateY(3px);
+}
+
+.rp-download:focus-visible,
+.rp-chip:focus-visible,
+.rp-tab:focus-visible {
+  outline: 2px solid var(--brand-deep);
+  outline-offset: 3px;
+}
+
+/* Without backdrop-filter the card would be a washed-out film over the glows,
+   so those browsers get an opaque surface instead. */
+@supports not (
+  (backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))
+) {
+  .rp-card {
+    background: var(--surface);
+  }
+
+  .rp-chip {
+    background: var(--background);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .rp-rise,
+  .rp-rise[data-visible="true"],
+  .rp-row {
+    animation: none !important;
+    opacity: 1;
+  }
+
+  .rp-tab::after,
+  .rp-download-arrow {
+    transition: none !important;
+  }
+}
