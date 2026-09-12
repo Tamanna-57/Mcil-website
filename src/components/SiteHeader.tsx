@@ -17,6 +17,44 @@ export default function SiteHeader() {
   const [mobileOpenId, setMobileOpenId] = useState<string | null>(null);
   const closeTimer = useRef<number | undefined>(undefined);
 
+  /*
+   * The drop panel stays mounted while it is open, so moving between nav items
+   * used to swap its children with nothing in between — the box never moved and
+   * only the words changed, which is what made it read as a glitch rather than
+   * a transition.
+   *
+   * Three pieces of state instead of one:
+   *   openId    — which item the pointer is on; null closes the panel
+   *   shownId   — what is drawn, which outlives openId so the panel can
+   *               collapse with its content still in it
+   *   leavingId — the panel being replaced, kept for one beat so the two
+   *               cross-fade instead of cutting
+   */
+  const [shownId, setShownId] = useState<string | null>(null);
+  const [leavingId, setLeavingId] = useState<string | null>(null);
+  const [panelHeight, setPanelHeight] = useState(0);
+  const openIdRef = useRef<string | null>(null);
+  const swapTimer = useRef<number | undefined>(undefined);
+  const clearTimer = useRef<number | undefined>(undefined);
+  const resizeObserver = useRef<ResizeObserver | null>(null);
+
+  /* The open panel's own height drives the container, so switching between a
+     panel of prose and a panel of figures eases between the two rather than
+     jumping. */
+  const measurePanel = useCallback((node: HTMLDivElement | null) => {
+    resizeObserver.current?.disconnect();
+    resizeObserver.current = null;
+    if (!node) return;
+
+    setPanelHeight(node.offsetHeight);
+    const observer = new ResizeObserver((entries) => {
+      const box = entries[0]?.borderBoxSize?.[0];
+      setPanelHeight(box ? box.blockSize : entries[0].contentRect.height);
+    });
+    observer.observe(node);
+    resizeObserver.current = observer;
+  }, []);
+
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 24);
     onScroll();
@@ -24,25 +62,63 @@ export default function SiteHeader() {
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
-  useEffect(() => () => window.clearTimeout(closeTimer.current), []);
+  useEffect(
+    () => () => {
+      window.clearTimeout(closeTimer.current);
+      window.clearTimeout(swapTimer.current);
+      window.clearTimeout(clearTimer.current);
+      resizeObserver.current?.disconnect();
+    },
+    [],
+  );
+
+  const open = useCallback((id: string) => {
+    window.clearTimeout(closeTimer.current);
+    window.clearTimeout(clearTimer.current);
+
+    const current = openIdRef.current;
+    if (current === id) return;
+
+    /* Moving between two open panels: hold the old one for the length of the
+       cross-fade so it can fade out under the new one. */
+    if (current !== null) {
+      setLeavingId(current);
+      window.clearTimeout(swapTimer.current);
+      swapTimer.current = window.setTimeout(() => setLeavingId(null), 300);
+    }
+
+    openIdRef.current = id;
+    setOpenId(id);
+    setShownId(id);
+  }, []);
+
+  /* Closing keeps the content mounted until the panel has finished collapsing;
+     clearing it immediately would empty the box on the way down. */
+  const startClose = useCallback(() => {
+    openIdRef.current = null;
+    setOpenId(null);
+    setLeavingId(null);
+    window.clearTimeout(clearTimer.current);
+    clearTimer.current = window.setTimeout(() => {
+      setShownId(null);
+      /* Back to nothing, so the next open grows from zero rather than popping
+         straight to the height the last panel happened to have. */
+      setPanelHeight(0);
+    }, 460);
+  }, []);
 
   /* A short grace period on the way out: the pointer crosses a few pixels of
      header chrome between the nav row and the panel, and dropping the menu
      there would make it feel twitchy. */
-  const open = useCallback((id: string) => {
-    window.clearTimeout(closeTimer.current);
-    setOpenId(id);
-  }, []);
-
   const scheduleClose = useCallback(() => {
     window.clearTimeout(closeTimer.current);
-    closeTimer.current = window.setTimeout(() => setOpenId(null), 130);
-  }, []);
+    closeTimer.current = window.setTimeout(startClose, 130);
+  }, [startClose]);
 
   const closeNow = useCallback(() => {
     window.clearTimeout(closeTimer.current);
-    setOpenId(null);
-  }, []);
+    startClose();
+  }, [startClose]);
 
   const pathname = usePathname();
   const lightTop = LIGHT_TOP_ROUTES.some(
@@ -50,6 +126,8 @@ export default function SiteHeader() {
   );
 
   const openItem = navItems.find((item) => item.id === openId) ?? null;
+  const shownItem = navItems.find((item) => item.id === shownId) ?? null;
+  const leavingItem = navItems.find((item) => item.id === leavingId) ?? null;
   const solid = lightTop || scrolled || menuOpen || openId !== null;
 
   return (
@@ -113,12 +191,27 @@ export default function SiteHeader() {
 
       {/* Drop panel. Kept inside <header> so the pointer never leaves the
           element that owns the close timer. */}
-      {openItem && (
+      {shownItem && (
         <div
           className="mega-panel hidden lg:block"
-          onMouseEnter={() => open(openItem.id)}
+          data-open={openItem !== null}
+          style={{ height: openItem ? panelHeight : 0 }}
+          onMouseEnter={() => openItem && open(openItem.id)}
         >
-          <Panel item={openItem} onNavigate={closeNow} />
+          <div className="mega-stack">
+            {leavingItem && (
+              <div className="mega-layer mega-layer--out" aria-hidden>
+                <Panel item={leavingItem} onNavigate={closeNow} />
+              </div>
+            )}
+            <div
+              key={shownItem.id}
+              ref={measurePanel}
+              className="mega-layer mega-layer--in"
+            >
+              <Panel item={shownItem} onNavigate={closeNow} />
+            </div>
+          </div>
         </div>
       )}
 
