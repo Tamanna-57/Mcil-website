@@ -1,14 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
+import { LOGO_HEIGHT, LOGO_NAME } from "@/lib/brand";
 import { navItems, type NavItem, type NavLink } from "@/lib/site-nav";
-
-/* Pages that open on a light ground rather than a dark hero. The bar's
-   transparent state paints white type for a photograph to sit behind; on these
-   the glass is on from the first pixel instead. */
-const LIGHT_TOP_ROUTES = ["/contact"];
 
 /*
  * How long the pointer has to rest on a nav item before its panel opens.
@@ -66,6 +61,9 @@ export default function SiteHeader() {
     resizeObserver.current = observer;
   }, []);
 
+  /* The bar is opaque at every scroll position, so this only decides whether
+     it casts a shadow — which is all scroll has left to say once the bar no
+     longer changes colour. */
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 24);
     onScroll();
@@ -155,34 +153,38 @@ export default function SiteHeader() {
     window.clearTimeout(intentTimer.current);
   }, []);
 
-  const pathname = usePathname();
-  const lightTop = LIGHT_TOP_ROUTES.some(
-    (route) => pathname === route || pathname.startsWith(`${route}/`),
-  );
-
   const openItem = navItems.find((item) => item.id === openId) ?? null;
   const shownItem = navItems.find((item) => item.id === shownId) ?? null;
   const leavingItem = navItems.find((item) => item.id === leavingId) ?? null;
-  const solid = lightTop || scrolled || menuOpen || openId !== null;
 
+  /* Brand navy on every route, at every scroll position — see .site-header in
+     globals.css for why the two-state bar went. */
   return (
     <header
-      className={`site-header fixed inset-x-0 top-0 z-50 transition-colors duration-300 ${
-        solid ? "site-header--glass" : "bg-transparent"
-      } ${menuOpen ? "site-header--sheet" : ""}`}
+      className={`site-header fixed inset-x-0 top-0 z-50 transition-shadow duration-300 ${
+        scrolled ? "site-header--lifted" : ""
+      }`}
       onMouseLeave={scheduleClose}
       onKeyDown={(e) => {
         if (e.key === "Escape") closeNow();
       }}
     >
       <div className="flex items-center justify-between gap-6 px-6 py-4 sm:px-10 lg:px-[3vw]">
+        {/* The mark is a CSS crop of the logo artwork, so the link carries the
+            company name for anything that cannot see it. Its height is what
+            sets the bar's, and with it --header-h. */}
         <Link
           href="/"
-          className="text-lg font-bold tracking-[0.16em] text-[color:var(--nav-ink)] uppercase transition-colors duration-300"
+          className="flex shrink-0 items-center"
           onFocus={closeNow}
           onClick={closeNow}
         >
-          MCIL
+          <span
+            className="site-logo block"
+            style={{ "--logo-h": `${LOGO_HEIGHT}px` } as React.CSSProperties}
+            aria-hidden
+          />
+          <span className="sr-only">{LOGO_NAME}</span>
         </Link>
 
         <nav className="hidden items-center gap-7 lg:flex" aria-label="Primary">

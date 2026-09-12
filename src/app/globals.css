@@ -28,10 +28,23 @@
      marks only, never body copy. */
   --accent: #d99a5b;
 
+  /*
+   * Brand navy — the ground the MCIL logo is set on. The bar carries it on
+   * every page and at every scroll position, so the logo always sits on its
+   * own colour rather than on a tint of whatever is behind it.
+   *
+   * Read off the logo artwork by eye; if the brand sheet gives an exact value,
+   * this is the one line to change.
+   */
+  --navy: #1c2c47;
+
   /* Frosted glass. White first, with only enough of the brand blue in it to
      keep the chrome in the same family as the rest of the page — a tint, not
      a colour. --glass-veil is the same white at the opacity the blur wants;
-     --glass-line is the hairline that gives a pane its edge. */
+     --glass-line is the hairline that gives a pane its edge.
+
+     The bar itself is navy now, so these are the drop panel's: it hangs off
+     the bar as a pane of glass rather than continuing it. */
   --glass-white: color-mix(in srgb, var(--brand-pale) 12%, #fff);
   --glass-veil: color-mix(in srgb, var(--glass-white) 84%, transparent);
   --glass-line: color-mix(in srgb, var(--steel-900) 9%, transparent);
@@ -51,6 +64,7 @@
   --color-steel-800: var(--steel-800);
   --color-steel-100: var(--steel-100);
   --color-accent: var(--accent);
+  --color-navy: var(--navy);
   --color-surface: var(--surface);
   --color-brand: var(--brand);
   --color-brand-light: var(--brand-light);
@@ -737,10 +751,21 @@ body {
 /* Header bar and drop panels                                          */
 /* ------------------------------------------------------------------ */
 
-/* Over the hero the bar is pure chrome: nothing but white type on the
-   photograph. The ink tokens below are what the markup paints with, so the
-   two states differ by four variables rather than by a second set of
-   classes. */
+/*
+ * One state, brand navy, on every route and at every scroll position.
+ *
+ * It used to be two: chrome over the hero photography, frosted white once
+ * scrolled or opened. That read well on the landing page and left white nav
+ * type on a white page everywhere else — nothing visible on About, Investors
+ * or Products until you scrolled or opened a menu. (/contact was carved out
+ * by hand, which is what made the other three look like the oversight they
+ * were.) The bar is also the logo's ground, so it has to be the logo's colour
+ * rather than a tint of whatever happens to sit behind it.
+ *
+ * The ink tokens are kept: the markup still paints with them, so recolouring
+ * the bar stays a matter of these seven values and not of touching the
+ * markup.
+ */
 .site-header {
   --nav-ink: #fff;
   --nav-ink-soft: color-mix(in srgb, #fff 88%, transparent);
@@ -749,33 +774,14 @@ body {
   --nav-mark: var(--brand-light);
   --nav-hover-ground: #fff;
   --nav-hover-ink: var(--steel-900);
+
+  background: var(--navy);
 }
 
-/* Scrolled, or with a menu open: a pane of frosted white. The blur does the
-   work — the fill is held light enough that the photograph still moves
-   underneath it, which is what separates glass from a painted bar. */
-.site-header--glass {
-  --nav-ink: var(--steel-900);
-  --nav-ink-soft: var(--steel-800);
-  --nav-line: color-mix(in srgb, var(--steel-900) 22%, transparent);
-  --nav-rule: var(--glass-line);
-  --nav-mark: var(--brand-deep);
-  --nav-hover-ground: var(--steel-900);
-  --nav-hover-ink: #fff;
-
-  background: var(--glass-veil);
-  -webkit-backdrop-filter: blur(34px) saturate(180%);
-  backdrop-filter: blur(34px) saturate(180%);
-  box-shadow:
-    inset 0 1px 0 color-mix(in srgb, #fff 70%, transparent),
-    0 1px 0 var(--glass-line);
-}
-
-/* The mobile sheet is a different problem from a 68px bar: it covers most of
-   the page, and at the bar's opacity the copy behind it tangles with the nav
-   labels. Near-opaque, with the blur kept for the softness at its edge. */
-.site-header--sheet {
-  background: color-mix(in srgb, var(--glass-white) 96%, transparent);
+/* Opaque, so the only thing left for scroll to say is that the page has
+   started moving underneath it. */
+.site-header--lifted {
+  box-shadow: 0 10px 30px -18px rgba(0, 0, 0, 0.65);
 }
 
 /* The bar under the hovered nav item, drawn from the middle out so it reads
@@ -796,8 +802,9 @@ body {
 }
 
 /*
- * The panel drops from under the bar and continues the same pane, so the two
- * read as one sheet of glass rather than a card parked below the header.
+ * The panel drops from under the bar as a pane of glass. It no longer
+ * continues the bar — that is navy — so the bar's lower edge is where the
+ * chrome ends and the panel begins.
  *
  * Its height is driven from the open panel's measured height rather than left
  * to auto: opening eases it down from nothing, closing eases it back, and
@@ -846,7 +853,8 @@ body {
   backdrop-filter: blur(34px) saturate(180%);
 }
 
-/* Left face: the same white as the bar, so the seam between them disappears. */
+/* Left face: the lighter of the two, so the display type on it has the
+   contrast it needs against the navy bar directly above. */
 .mega-face--lead {
   background: var(--glass-veil);
   box-shadow: inset 0 1px 0 color-mix(in srgb, #fff 70%, transparent);
@@ -876,8 +884,6 @@ body {
 @supports not (
   (backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))
 ) {
-  .site-header--glass,
-  .site-header--sheet,
   .mega-face--lead {
     background: var(--glass-white);
   }
@@ -908,6 +914,14 @@ body {
   display: grid;
   place-items: center;
   padding: 1.5rem;
+}
+
+/* The colour field, on its own layer. It has to be able to fade out from under
+   a logo that stays at full strength, and opacity on the curtain itself would
+   fade the logo along with it. */
+.intro-ground {
+  position: absolute;
+  inset: 0;
   background:
     radial-gradient(
       80% 65% at 50% 45%,
@@ -932,12 +946,28 @@ body {
  * fixed element the size of the screen is a lot to ask of a phone for an
  * effect that is only really visible on the mark.
  */
-.intro[data-leaving="true"] {
-  animation: intro-dissolve 900ms cubic-bezier(0.37, 0, 0.28, 1) both;
+.intro[data-phase="dock"],
+.intro[data-phase="handover"],
+.intro[data-phase="dissolve"] {
   pointer-events: none;
 }
 
-.intro[data-leaving="true"] .intro-lockup {
+/*
+ * Hand-over. The logo is already parked on the header's mark, pixel for pixel,
+ * so only the ground has to go: what is revealed underneath is the same shape
+ * in the same place, and the swap at unmount has nothing left to give away.
+ */
+.intro[data-phase="handover"] .intro-ground {
+  animation: intro-ground-out 620ms cubic-bezier(0.37, 0, 0.28, 1) both;
+}
+
+/* Cut short before the dock, so there is nothing lined up to hand over to:
+   the whole curtain dissolves, as it did before the dock existed. */
+.intro[data-phase="dissolve"] {
+  animation: intro-dissolve 900ms cubic-bezier(0.37, 0, 0.28, 1) both;
+}
+
+.intro[data-phase="dissolve"] .intro-lockup {
   animation: intro-lockup-dissolve 620ms cubic-bezier(0.4, 0, 0.3, 1) both;
 }
 
@@ -957,6 +987,33 @@ body {
   position: relative;
   width: calc(var(--logo-w) * var(--u));
   height: calc(var(--logo-h) * var(--u));
+
+  /*
+   * The letters' own top-left corner, not the lockup's. SiteIntro measures the
+   * journey from that corner to the header mark's, and with the origin here the
+   * shrink holds it still — so the offset it hands over is the whole story and
+   * the scale does not drag the logo off course.
+   */
+  transform-origin: calc(var(--letters-x) * var(--u)) 0;
+}
+
+/*
+ * The travel. Eased at both ends rather than thrown: it lifts off the centre,
+ * carries across, and settles onto the mark. The site's usual ease-out curve
+ * was wrong here — it spends most of the distance in the first quarter, which
+ * reads as the logo being flicked away instead of put away.
+ */
+.intro[data-phase="dock"] .intro-lockup,
+.intro[data-phase="handover"] .intro-lockup {
+  transform: translate(var(--dock-x), var(--dock-y)) scale(var(--dock-s));
+  transition: transform 980ms cubic-bezier(0.62, 0.01, 0.24, 1);
+}
+
+/* The tagline is not in the header, so it goes as the journey begins — early
+   enough that what arrives is only ever the four letters. */
+.intro[data-phase="dock"] .intro-tagline,
+.intro[data-phase="handover"] .intro-tagline {
+  animation: intro-tag-out 280ms cubic-bezier(0.4, 0, 1, 1) both;
 }
 
 /* Each piece is a window onto the one artwork file: same image, offset so only
@@ -1003,6 +1060,26 @@ body {
 /* The line underneath arrives only once the word has settled. */
 .intro-tagline {
   animation: intro-tag 1150ms cubic-bezier(0.33, 0.8, 0.3, 1) 1720ms both;
+}
+
+@keyframes intro-ground-out {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
+@keyframes intro-tag-out {
+  from {
+    opacity: 1;
+    filter: blur(0);
+  }
+  to {
+    opacity: 0;
+    filter: blur(6px);
+  }
 }
 
 @keyframes intro-dissolve {
@@ -1752,4 +1829,100 @@ body {
   .rp-download-arrow {
     transition: none !important;
   }
+}
+
+/* ------------------------------------------------------------------ */
+/* Product bands                                                       */
+/* ------------------------------------------------------------------ */
+
+/*
+ * Both product layouts are held blank until the band reaches the viewport, so
+ * the imagery arrives as you scroll onto it rather than sitting there already.
+ * data-visible is flipped by the band's own IntersectionObserver.
+ */
+.pb-rise {
+  opacity: 0;
+}
+
+.pb-rise[data-visible="true"] {
+  animation: pb-rise 760ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@keyframes pb-rise {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* The inset photograph on the wordmark block gets a different arrival from
+   everything around it: further from below, slightly undersized, and landing
+   on an overshoot so it reads as popping into place over the giant name
+   rather than fading up alongside it. */
+.pb-pop {
+  opacity: 0;
+}
+
+.pb-pop[data-visible="true"] {
+  animation: pb-pop 820ms cubic-bezier(0.2, 1.24, 0.42, 1) both;
+}
+
+@keyframes pb-pop {
+  from {
+    opacity: 0;
+    transform: translateY(56px) scale(0.93);
+  }
+  60% {
+    opacity: 1;
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* The giant product name is set wider than its plate on purpose — the plate
+   clips it, and the photograph laps over what is left. Kept off the accessible
+   tree, since the name is already the band's heading. */
+.pb-wordmark {
+  user-select: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pb-rise,
+  .pb-rise[data-visible="true"],
+  .pb-pop,
+  .pb-pop[data-visible="true"] {
+    animation: none !important;
+    opacity: 1;
+  }
+}
+
+/* ------------------------------------------------------------------ */
+/* Header mark                                                         */
+/* ------------------------------------------------------------------ */
+
+/*
+ * The four letters, cropped out of the logo artwork in place rather than
+ * saved off as a second file — the same technique and the same measurements
+ * SiteIntro uses on the same PNG, so the two cannot drift apart. The file is
+ * the full lockup; its tagline at this size would be a smudge, so the bar
+ * takes the letters alone.
+ *
+ * Source geometry, in the file's own pixels: the file is 2022 x 778, and the
+ * four letters occupy x 408 to 1725 (1317 wide) at y 178, 328 tall. Every
+ * figure below is one of those, scaled by --u so the crop follows --logo-h.
+ */
+.site-logo {
+  --u: calc(var(--logo-h) / 328);
+  width: calc(1317 * var(--u));
+  height: var(--logo-h);
+  background-image: url("/images/mcil-logo.png");
+  background-repeat: no-repeat;
+  background-size: calc(2022 * var(--u)) calc(778 * var(--u));
+  background-position: calc(408 * var(--u) * -1) calc(178 * var(--u) * -1);
 }
