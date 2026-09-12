@@ -28,10 +28,23 @@
      marks only, never body copy. */
   --accent: #d99a5b;
 
+  /*
+   * Brand navy — the ground the MCIL logo is set on. The bar carries it on
+   * every page and at every scroll position, so the logo always sits on its
+   * own colour rather than on a tint of whatever is behind it.
+   *
+   * Read off the logo artwork by eye; if the brand sheet gives an exact value,
+   * this is the one line to change.
+   */
+  --navy: #1c2c47;
+
   /* Frosted glass. White first, with only enough of the brand blue in it to
      keep the chrome in the same family as the rest of the page — a tint, not
      a colour. --glass-veil is the same white at the opacity the blur wants;
-     --glass-line is the hairline that gives a pane its edge. */
+     --glass-line is the hairline that gives a pane its edge.
+
+     The bar itself is navy now, so these are the drop panel's: it hangs off
+     the bar as a pane of glass rather than continuing it. */
   --glass-white: color-mix(in srgb, var(--brand-pale) 12%, #fff);
   --glass-veil: color-mix(in srgb, var(--glass-white) 84%, transparent);
   --glass-line: color-mix(in srgb, var(--steel-900) 9%, transparent);
@@ -51,6 +64,7 @@
   --color-steel-800: var(--steel-800);
   --color-steel-100: var(--steel-100);
   --color-accent: var(--accent);
+  --color-navy: var(--navy);
   --color-surface: var(--surface);
   --color-brand: var(--brand);
   --color-brand-light: var(--brand-light);
@@ -737,10 +751,21 @@ body {
 /* Header bar and drop panels                                          */
 /* ------------------------------------------------------------------ */
 
-/* Over the hero the bar is pure chrome: nothing but white type on the
-   photograph. The ink tokens below are what the markup paints with, so the
-   two states differ by four variables rather than by a second set of
-   classes. */
+/*
+ * One state, brand navy, on every route and at every scroll position.
+ *
+ * It used to be two: chrome over the hero photography, frosted white once
+ * scrolled or opened. That read well on the landing page and left white nav
+ * type on a white page everywhere else — nothing visible on About, Investors
+ * or Products until you scrolled or opened a menu. (/contact was carved out
+ * by hand, which is what made the other three look like the oversight they
+ * were.) The bar is also the logo's ground, so it has to be the logo's colour
+ * rather than a tint of whatever happens to sit behind it.
+ *
+ * The ink tokens are kept: the markup still paints with them, so recolouring
+ * the bar stays a matter of these seven values and not of touching the
+ * markup.
+ */
 .site-header {
   --nav-ink: #fff;
   --nav-ink-soft: color-mix(in srgb, #fff 88%, transparent);
@@ -749,33 +774,14 @@ body {
   --nav-mark: var(--brand-light);
   --nav-hover-ground: #fff;
   --nav-hover-ink: var(--steel-900);
+
+  background: var(--navy);
 }
 
-/* Scrolled, or with a menu open: a pane of frosted white. The blur does the
-   work — the fill is held light enough that the photograph still moves
-   underneath it, which is what separates glass from a painted bar. */
-.site-header--glass {
-  --nav-ink: var(--steel-900);
-  --nav-ink-soft: var(--steel-800);
-  --nav-line: color-mix(in srgb, var(--steel-900) 22%, transparent);
-  --nav-rule: var(--glass-line);
-  --nav-mark: var(--brand-deep);
-  --nav-hover-ground: var(--steel-900);
-  --nav-hover-ink: #fff;
-
-  background: var(--glass-veil);
-  -webkit-backdrop-filter: blur(34px) saturate(180%);
-  backdrop-filter: blur(34px) saturate(180%);
-  box-shadow:
-    inset 0 1px 0 color-mix(in srgb, #fff 70%, transparent),
-    0 1px 0 var(--glass-line);
-}
-
-/* The mobile sheet is a different problem from a 68px bar: it covers most of
-   the page, and at the bar's opacity the copy behind it tangles with the nav
-   labels. Near-opaque, with the blur kept for the softness at its edge. */
-.site-header--sheet {
-  background: color-mix(in srgb, var(--glass-white) 96%, transparent);
+/* Opaque, so the only thing left for scroll to say is that the page has
+   started moving underneath it. */
+.site-header--lifted {
+  box-shadow: 0 10px 30px -18px rgba(0, 0, 0, 0.65);
 }
 
 /* The bar under the hovered nav item, drawn from the middle out so it reads
@@ -796,8 +802,9 @@ body {
 }
 
 /*
- * The panel drops from under the bar and continues the same pane, so the two
- * read as one sheet of glass rather than a card parked below the header.
+ * The panel drops from under the bar as a pane of glass. It no longer
+ * continues the bar — that is navy — so the bar's lower edge is where the
+ * chrome ends and the panel begins.
  *
  * Its height is driven from the open panel's measured height rather than left
  * to auto: opening eases it down from nothing, closing eases it back, and
@@ -846,7 +853,8 @@ body {
   backdrop-filter: blur(34px) saturate(180%);
 }
 
-/* Left face: the same white as the bar, so the seam between them disappears. */
+/* Left face: the lighter of the two, so the display type on it has the
+   contrast it needs against the navy bar directly above. */
 .mega-face--lead {
   background: var(--glass-veil);
   box-shadow: inset 0 1px 0 color-mix(in srgb, #fff 70%, transparent);
@@ -876,8 +884,6 @@ body {
 @supports not (
   (backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))
 ) {
-  .site-header--glass,
-  .site-header--sheet,
   .mega-face--lead {
     background: var(--glass-white);
   }
@@ -1823,4 +1829,29 @@ body {
     animation: none !important;
     opacity: 1;
   }
+}
+
+/* ------------------------------------------------------------------ */
+/* Header mark                                                         */
+/* ------------------------------------------------------------------ */
+
+/*
+ * The four letters, cropped out of the logo artwork in place rather than
+ * saved off as a second file — the same technique and the same measurements
+ * SiteIntro uses on the same PNG, so the two cannot drift apart. The file is
+ * the full lockup; its tagline at this size would be a smudge, so the bar
+ * takes the letters alone.
+ *
+ * Source geometry, in the file's own pixels: the file is 2022 x 778, and the
+ * four letters occupy x 408 to 1725 (1317 wide) at y 178, 328 tall. Every
+ * figure below is one of those, scaled by --u so the crop follows --logo-h.
+ */
+.site-logo {
+  --u: calc(var(--logo-h) / 328);
+  width: calc(1317 * var(--u));
+  height: var(--logo-h);
+  background-image: url("/images/mcil-logo.png");
+  background-repeat: no-repeat;
+  background-size: calc(2022 * var(--u)) calc(778 * var(--u));
+  background-position: calc(408 * var(--u) * -1) calc(178 * var(--u) * -1);
 }

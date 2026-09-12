@@ -109,8 +109,10 @@ export default function Hero() {
         aria-hidden
       />
 
-      {/* Wordmark */}
-      <div className="relative z-10 flex h-full items-center">
+      {/* Wordmark. The header is opaque now, so its height is reserved here —
+          otherwise the block centres against the whole slide and reads low,
+          with its top edge tucked under the bar. */}
+      <div className="relative z-10 flex h-full items-center pt-[var(--header-h)]">
         <div className="hero-rise w-full px-6 sm:px-10 lg:px-[6.5vw]">
           <h1 className="hero-headline font-display leading-[1.05] text-white uppercase">
             {/* The wordmark never breaks; only the sector word may drop to

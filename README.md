@@ -63,6 +63,35 @@ the same filename; no code change is needed.
 displays and look softer than the other two. Higher-resolution originals are
 worth dropping in if they exist.
 
+## Header and the logo
+
+The header is **brand navy on every page and at every scroll position**. It
+used to be transparent until the page scrolled, which read well over the hero
+photography and left white nav type sitting on a white page everywhere else —
+invisible on About, Investors and Products until you scrolled or opened a menu.
+
+The navy lives in one place, `--navy` in `src/app/globals.css`, taken off the
+logo artwork by eye. If the brand sheet gives an exact value, that is the one
+line to change.
+
+### The mark
+
+The mark in the bar is the four letters cropped out of
+`public/images/mcil-logo.png`. That file is the full lockup — letters over a
+tagline — and the tagline at a 36px bar height would be a smudge, so the header
+takes the letters alone.
+
+The crop is done in CSS (`.site-logo`), off the same measurements `SiteIntro`
+uses on the same file, so there is no second asset to keep in step. The source
+geometry is written out in the rule: the file is 2022 x 778, the letters occupy
+x 408-1725 at y 178, 328 tall. **Replacing the artwork means re-measuring in
+both places.**
+
+`LOGO_HEIGHT` in `src/lib/brand.ts` is how tall the mark renders, and with the
+bar's padding it is what makes the header 68px — so `--header-h` has to stay in
+step with it. Every page's top padding and the sticky sections are measured off
+that token.
+
 ## Products
 
 `/products` carries one band per product, in the two layouts of the reference:
@@ -135,6 +164,5 @@ Each category is also an anchor — `/investors#financials`, `#compliance`,
 ## Still to do
 
 - Higher-resolution originals for `hero-1` and `hero-4` (above).
-- MCIL logo asset — the header currently sets the wordmark in type.
 - The rest of the site: Media, Careers, Contact.
 - Real PDFs behind the investor document rows (above).
