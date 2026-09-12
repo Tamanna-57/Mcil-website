@@ -10,22 +10,11 @@ export const metadata: Metadata = {
 
 export default function ContactPage() {
   return (
-    <main>
-      {/* A short dark band: it carries the eyebrow, and it is what the fixed
-          header's white type sits on before the card scrolls up under it. */}
-      <section className="bg-steel-900 px-6 pt-32 pb-40 text-center sm:px-10 lg:px-[6.5vw] lg:pb-44">
-        <p className="text-[11px] font-semibold tracking-[0.24em] text-brand-pale uppercase">
-          [ Contact Us ]
-        </p>
-        <p className="mx-auto mt-4 max-w-md text-sm text-white/70">
-          Registered office in New Delhi, works in Faridabad — and someone at
-          the end of both numbers.
-        </p>
-      </section>
-
-      <ContactCard />
-
-      <ContactDetails />
+    <main className="contact-ground px-5 pt-24 pb-16 sm:px-8 sm:pt-28 lg:px-[5vw] lg:pb-24">
+      <div className="mx-auto w-full max-w-5xl">
+        <ContactCard />
+        <ContactDetails />
+      </div>
     </main>
   );
 }

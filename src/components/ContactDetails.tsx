@@ -10,7 +10,7 @@ function telHref(phone: string) {
   return `tel:${phone.split("/")[0].trim().replace(/[\s-]/g, "")}`;
 }
 
-/** The written details, in the same order as the map's two pins. */
+/** The written details under the card — small, on the same blue ground. */
 export default function ContactDetails() {
   const sectionRef = useRef<HTMLElement>(null);
   const [visible, setVisible] = useState(false);
@@ -31,91 +31,57 @@ export default function ContactDetails() {
           observer.disconnect();
         }
       },
-      { threshold: 0.15 },
+      { threshold: 0.2 },
     );
     observer.observe(el);
     return () => observer.disconnect();
   }, []);
 
   return (
-    <section
-      ref={sectionRef}
-      className="bg-background px-6 pb-24 sm:px-10 lg:px-[6.5vw]"
-    >
-      <div className="mx-auto w-full max-w-6xl">
-        <p
-          className="hl-reveal text-[11px] font-semibold tracking-[0.24em] text-accent uppercase"
+    <section ref={sectionRef} className="mt-5 grid gap-4 sm:grid-cols-3">
+      {locations.map((location, i) => (
+        <article
+          key={location.id}
+          className="cc-tile hl-reveal rounded-2xl p-5"
           data-visible={visible}
+          style={{ animationDelay: `${60 + i * 80}ms` }}
         >
-          [ Where to Find Us ]
+          <h2 className="text-[10px] font-semibold tracking-[0.16em] text-brand-deep uppercase">
+            {location.label}
+          </h2>
+          <p className="mt-3 text-[13px] leading-relaxed text-steel-800">
+            {location.address}
+          </p>
+          <a
+            href={telHref(location.phone)}
+            className="type-figure mt-3 inline-block text-sm text-steel-900 transition-colors hover:text-brand-deep"
+          >
+            {location.phone}
+          </a>
+        </article>
+      ))}
+
+      <article
+        className="cc-tile hl-reveal rounded-2xl p-5"
+        data-visible={visible}
+        style={{ animationDelay: "220ms" }}
+      >
+        <h2 className="text-[10px] font-semibold tracking-[0.16em] text-brand-deep uppercase">
+          Email &amp; Company
+        </h2>
+        <a
+          href={`mailto:${company.email}`}
+          className="mt-3 inline-block text-[13px] font-semibold text-steel-900 transition-colors hover:text-brand-deep"
+        >
+          {company.email}
+        </a>
+        <p className="mt-2 text-[12px] leading-relaxed text-steel-800/80">
+          {company.complianceOfficer.name} — investor queries
         </p>
-
-        <div className="mt-8 grid gap-6 md:grid-cols-2">
-          {locations.map((location, i) => (
-            <article
-              key={location.id}
-              className="hl-reveal rounded-3xl border border-steel-900/10 bg-surface p-7 sm:p-8"
-              data-visible={visible}
-              style={{ animationDelay: `${80 + i * 90}ms` }}
-            >
-              <h2 className="font-display text-lg font-semibold text-steel-900">
-                {location.label}
-              </h2>
-              <p className="mt-1 text-[12px] tracking-[0.06em] text-steel-800/70">
-                {location.role}
-              </p>
-              <p className="mt-5 text-sm leading-relaxed text-steel-800">
-                {location.address}
-              </p>
-              <a
-                href={telHref(location.phone)}
-                className="type-figure mt-5 inline-block text-lg text-steel-900 transition-colors hover:text-brand-deep"
-              >
-                {location.phone}
-              </a>
-            </article>
-          ))}
-        </div>
-
-        <dl
-          className="hl-reveal mt-6 grid gap-x-8 gap-y-6 rounded-3xl bg-steel-900 p-7 text-white sm:grid-cols-3 sm:p-8"
-          data-visible={visible}
-          style={{ animationDelay: "260ms" }}
-        >
-          <div>
-            <dt className="text-[11px] tracking-[0.14em] text-white/55 uppercase">
-              Email
-            </dt>
-            <dd className="mt-2">
-              <a
-                href={`mailto:${company.email}`}
-                className="text-sm font-semibold text-white transition-colors hover:text-brand-pale"
-              >
-                {company.email}
-              </a>
-            </dd>
-          </div>
-          <div>
-            <dt className="text-[11px] tracking-[0.14em] text-white/55 uppercase">
-              Investor Queries
-            </dt>
-            <dd className="mt-2 text-sm text-white/85">
-              {company.complianceOfficer.name}
-              <span className="block text-xs text-white/55">
-                {company.complianceOfficer.role}
-              </span>
-            </dd>
-          </div>
-          <div>
-            <dt className="text-[11px] tracking-[0.14em] text-white/55 uppercase">
-              CIN
-            </dt>
-            <dd className="mt-2 text-sm text-white/85 tabular-nums">
-              {company.cin}
-            </dd>
-          </div>
-        </dl>
-      </div>
+        <p className="mt-2 text-[11px] tracking-[0.04em] text-steel-800/60 tabular-nums">
+          CIN {company.cin}
+        </p>
+      </article>
     </section>
   );
 }

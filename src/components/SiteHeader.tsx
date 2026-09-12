@@ -1,8 +1,14 @@
 "use client";
 
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { navItems, type NavItem, type NavLink } from "@/lib/site-nav";
+
+/* Pages that open on a light ground rather than a dark hero. The bar's
+   transparent state paints white type for a photograph to sit behind; on these
+   the glass is on from the first pixel instead. */
+const LIGHT_TOP_ROUTES = ["/contact"];
 
 export default function SiteHeader() {
   const [scrolled, setScrolled] = useState(false);
@@ -38,8 +44,13 @@ export default function SiteHeader() {
     setOpenId(null);
   }, []);
 
+  const pathname = usePathname();
+  const lightTop = LIGHT_TOP_ROUTES.some(
+    (route) => pathname === route || pathname.startsWith(`${route}/`),
+  );
+
   const openItem = navItems.find((item) => item.id === openId) ?? null;
-  const solid = scrolled || menuOpen || openId !== null;
+  const solid = lightTop || scrolled || menuOpen || openId !== null;
 
   return (
     <header

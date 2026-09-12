@@ -855,6 +855,54 @@ body {
 /* Contact page                                                        */
 /* ------------------------------------------------------------------ */
 
+/* The page's ground: the brand blue as a soft wash rather than a block of it,
+   lightening toward the foot so the small tiles at the bottom sit on almost
+   white. This is what the card and the tiles are glass against. */
+.contact-ground {
+  min-height: 100svh;
+  background:
+    radial-gradient(
+      130% 80% at 50% -10%,
+      color-mix(in srgb, var(--brand-light) 55%, var(--brand-pale)),
+      transparent 65%
+    ),
+    linear-gradient(
+      180deg,
+      var(--brand-pale),
+      color-mix(in srgb, var(--brand-pale) 60%, #fff) 55%,
+      var(--background)
+    );
+}
+
+/* The card is the one solid object on that wash — white, lifted, with a hair
+   of the blue in its edge rather than a grey border. */
+.contact-card {
+  background: var(--surface);
+  box-shadow:
+    0 1px 0 color-mix(in srgb, #fff 90%, transparent) inset,
+    0 2px 6px -2px color-mix(in srgb, var(--brand-deep) 30%, transparent),
+    0 30px 60px -34px color-mix(in srgb, var(--brand-deep) 65%, transparent);
+}
+
+/* The small tiles under it are the glass: the wash reads through them, so they
+   belong to the ground rather than sitting on it as more white cards. */
+.cc-tile {
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  backdrop-filter: blur(20px) saturate(180%);
+  background: color-mix(in srgb, #fff 62%, transparent);
+  box-shadow:
+    inset 0 1px 0 color-mix(in srgb, #fff 80%, transparent),
+    0 10px 26px -20px color-mix(in srgb, var(--brand-deep) 60%, transparent);
+}
+
+@supports not (
+  (backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))
+) {
+  .cc-tile {
+    background: color-mix(in srgb, #fff 88%, var(--brand-pale));
+  }
+}
+
 /* The pills sit on the map, so they are frosted: the blur and the lift belong
    to every pill, while the fill stays with the markup — otherwise this rule
    would paint over the active pill's dark ground. */
