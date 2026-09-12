@@ -90,13 +90,13 @@ function LogoPiece({ piece, className }: { piece: Piece; className: string }) {
  * The opening: M, C, I and L start in the four corners, each swings in along
  * its own arc — all four turning the same way, so the four arcs read as one
  * circle — and they close into the wordmark. METAL COATINGS (INDIA) LTD then
- * opens from its centre underneath, and the curtain lifts into the page.
+ * opens from its centre underneath, and the curtain dissolves into the page.
  *
  * Mounted by the landing page rather than the layout, so it belongs to that
  * page and plays on every load of it.
  */
 export default function SiteIntro() {
-  const skip = useSyncExternalStore(
+  const storeSkip = useSyncExternalStore(
     neverChanges,
     shouldSkip,
     neverSkipOnServer,
@@ -104,17 +104,23 @@ export default function SiteIntro() {
   const [done, setDone] = useState(false);
   const [leaving, setLeaving] = useState(false);
 
+  /* Once this instance is on its way out it keeps rendering until the dissolve
+     is over, whatever the store now says. */
+  const skip = storeSkip && !leaving;
+
   const finish = useCallback(() => {
+    /* Claimed here rather than when the run starts. The store snapshot below is
+       re-read on every render, so flipping this mid-run would make the next
+       render skip — which silently cut the exit animation before it drew a
+       single frame. */
+    hasPlayedThisLoad = true;
     setLeaving(true);
-    window.setTimeout(() => setDone(true), 700);
+    /* Held until the dissolve has finished; unmounting mid-fade would cut it. */
+    window.setTimeout(() => setDone(true), 940);
   }, []);
 
   useEffect(() => {
     if (skip || done || leaving) return;
-
-    /* Claimed as it starts, so a later client-side navigation back to the
-       landing page does not replay it. */
-    hasPlayedThisLoad = true;
 
     /* The curtain covers the page, so the page must not scroll under it. */
     const previous = document.body.style.overflow;
