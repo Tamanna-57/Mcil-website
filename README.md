@@ -74,6 +74,38 @@ The navy lives in one place, `--navy` in `src/app/globals.css`, taken off the
 logo artwork by eye. If the brand sheet gives an exact value, that is the one
 line to change.
 
+### The opening sequence
+
+The landing page opens with `SiteIntro`: M, C, I and L fly in from the four
+corners along arcs that all turn the same way, the tagline opens under them,
+and then **the whole lockup travels to the top-left and parks exactly on the
+header's own mark** — the tagline dropping away on the way, since the header
+does not carry it. The ground then fades out from under a logo that is already
+sitting where it lives, so the hand-over to the real header mark is a
+substitution rather than a dissolve.
+
+The landing has to be exact or the substitution shows. It is measured at
+runtime, not computed: `measureDock()` reads the live `.site-logo` rect and the
+lockup's, and hands CSS an offset and a scale. The bar's left padding is
+viewport-dependent, so a second copy of that sum would be a second thing to
+keep right. Verified to land within 0.1px at 390, 768, 1280 and 1440px wide.
+
+Timings live in both places and must stay in step: the constants at the top of
+`SiteIntro.tsx` and the animations in the `Opening sequence` block of
+`globals.css`.
+
+Two exits, and the difference matters:
+
+- **hand-over** — the normal one. Only `.intro-ground` fades; the logo holds at
+  full strength because it is already in position.
+- **dissolve** — for a run cut short by a key or a click before the dock
+  began, or if there is no `.site-logo` to aim at. Nothing is lined up to hand
+  over to, so the whole curtain blooms and blurs out, as it did before the dock
+  existed.
+
+The sequence is skipped entirely under `prefers-reduced-motion`, and plays once
+per page **load** — navigating back to Home within a session does not replay it.
+
 ### The mark
 
 The mark in the bar is the four letters cropped out of

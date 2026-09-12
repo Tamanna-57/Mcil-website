@@ -914,6 +914,14 @@ body {
   display: grid;
   place-items: center;
   padding: 1.5rem;
+}
+
+/* The colour field, on its own layer. It has to be able to fade out from under
+   a logo that stays at full strength, and opacity on the curtain itself would
+   fade the logo along with it. */
+.intro-ground {
+  position: absolute;
+  inset: 0;
   background:
     radial-gradient(
       80% 65% at 50% 45%,
@@ -938,12 +946,28 @@ body {
  * fixed element the size of the screen is a lot to ask of a phone for an
  * effect that is only really visible on the mark.
  */
-.intro[data-leaving="true"] {
-  animation: intro-dissolve 900ms cubic-bezier(0.37, 0, 0.28, 1) both;
+.intro[data-phase="dock"],
+.intro[data-phase="handover"],
+.intro[data-phase="dissolve"] {
   pointer-events: none;
 }
 
-.intro[data-leaving="true"] .intro-lockup {
+/*
+ * Hand-over. The logo is already parked on the header's mark, pixel for pixel,
+ * so only the ground has to go: what is revealed underneath is the same shape
+ * in the same place, and the swap at unmount has nothing left to give away.
+ */
+.intro[data-phase="handover"] .intro-ground {
+  animation: intro-ground-out 620ms cubic-bezier(0.37, 0, 0.28, 1) both;
+}
+
+/* Cut short before the dock, so there is nothing lined up to hand over to:
+   the whole curtain dissolves, as it did before the dock existed. */
+.intro[data-phase="dissolve"] {
+  animation: intro-dissolve 900ms cubic-bezier(0.37, 0, 0.28, 1) both;
+}
+
+.intro[data-phase="dissolve"] .intro-lockup {
   animation: intro-lockup-dissolve 620ms cubic-bezier(0.4, 0, 0.3, 1) both;
 }
 
@@ -963,6 +987,33 @@ body {
   position: relative;
   width: calc(var(--logo-w) * var(--u));
   height: calc(var(--logo-h) * var(--u));
+
+  /*
+   * The letters' own top-left corner, not the lockup's. SiteIntro measures the
+   * journey from that corner to the header mark's, and with the origin here the
+   * shrink holds it still — so the offset it hands over is the whole story and
+   * the scale does not drag the logo off course.
+   */
+  transform-origin: calc(var(--letters-x) * var(--u)) 0;
+}
+
+/*
+ * The travel. Eased at both ends rather than thrown: it lifts off the centre,
+ * carries across, and settles onto the mark. The site's usual ease-out curve
+ * was wrong here — it spends most of the distance in the first quarter, which
+ * reads as the logo being flicked away instead of put away.
+ */
+.intro[data-phase="dock"] .intro-lockup,
+.intro[data-phase="handover"] .intro-lockup {
+  transform: translate(var(--dock-x), var(--dock-y)) scale(var(--dock-s));
+  transition: transform 980ms cubic-bezier(0.62, 0.01, 0.24, 1);
+}
+
+/* The tagline is not in the header, so it goes as the journey begins — early
+   enough that what arrives is only ever the four letters. */
+.intro[data-phase="dock"] .intro-tagline,
+.intro[data-phase="handover"] .intro-tagline {
+  animation: intro-tag-out 280ms cubic-bezier(0.4, 0, 1, 1) both;
 }
 
 /* Each piece is a window onto the one artwork file: same image, offset so only
@@ -1009,6 +1060,26 @@ body {
 /* The line underneath arrives only once the word has settled. */
 .intro-tagline {
   animation: intro-tag 1150ms cubic-bezier(0.33, 0.8, 0.3, 1) 1720ms both;
+}
+
+@keyframes intro-ground-out {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
+@keyframes intro-tag-out {
+  from {
+    opacity: 1;
+    filter: blur(0);
+  }
+  to {
+    opacity: 0;
+    filter: blur(6px);
+  }
 }
 
 @keyframes intro-dissolve {
