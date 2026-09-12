@@ -851,6 +851,91 @@ body {
   }
 }
 
+/* ------------------------------------------------------------------ */
+/* Contact page                                                        */
+/* ------------------------------------------------------------------ */
+
+/* The card sits on the map, so it is the same frosted white as the header
+   rather than a solid panel — the map reads through it and the two pieces of
+   chrome on this page match. */
+.cm-card {
+  -webkit-backdrop-filter: blur(28px) saturate(180%);
+  backdrop-filter: blur(28px) saturate(180%);
+  background: color-mix(in srgb, var(--glass-white) 88%, transparent);
+  box-shadow:
+    inset 0 1px 0 color-mix(in srgb, #fff 70%, transparent),
+    0 24px 50px -30px color-mix(in srgb, var(--steel-900) 60%, transparent);
+  animation: hl-reveal 700ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@supports not (
+  (backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))
+) {
+  .cm-card {
+    background: var(--glass-white);
+  }
+}
+
+/* The pin marker on the active location pill. It keeps its space when idle so
+   the pill does not resize as the selection moves. */
+.cm-dot {
+  display: inline-block;
+  width: 0.45rem;
+  height: 0.45rem;
+  margin-right: 0.55rem;
+  border-radius: 9999px;
+  background: currentColor;
+  opacity: 0.35;
+  vertical-align: middle;
+}
+
+.cm-dot[data-active="true"] {
+  opacity: 1;
+  animation: cm-ping 2.4s ease-out infinite;
+}
+
+/* The address line under the pills is keyed to the location, so it remounts on
+   every switch and this plays as the new address arrives. */
+.cm-swap {
+  animation: cm-rise 420ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+/* Underline fields: the rule thickens on focus rather than growing a ring,
+   which would break the line the form is built on. */
+.cf-input:focus {
+  border-bottom-width: 2px;
+  padding-bottom: calc(0.5rem - 1px);
+}
+
+@keyframes cm-rise {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes cm-ping {
+  0% {
+    box-shadow: 0 0 0 0 color-mix(in srgb, currentColor 55%, transparent);
+  }
+  70%,
+  100% {
+    box-shadow: 0 0 0 0.5rem transparent;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cm-card,
+  .cm-swap,
+  .cm-dot[data-active="true"] {
+    animation: none !important;
+  }
+}
+
 @keyframes mega-drop {
   from {
     clip-path: inset(0 0 100% 0);
