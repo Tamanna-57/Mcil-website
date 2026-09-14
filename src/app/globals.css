@@ -1576,6 +1576,46 @@ body {
   animation: cc-rise 420ms cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
+/* What stands in the map's place while Google's embed boots. Two faint sets of
+   rules at street angles over the pale ground, with a sweep across them, so
+   the top of the card reads as a map arriving rather than as an empty box. It
+   is painted behind the frame and left there, so a switch between locations
+   fades against the same thing the first load did. */
+.cc-map-skeleton {
+  background-color: color-mix(in srgb, var(--brand-pale) 88%, #fff);
+  background-image:
+    repeating-linear-gradient(
+      64deg,
+      color-mix(in srgb, var(--brand-deep) 9%, transparent) 0 1px,
+      transparent 1px 78px
+    ),
+    repeating-linear-gradient(
+      -26deg,
+      color-mix(in srgb, var(--brand-deep) 6%, transparent) 0 1px,
+      transparent 1px 54px
+    );
+  overflow: hidden;
+}
+
+.cc-map-skeleton::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    100deg,
+    transparent 35%,
+    color-mix(in srgb, #fff 65%, transparent) 50%,
+    transparent 65%
+  );
+  transform: translateX(-100%);
+  animation: cc-map-sweep 1.7s ease-in-out infinite;
+}
+
+/* Nothing is waiting on any more, and the map is painted over it. */
+.cc-map-skeleton[data-loaded="true"]::after {
+  animation: none;
+}
+
 /* Underline fields: the rule thickens on focus rather than growing a ring,
    which would break the line the form is built on. */
 .cf-input:focus {
@@ -1604,10 +1644,17 @@ body {
   }
 }
 
+@keyframes cc-map-sweep {
+  to {
+    transform: translateX(100%);
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .cc-title,
   .cc-swap,
-  .cc-dot[data-active="true"] {
+  .cc-dot[data-active="true"],
+  .cc-map-skeleton::after {
     animation: none !important;
   }
 }
