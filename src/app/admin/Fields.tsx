@@ -1,20 +1,9 @@
 "use client";
 
 import Image from "next/image";
-import { createContext, useContext, useId, useRef, useState } from "react";
+import { useId, useRef, useState } from "react";
 import type { Field } from "@/lib/admin/schema";
 import { displayName, extensionList } from "@/lib/admin/uploads";
-import { type StorageInfo, uploadFile } from "./upload-client";
-
-/**
- * Where this deployment keeps uploads. Set once by the dashboard and read by
- * whichever field the admin happens to be uploading through, however deeply
- * nested it is.
- */
-export const StorageContext = createContext<StorageInfo>({
-  kind: "file",
-  prefix: "mcil-content",
-});
 
 /**
  * The controls the dashboard is built from.
@@ -73,20 +62,27 @@ function usePicker(
   onDone: (url: string) => void,
   onError: (message: string) => void,
 ) {
-  const storage = useContext(StorageContext);
   const ref = useRef<HTMLInputElement>(null);
   const [busy, setBusy] = useState(false);
 
   async function send(file: File) {
     setBusy(true);
     try {
-      onDone(await uploadFile(file, kind, storage));
-    } catch (error) {
-      onError(
-        error instanceof Error
-          ? error.message
-          : "Upload failed — check the connection and try again.",
-      );
+      const body = new FormData();
+      body.append("file", file);
+      body.append("kind", kind);
+      const res = await fetch("/api/admin/upload", { method: "POST", body });
+      const data = (await res.json().catch(() => ({}))) as {
+        url?: string;
+        error?: string;
+      };
+      if (!res.ok || !data.url) {
+        onError(data.error || "Upload failed.");
+        return;
+      }
+      onDone(data.url);
+    } catch {
+      onError("Upload failed — check the connection and try again.");
     } finally {
       setBusy(false);
       if (ref.current) ref.current.value = "";

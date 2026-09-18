@@ -74,34 +74,25 @@ URL into the box under the upload button instead.
 
 Adding next year's report is **+ Add document**, a title, a date and the file.
 
-Documents are capped at 50 MB (`MAX_DOCUMENT_MB`) and images at 8 MB.
+Documents are capped at 32 MB (`MAX_DOCUMENT_MB`) and images at 8 MB.
 Downloads are named the way they were uploaded, without the collision-avoiding
 token the stored file carries.
 
-How the file gets there depends on the backend, and the difference matters:
-
-- **File backend** — posted to `/api/admin/upload` and streamed to disk.
-- **Blob backend** — uploaded from the browser **straight to Blob**, using a
-  short-lived token signed by `/api/admin/upload/token`. A serverless function
-  may only receive a request body of about 4.5 MB, which most annual reports
-  exceed, so the file must not pass through one. Anything over 8 MB goes up in
-  parallel parts with failed parts retried.
+Uploads are streamed rather than buffered, so a 30 MB report is not held in
+memory in one piece on its way to disk or to the bucket.
 
 ### Where content is stored
 
 Two interchangeable backends, chosen by environment, so the whole thing is
 testable on a laptop before it touches a cloud account:
 
-| Backend            | Chosen when                   | Content             | Uploads                                        |
-| ------------------ | ----------------------------- | ------------------- | ---------------------------------------------- |
-| **File** (default) | `BLOB_READ_WRITE_TOKEN` unset | `content/site.json` | `content/uploads/`, served by `/media/[name]`   |
-| **Vercel Blob**    | `BLOB_READ_WRITE_TOKEN` set   | one Blob object     | Blob, as absolute URLs                         |
+| Backend            | Chosen when         | Content             | Uploads                                      |
+| ------------------ | ------------------- | ------------------- | -------------------------------------------- |
+| **File** (default) | `GCS_BUCKET` unset  | `content/site.json` | `content/uploads/`, served by `/media/[name]` |
+| **Cloud Storage**  | `GCS_BUCKET` set    | one bucket object   | `uploads/` in the bucket, as public URLs      |
 
-The file backend needs a **persistent disk**, so it suits local development,
-Docker, Render or a VPS — point `CONTENT_DIR` at the mounted volume. On Vercel
-the filesystem is read-only, so attach a Blob store to the project; Vercel then
-sets `BLOB_READ_WRITE_TOKEN` itself and the panel switches over with no code
-change.
+The file backend needs a **persistent disk**, so it suits local development and
+anything with a volume to mount — point `CONTENT_DIR` at it.
 
 Uploads deliberately do not go in `public/`: Next serves that directory as it
 stood when the site was built, so a file written there afterwards is a 404.
@@ -110,17 +101,54 @@ If the store is ever unreachable or holding bad JSON the site falls back to the
 copy in the repo and logs the reason — a broken store degrades the site to its
 defaults rather than taking it down.
 
+## Deploying to Cloud Run
+
+The container serves the site and the admin panel; Cloud Storage holds
+everything an admin saves, so the container itself stays stateless and a
+redeploy never loses an edit.
+
+**1. A bucket for the content.** Uploaded images and filings are served to the
+public straight from it, so it needs public read:
+
+```bash
+gcloud storage buckets create gs://BUCKET --location=asia-south1 \
+  --uniform-bucket-level-access
+gcloud storage buckets add-iam-policy-binding gs://BUCKET \
+  --member=allUsers --role=roles/storage.objectViewer
+```
+
+**2. Build and deploy.** The service account the revision runs as needs
+`roles/storage.objectAdmin` on that bucket; credentials are picked up from it
+automatically, so there is no key file to manage.
+
+```bash
+gcloud run deploy mcil-website --source . --region asia-south1 \
+  --service-account SA@PROJECT.iam.gserviceaccount.com \
+  --set-env-vars GCS_BUCKET=BUCKET \
+  --set-secrets ADMIN_PASSWORD=mcil-admin-password:latest
+```
+
+Keep the password in Secret Manager rather than `--set-env-vars`, so it is not
+readable from the service description.
+
+Cloud Run will not accept a request body over 32 MB, which is why
+`MAX_DOCUMENT_MB` defaults to 32 — a larger filing fails with a clear message
+from the panel rather than a platform error. If MCIL ever files something
+bigger, the fix is to upload it from the browser straight to the bucket with a
+signed URL, which is a change to the upload route alone.
+
 ### Environment variables
 
-| Variable                | Required | What it does                                                   |
-| ----------------------- | -------- | -------------------------------------------------------------- |
-| `ADMIN_PASSWORD`        | yes      | The shared admin password.                                      |
-| `ADMIN_SESSION_SECRET`  | no       | Signs the session cookie. Defaults to `ADMIN_PASSWORD`.         |
-| `BLOB_READ_WRITE_TOKEN` | no       | Present → store content in Vercel Blob instead of on disk.      |
-| `BLOB_PREFIX`           | no       | Blob path prefix. Default `mcil-content`.                       |
-| `CONTENT_DIR`           | no       | File backend directory. Default `./content`.                    |
-| `CONTENT_CACHE_MS`      | no       | Hold the last store read this long. Default `0` — always fresh. |
-| `MAX_DOCUMENT_MB`       | no       | Upload ceiling for filings. Default `50`.                       |
+| Variable               | Required | What it does                                                    |
+| ---------------------- | -------- | --------------------------------------------------------------- |
+| `ADMIN_PASSWORD`       | yes      | The shared admin password. Unset, the panel refuses every login. |
+| `ADMIN_SESSION_SECRET` | no       | Signs the session cookie. Defaults to `ADMIN_PASSWORD`.          |
+| `GCS_BUCKET`           | no       | Set → keep content and uploads in this bucket instead of on disk.|
+| `GCS_PREFIX`           | no       | Path prefix inside the bucket. Default: the bucket root.         |
+| `CONTENT_DIR`          | no       | File backend directory. Default `./content`.                     |
+| `MAX_DOCUMENT_MB`      | no       | Upload ceiling for filings. Default `32`, Cloud Run's own limit. |
+| `CONTENT_CACHE_MS`     | no       | Hold the last store read this long. Default `0` — always fresh.  |
+| `NEXT_OUTPUT`          | no       | `standalone` for the container build. Set by the Dockerfile.     |
 
 ## What is built so far
 
@@ -290,14 +318,13 @@ the live mcil.net investor section, each with its real sub-categories:
 | Letters Sent to Stock Exchange      | Intimation, Outcome, Newspaper Publication, Others                                                         |
 | Policies, Code & Unclaimed Dividend | Policies, Code, Unclaimed Dividend, Investor Forms                                                         |
 
-The rows are **placeholders** — titles and dates are shaped like the real
-filings, but no file is attached yet. To publish a document:
+The rows that ship are **placeholders** — titles and dates are shaped like the
+real filings, but no file is attached yet. Publishing one is a job for the
+admin panel, not the code: see [Uploading filings](#uploading-filings). The
+list in `src/lib/investor-reports.ts` is only the starting point an admin edits
+from.
 
-1. Drop the PDF under `public/`, e.g. `public/docs/annual-report-2026.pdf`.
-2. Set `href` on its row in `src/lib/investor-reports.ts`
-   (`href: "/docs/annual-report-2026.pdf"`).
-
-A row with an `href` renders a live download; a row without one keeps the same
+A row with a document renders a live download; a row without one keeps the same
 Download control, inert. Nothing links back to mcil.net.
 
 Rows sort newest-first on `date`, so entries can be added in any order, and

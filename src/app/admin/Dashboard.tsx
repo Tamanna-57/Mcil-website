@@ -5,8 +5,7 @@ import { useRouter } from "next/navigation";
 import { useCallback, useMemo, useState } from "react";
 import { sections } from "@/lib/admin/schema";
 import type { SiteContent } from "@/lib/content/types";
-import { FieldList, StorageContext } from "./Fields";
-import type { StorageInfo } from "./upload-client";
+import { FieldList } from "./Fields";
 
 type Json = Record<string, unknown>;
 type SectionId = (typeof sections)[number]["id"];
@@ -27,14 +26,7 @@ const PREVIEW: Record<SectionId, string> = {
   investors: "/investors",
 };
 
-export default function Dashboard({
-  content,
-  storage,
-}: {
-  content: SiteContent;
-  /** Which upload path this deployment uses; read by the file fields. */
-  storage: StorageInfo;
-}) {
+export default function Dashboard({ content }: { content: SiteContent }) {
   const router = useRouter();
   const [active, setActive] = useState<SectionId>("home");
   const [draft, setDraft] = useState<Record<string, Json>>(
@@ -128,7 +120,6 @@ export default function Dashboard({
   const isDirty = dirty.has(active);
 
   return (
-    <StorageContext value={storage}>
       <div className="min-h-screen bg-background">
         <header className="sticky top-0 z-30 border-b border-steel-900/10 bg-navy text-white">
           <div className="mx-auto flex w-full max-w-6xl flex-wrap items-center gap-3 px-5 py-3">
@@ -257,6 +248,5 @@ export default function Dashboard({
           </div>
         </div>
       </div>
-    </StorageContext>
   );
 }

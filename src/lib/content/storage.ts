@@ -1,40 +1,26 @@
 import "server-only";
 
+import type { Bucket } from "@google-cloud/storage";
+import { flatName, type SafeName, type UploadKind } from "@/lib/admin/uploads";
+
 /**
- * Where the admin panel's saved content lives.
+ * Where the admin panel's saved content and uploads live.
  *
  * Two interchangeable backends sit behind one small interface, chosen by
  * environment so the editing UX is fully testable on a laptop before anything
  * touches a cloud account:
  *
- * * `FileBackend`  — a JSON file on disk (`content/site.json`, or wherever
- *   `CONTENT_DIR` points), with uploaded images in `uploads/` beside it. The
- *   default. Correct for local development and for any host with a persistent
- *   disk (Docker, Render, a VPS).
- * * `BlobBackend`  — Vercel Blob, over its REST API so there is no extra npm
- *   dependency to keep in step. Selected automatically when
- *   `BLOB_READ_WRITE_TOKEN` is set, which is the case on Vercel once a Blob
- *   store is attached to the project.
+ * * `FileBackend` — a JSON file on disk (`content/site.json`, or wherever
+ *   `CONTENT_DIR` points), with uploads in `uploads/` beside it. The default,
+ *   and what local development uses.
+ * * `GCSBackend` — a Cloud Storage bucket: the same JSON as one object, and
+ *   uploads under `uploads/`. Selected when `GCS_BUCKET` is set, which is the
+ *   production arrangement on Cloud Run.
  *
  * Both store one JSON document: the overrides an admin has saved. Nothing else
  * is persisted, so losing the store degrades the site to the copy in the repo
  * rather than breaking it.
  */
-
-import {
-  blobPath,
-  flatName,
-  type SafeName,
-  type UploadKind,
-} from "@/lib/admin/uploads";
-
-const BLOB_API = "https://blob.vercel-storage.com";
-const BLOB_API_VERSION = "7";
-
-/** The Blob path prefix, so the browser can name a direct upload the same way. */
-export function uploadPrefix(): string {
-  return process.env.BLOB_PREFIX || "mcil-content";
-}
 
 export type StoredDoc = {
   /** The override document, exactly as written by the admin panel. */
@@ -43,7 +29,7 @@ export type StoredDoc = {
   updatedAt: string | null;
 };
 
-export type BackendKind = "file" | "blob";
+export type BackendKind = "file" | "gcs";
 
 export interface StorageBackend {
   readonly name: BackendKind;
@@ -115,114 +101,87 @@ class FileBackend implements StorageBackend {
     const { path, uploadDir } = await this.paths();
     await fs.mkdir(uploadDir, { recursive: true });
     const filename = flatName(safe);
-    // Streamed rather than buffered: a 50 MB annual report should not have to
+    // Streamed rather than buffered: a 30 MB annual report should not have to
     // sit in memory in one piece to be written to disk.
     const { Readable } = await import("node:stream");
     const { pipeline } = await import("node:stream/promises");
-    const target = path.join(uploadDir, filename);
+    const { createWriteStream } = await import("node:fs");
     await pipeline(
       Readable.fromWeb(file.stream() as Parameters<typeof Readable.fromWeb>[0]),
-      (await import("node:fs")).createWriteStream(target),
+      createWriteStream(path.join(uploadDir, filename)),
     );
     // Served by the /media route, which reads this directory at request time.
     return `/media/${filename}`;
   }
 }
 
-/* ------------------------------------------------------------- vercel blob */
+/* -------------------------------------------------------- cloud storage */
 
-type BlobListItem = {
-  url: string;
-  pathname: string;
-  uploadedAt: string;
-};
-
-class BlobBackend implements StorageBackend {
-  readonly name = "blob" as const;
-  private readonly token: string;
+class GCSBackend implements StorageBackend {
+  readonly name = "gcs" as const;
+  private bucketPromise: Promise<Bucket> | null = null;
+  private readonly bucketName: string;
   private readonly prefix: string;
 
-  constructor(token: string) {
-    this.token = token;
-    this.prefix = uploadPrefix();
+  constructor(bucketName: string) {
+    this.bucketName = bucketName;
+    this.prefix = (process.env.GCS_PREFIX ?? "").replace(/^\/+|\/+$/g, "");
+  }
+
+  /** Lazily built so importing this module never needs credentials. */
+  private bucket(): Promise<Bucket> {
+    if (!this.bucketPromise) {
+      this.bucketPromise = import("@google-cloud/storage").then(({ Storage }) =>
+        new Storage(
+          // Credentials come from Application Default Credentials, which on
+          // Cloud Run is the service account the revision runs as — nothing to
+          // configure. `GCS_API_ENDPOINT` exists so the backend can be pointed
+          // at an emulator and actually tested.
+          process.env.GCS_API_ENDPOINT
+            ? { apiEndpoint: process.env.GCS_API_ENDPOINT }
+            : {},
+        ).bucket(this.bucketName),
+      );
+    }
+    return this.bucketPromise;
+  }
+
+  private path(...parts: string[]): string {
+    return [this.prefix, ...parts].filter(Boolean).join("/");
   }
 
   private get contentPath() {
-    return `${this.prefix}/site.json`;
-  }
-
-  private headers(extra: Record<string, string> = {}) {
-    return {
-      authorization: `Bearer ${this.token}`,
-      "x-api-version": BLOB_API_VERSION,
-      ...extra,
-    };
-  }
-
-  /** Locate a blob by exact pathname. Returns null when it does not exist. */
-  private async head(pathname: string): Promise<BlobListItem | null> {
-    const url = `${BLOB_API}?prefix=${encodeURIComponent(pathname)}&limit=1`;
-    const res = await fetch(url, {
-      headers: this.headers(),
-      cache: "no-store",
-    });
-    if (!res.ok) {
-      throw new Error(`Blob list failed: ${res.status} ${await res.text()}`);
-    }
-    const body = (await res.json()) as { blobs?: BlobListItem[] };
-    return body.blobs?.find((b) => b.pathname === pathname) ?? null;
+    return this.path("site.json");
   }
 
   async read(): Promise<StoredDoc> {
-    const blob = await this.head(this.contentPath);
-    if (!blob) return { data: {}, updatedAt: null };
-
-    // Blob URLs are served from a long-lived CDN cache. The listing above is
-    // an authenticated API call and is always fresh, so its `uploadedAt` is
-    // used as a cache buster — without it a save could stay invisible for
-    // hours.
-    const bust = encodeURIComponent(blob.uploadedAt);
-    const res = await fetch(`${blob.url}?v=${bust}`, { cache: "no-store" });
-    if (!res.ok) {
-      throw new Error(`Blob read failed: ${res.status}`);
+    const file = (await this.bucket()).file(this.contentPath);
+    try {
+      const [contents] = await file.download();
+      const text = contents.toString("utf8");
+      const [meta] = await file.getMetadata();
+      return {
+        data: text.trim() ? JSON.parse(text) : {},
+        updatedAt: meta.updated ?? null,
+      };
+    } catch (error) {
+      // Nothing saved yet is the normal first-run state, not a failure.
+      if ((error as { code?: number }).code === 404) {
+        return { data: {}, updatedAt: null };
+      }
+      throw error;
     }
-    const text = await res.text();
-    return {
-      data: text.trim() ? JSON.parse(text) : {},
-      updatedAt: blob.uploadedAt,
-    };
-  }
-
-  private async put(
-    pathname: string,
-    body: BodyInit,
-    contentType: string,
-    { randomSuffix }: { randomSuffix: boolean },
-  ): Promise<{ url: string; downloadUrl?: string }> {
-    const res = await fetch(`${BLOB_API}/${pathname}`, {
-      method: "PUT",
-      headers: this.headers({
-        "x-content-type": contentType,
-        "x-add-random-suffix": randomSuffix ? "1" : "0",
-        "x-allow-overwrite": "1",
-        "x-access": "public",
-      }),
-      body,
-      cache: "no-store",
-    });
-    if (!res.ok) {
-      throw new Error(`Blob write failed: ${res.status} ${await res.text()}`);
-    }
-    return (await res.json()) as { url: string; downloadUrl?: string };
   }
 
   async write(data: unknown): Promise<void> {
-    await this.put(
-      this.contentPath,
-      `${JSON.stringify(data, null, 2)}\n`,
-      "application/json",
-      { randomSuffix: false },
-    );
+    const file = (await this.bucket()).file(this.contentPath);
+    await file.save(`${JSON.stringify(data, null, 2)}\n`, {
+      contentType: "application/json",
+      // The panel is the only writer and it saves a whole section at a time,
+      // so the useful guarantee is that a reader never sees a stale cached
+      // copy — not that two writers are serialised.
+      metadata: { cacheControl: "no-store" },
+    });
   }
 
   async saveFile(
@@ -230,15 +189,28 @@ class BlobBackend implements StorageBackend {
     safe: SafeName,
     kind: UploadKind,
   ): Promise<string> {
-    const saved = await this.put(
-      blobPath(this.prefix, safe),
-      await file.arrayBuffer(),
-      safe.contentType,
-      { randomSuffix: false },
+    const name = this.path("uploads", safe.token, safe.name);
+    const target = (await this.bucket()).file(name);
+
+    const { Readable } = await import("node:stream");
+    const { pipeline } = await import("node:stream/promises");
+    await pipeline(
+      Readable.fromWeb(file.stream() as Parameters<typeof Readable.fromWeb>[0]),
+      target.createWriteStream({
+        resumable: file.size > 8 * 1024 * 1024,
+        contentType: safe.contentType,
+        metadata: {
+          cacheControl: "public, max-age=31536000, immutable",
+          // A filing should land in the visitor's downloads named the way it
+          // was uploaded, rather than opening in a tab.
+          ...(kind === "document"
+            ? { contentDisposition: `attachment; filename="${safe.name}"` }
+            : {}),
+        },
+      }),
     );
-    // A filing should land in the visitor's downloads rather than open in a
-    // tab; `downloadUrl` is the same object served with that disposition.
-    return kind === "document" ? (saved.downloadUrl ?? saved.url) : saved.url;
+
+    return `https://storage.googleapis.com/${this.bucketName}/${name}`;
   }
 }
 
@@ -248,8 +220,13 @@ let backend: StorageBackend | null = null;
 
 export function getBackend(): StorageBackend {
   if (!backend) {
-    const token = process.env.BLOB_READ_WRITE_TOKEN;
-    backend = token ? new BlobBackend(token) : new FileBackend();
+    const bucket = process.env.GCS_BUCKET;
+    backend = bucket ? new GCSBackend(bucket) : new FileBackend();
   }
   return backend;
+}
+
+/** Test seam: forget the chosen backend so the next call re-reads the env. */
+export function resetBackend() {
+  backend = null;
 }

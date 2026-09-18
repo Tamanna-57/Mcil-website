@@ -290,7 +290,7 @@ function Row({ doc, index }: { doc: ReportDoc; index: number }) {
         <button
           type="button"
           disabled
-          title="This document has not been uploaded yet"
+          title="This document is not available yet"
           className="rp-download flex shrink-0 items-center gap-2 text-xs font-semibold tracking-[0.04em] sm:text-sm"
         >
           Download

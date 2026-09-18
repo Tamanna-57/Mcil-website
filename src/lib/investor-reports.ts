@@ -17,7 +17,7 @@ export type ReportDoc = {
   title: string;
   /** ISO yyyy-mm-dd. Formatted for display; also what the list sorts on. */
   date: string;
-  /** Path to the file under `public/`. Absent until the document is uploaded. */
+  /** URL of the file to download. Absent until the document is available. */
   href?: string;
 };
 
