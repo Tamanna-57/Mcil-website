@@ -3,22 +3,27 @@
 import Image from "next/image";
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
-  IR_SLIDE_DURATION,
-  investorSlides,
   type HeroMetric,
+  investorSlides as defaultSlides,
+  IR_SLIDE_DURATION,
   type InvestorSlide,
 } from "@/lib/investor-hero";
 
-export default function InvestorHero() {
+export default function InvestorHero({
+  slides = defaultSlides,
+}: {
+  slides?: InvestorSlide[];
+}) {
   const [index, setIndex] = useState(0);
   const [paused, setPaused] = useState(false);
   const plateRefs = useRef<(HTMLDivElement | null)[]>([]);
 
-  const go = useCallback((delta: number) => {
-    setIndex(
-      (i) => (i + delta + investorSlides.length) % investorSlides.length,
-    );
-  }, []);
+  const go = useCallback(
+    (delta: number) => {
+      setIndex((i) => (i + delta + slides.length) % slides.length);
+    },
+    [slides.length],
+  );
 
   useEffect(() => {
     if (paused) return;
@@ -37,7 +42,8 @@ export default function InvestorHero() {
     }
   }, [index]);
 
-  const slide = investorSlides[index];
+  const slide = slides[index];
+  if (!slide) return null;
 
   return (
     <section
@@ -49,7 +55,7 @@ export default function InvestorHero() {
       onFocusCapture={() => setPaused(true)}
       onBlurCapture={() => setPaused(false)}
     >
-      {investorSlides.map((s, i) => (
+      {slides.map((s, i) => (
         <div
           key={s.id}
           className="absolute inset-0 transition-opacity ease-[cubic-bezier(0.4,0,0.2,1)] motion-reduce:transition-none"
@@ -102,6 +108,7 @@ export default function InvestorHero() {
       {slide.banner ? <Banner key={`b-${slide.id}`} slide={slide} /> : null}
 
       <Controls
+        slides={slides}
         index={index}
         onPrev={() => go(-1)}
         onNext={() => go(1)}
@@ -319,12 +326,14 @@ function HatchMark() {
 }
 
 function Controls({
+  slides,
   index,
   onPrev,
   onNext,
   onSelect,
   paused,
 }: {
+  slides: InvestorSlide[];
   index: number;
   onPrev: () => void;
   onNext: () => void;
@@ -338,7 +347,7 @@ function Controls({
         role="tablist"
         aria-label="Choose a slide"
       >
-        {investorSlides.map((s, i) => (
+        {slides.map((s, i) => (
           <button
             key={s.id}
             type="button"

@@ -3,10 +3,11 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
   formatReportDate,
-  REPORTS_PAGE_SIZE,
-  reportCategories,
-  reportsHeading,
+  type ReportCategory,
+  reportCategories as defaultCategories,
   type ReportDoc,
+  REPORTS_PAGE_SIZE,
+  reportsHeading as defaultHeading,
 } from "@/lib/investor-reports";
 
 /**
@@ -19,15 +20,21 @@ import {
  * active sub-category in place rather than routing anywhere — the documents
  * themselves are not attached yet (see src/lib/investor-reports.ts).
  */
-export default function InvestorReports() {
+export default function InvestorReports({
+  heading = defaultHeading,
+  categories = defaultCategories,
+}: {
+  heading?: { eyebrow: string; title: string; standfirst: string };
+  categories?: ReportCategory[];
+}) {
   const sectionRef = useRef<HTMLElement | null>(null);
   const [visible, setVisible] = useState(false);
-  const [categoryId, setCategoryId] = useState(reportCategories[0].id);
-  const [subId, setSubId] = useState(reportCategories[0].subCategories[0].id);
+  const [categoryId, setCategoryId] = useState(categories[0].id);
+  const [subId, setSubId] = useState(categories[0].subCategories[0].id);
   const [expanded, setExpanded] = useState(false);
 
   const category =
-    reportCategories.find((c) => c.id === categoryId) ?? reportCategories[0];
+    categories.find((c) => c.id === categoryId) ?? categories[0];
   const sub =
     category.subCategories.find((s) => s.id === subId) ??
     category.subCategories[0];
@@ -55,13 +62,16 @@ export default function InvestorReports() {
     return () => observer.disconnect();
   }, []);
 
-  const selectCategory = useCallback((id: string) => {
-    const next = reportCategories.find((c) => c.id === id);
-    if (!next) return;
-    setCategoryId(next.id);
-    setSubId(next.subCategories[0].id);
-    setExpanded(false);
-  }, []);
+  const selectCategory = useCallback(
+    (id: string) => {
+      const next = categories.find((c) => c.id === id);
+      if (!next?.subCategories[0]) return;
+      setCategoryId(next.id);
+      setSubId(next.subCategories[0].id);
+      setExpanded(false);
+    },
+    [categories],
+  );
 
   /* The hero CTAs and the header menu link straight at a category
      (/investors#financials, #compliance, #policies, #letters), so the hash
@@ -69,12 +79,12 @@ export default function InvestorReports() {
   useEffect(() => {
     const apply = () => {
       const id = window.location.hash.replace("#", "");
-      if (reportCategories.some((c) => c.id === id)) selectCategory(id);
+      if (categories.some((c) => c.id === id)) selectCategory(id);
     };
     apply();
     window.addEventListener("hashchange", apply);
     return () => window.removeEventListener("hashchange", apply);
-  }, [selectCategory]);
+  }, [categories, selectCategory]);
 
   /* Newest first, whatever order the rows were written in. The React compiler
      memoizes this; a manual useMemo on `sub` is what it cannot preserve. */
@@ -95,7 +105,7 @@ export default function InvestorReports() {
       {/* Anchor targets, one per category, sitting at the top of the band so a
           hash brings the heading and the tabs into view under the fixed
           header rather than the card alone. */}
-      {reportCategories.map((c) => (
+      {categories.map((c) => (
         <span
           key={c.id}
           id={c.id}
@@ -110,21 +120,21 @@ export default function InvestorReports() {
             className="rp-rise text-[11px] font-semibold tracking-[0.24em] text-accent uppercase"
             data-visible={visible}
           >
-            [ {reportsHeading.eyebrow} ]
+            [ {heading.eyebrow} ]
           </p>
           <h2
             className="rp-rise type-display mt-4 text-[clamp(1.7rem,5.4vw,3.9rem)] leading-[1.15] text-steel-900 uppercase"
             data-visible={visible}
             style={{ animationDelay: "80ms" }}
           >
-            {reportsHeading.title}
+            {heading.title}
           </h2>
           <p
             className="rp-rise mx-auto mt-4 max-w-2xl text-sm text-steel-800 sm:text-base"
             data-visible={visible}
             style={{ animationDelay: "160ms" }}
           >
-            {reportsHeading.standfirst}
+            {heading.standfirst}
           </p>
         </header>
 
@@ -139,7 +149,7 @@ export default function InvestorReports() {
           data-visible={visible}
           style={{ animationDelay: "240ms" }}
         >
-          {reportCategories.map((c, i) => {
+          {categories.map((c, i) => {
             const active = c.id === category.id;
             return (
               <div key={c.id} className="flex items-center gap-x-2 sm:gap-x-3">
@@ -159,7 +169,7 @@ export default function InvestorReports() {
                 >
                   {c.label}
                 </button>
-                {i < reportCategories.length - 1 && (
+                {i < categories.length - 1 && (
                   <span className="text-steel-900/25 select-none" aria-hidden>
                     |
                   </span>
@@ -280,7 +290,7 @@ function Row({ doc, index }: { doc: ReportDoc; index: number }) {
         <button
           type="button"
           disabled
-          title="This document has not been uploaded yet"
+          title="This document is not available yet"
           className="rp-download flex shrink-0 items-center gap-2 text-xs font-semibold tracking-[0.04em] sm:text-sm"
         >
           Download

@@ -3,11 +3,11 @@
 import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
 import {
-  COUNT_DURATION,
-  highlights,
-  highlightsHeading,
   type Bar,
+  COUNT_DURATION,
   type Highlight,
+  highlights as defaultHighlights,
+  highlightsHeading as defaultHeading,
 } from "@/lib/investor-highlights";
 
 /** Hero photographs reused as thumbnails on the wide card. */
@@ -20,7 +20,13 @@ const THUMBS = [
   { src: "/images/hero-1.jpg", alt: "Operators finishing steel sections" },
 ];
 
-export default function InvestorHighlights() {
+export default function InvestorHighlights({
+  heading = defaultHeading,
+  items = defaultHighlights,
+}: {
+  heading?: { eyebrow: string; title: string; standfirst: string };
+  items?: Highlight[];
+}) {
   const sectionRef = useRef<HTMLElement | null>(null);
   const [started, setStarted] = useState(false);
 
@@ -50,7 +56,7 @@ export default function InvestorHighlights() {
     return () => observer.disconnect();
   }, []);
 
-  const [tall, ...rest] = highlights;
+  const [tall, ...rest] = items;
 
   return (
     <section
@@ -64,21 +70,21 @@ export default function InvestorHighlights() {
             className="hl-reveal text-[11px] font-semibold tracking-[0.24em] text-accent uppercase"
             data-visible={started}
           >
-            [ {highlightsHeading.eyebrow} ]
+            [ {heading.eyebrow} ]
           </p>
           <h2
             className="hl-reveal type-display mt-4 text-[clamp(1.6rem,4.6vw,3.1rem)] leading-[1.15] text-steel-900 uppercase"
             data-visible={started}
             style={{ animationDelay: "80ms" }}
           >
-            {highlightsHeading.title}
+            {heading.title}
           </h2>
           <p
             className="hl-reveal mx-auto mt-4 max-w-xl text-sm text-steel-800 sm:text-base"
             data-visible={started}
             style={{ animationDelay: "160ms" }}
           >
-            {highlightsHeading.standfirst}
+            {heading.standfirst}
           </p>
         </header>
 

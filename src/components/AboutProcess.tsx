@@ -8,7 +8,15 @@ import {
   type ProcessStep,
 } from "@/lib/about-process";
 
-export default function AboutProcess() {
+export default function AboutProcess({
+  eyebrow = "Process",
+  title = "How a coil is made",
+  steps = processSteps,
+}: {
+  eyebrow?: string;
+  title?: string;
+  steps?: ProcessStep[];
+}) {
   const trackRef = useRef<HTMLDivElement | null>(null);
   const [step, setStep] = useState(0);
   const [progress, setProgress] = useState(0);
@@ -34,8 +42,8 @@ export default function AboutProcess() {
       setProgress(p);
       setStep((current) => {
         const next = Math.min(
-          processSteps.length - 1,
-          Math.floor(p * processSteps.length),
+          steps.length - 1,
+          Math.floor(p * steps.length),
         );
         return next === current ? current : next;
       });
@@ -53,33 +61,34 @@ export default function AboutProcess() {
       window.removeEventListener("scroll", onScroll);
       window.removeEventListener("resize", onScroll);
     };
-  }, []);
+  }, [steps.length]);
 
   /* Clicking a tab scrolls to the slice of track that owns that step. */
   const goToStep = useCallback((i: number) => {
     const el = trackRef.current;
     if (!el) return;
     const travel = el.offsetHeight - window.innerHeight;
-    const target = el.offsetTop + (travel * (i + 0.5)) / processSteps.length;
+    const target = el.offsetTop + (travel * (i + 0.5)) / steps.length;
     window.scrollTo({ top: target, behavior: "smooth" });
-  }, []);
+  }, [steps.length]);
 
-  const active = processSteps[step];
+  const active = steps[step] ?? steps[0];
+  if (!active) return null;
 
   return (
     <section id="process" className="bg-background">
       <div
         ref={trackRef}
-        style={{ height: `${processSteps.length * SCROLL_PER_STEP}vh` }}
+        style={{ height: `${steps.length * SCROLL_PER_STEP}vh` }}
       >
         <div className="ap-pin sticky top-0 flex h-[100svh] items-center px-4 sm:px-8 lg:px-[5vw]">
           <div className="mx-auto w-full max-w-6xl">
             <header className="text-center">
               <p className="text-[11px] font-semibold tracking-[0.24em] text-accent uppercase">
-                [ Process ]
+                [ {eyebrow} ]
               </p>
               <h2 className="ap-title type-display mt-3 text-[clamp(1.5rem,4vw,2.6rem)] leading-[1.15] text-steel-900 uppercase">
-                How a coil is made
+                {title}
               </h2>
             </header>
 
@@ -90,7 +99,7 @@ export default function AboutProcess() {
                 aria-label="Production stage"
                 className="flex max-w-full gap-1 overflow-x-auto rounded-full bg-surface p-1.5 ring-1 ring-steel-900/10"
               >
-                {processSteps.map((s, i) => (
+                {steps.map((s, i) => (
                   <button
                     key={s.id}
                     type="button"
@@ -114,7 +123,7 @@ export default function AboutProcess() {
 
             <div className="ap-panel mt-6 grid items-center gap-8 rounded-3xl bg-surface p-5 ring-1 ring-steel-900/10 sm:p-7 lg:grid-cols-[minmax(0,0.78fr)_minmax(0,1fr)] lg:gap-12 lg:p-9">
               <Copy step={active} index={step} />
-              <Stage current={step} />
+              <Stage steps={steps} current={step} />
             </div>
 
             {/* Continuous rail, so the pinned panel still reads as scrolling. */}
@@ -176,10 +185,10 @@ function Copy({ step, index }: { step: ProcessStep; index: number }) {
  * off to the right and steps already passed sit off to the left, so advancing
  * reads as one continuous right-to-left travel.
  */
-function Stage({ current }: { current: number }) {
+function Stage({ steps, current }: { steps: ProcessStep[]; current: number }) {
   return (
     <div className="ap-figure relative order-1 aspect-[16/10] overflow-hidden rounded-2xl bg-steel-900/5 lg:order-2">
-      {processSteps.map((s, i) => {
+      {steps.map((s, i) => {
         const offset = i - current;
         return (
           <div

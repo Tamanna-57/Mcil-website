@@ -16,8 +16,6 @@ export type ContactLocation = {
   address: string;
   phone: string;
   mapQuery: string;
-  /** Where the embed's own "view larger map" would go. */
-  mapUrl: string;
 };
 
 /*
@@ -47,7 +45,6 @@ export const locations: ContactLocation[] = [
     address: company.registeredOffice,
     phone: company.phone,
     mapQuery: queries.office,
-    mapUrl: `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(queries.office)}`,
   },
   {
     id: "works",
@@ -56,10 +53,15 @@ export const locations: ContactLocation[] = [
     address: company.works,
     phone: company.worksPhone,
     mapQuery: queries.works,
-    mapUrl: `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(queries.works)}`,
   },
 ];
 
 export function mapEmbed(location: ContactLocation) {
   return embedSrc(location.mapQuery);
+}
+
+/** Where the embed's own "view larger map" goes. */
+export function mapLink(location: ContactLocation) {
+  const q = encodeURIComponent(location.mapQuery);
+  return `https://www.google.com/maps/search/?api=1&query=${q}`;
 }

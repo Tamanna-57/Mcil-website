@@ -3,20 +3,28 @@
 import { useEffect, useId, useMemo, useRef, useState } from "react";
 import {
   BAR_STAGGER,
-  PER_SHARE_METRICS,
-  performanceHeading,
-  performanceMetrics,
-  USD_MN_PER_INR_CR,
   type MetricKind,
+  PER_SHARE_METRICS,
+  performanceHeading as defaultHeading,
   type PerformanceMetric,
+  performanceMetrics as defaultMetrics,
+  USD_MN_PER_INR_CR,
 } from "@/lib/investor-performance";
 
 type Currency = "inr" | "usd";
 
-export default function InvestorPerformance() {
+export default function InvestorPerformance({
+  title = defaultHeading.title,
+  standfirst = defaultHeading.standfirst,
+  metrics = defaultMetrics,
+}: {
+  title?: string;
+  standfirst?: string;
+  metrics?: PerformanceMetric[];
+}) {
   const sectionRef = useRef<HTMLElement | null>(null);
   const [visible, setVisible] = useState(false);
-  const [metricId, setMetricId] = useState(performanceMetrics[0].id);
+  const [metricId, setMetricId] = useState(metrics[0].id);
   const [currency, setCurrency] = useState<Currency>("inr");
   const groupName = useId();
 
@@ -45,7 +53,7 @@ export default function InvestorPerformance() {
   }, []);
 
   const metric =
-    performanceMetrics.find((m) => m.id === metricId) ?? performanceMetrics[0];
+    metrics.find((m) => m.id === metricId) ?? metrics[0];
 
   /* Headroom above the tallest bar so its label never crowds the card edge. */
   const scaleMax = useMemo(
@@ -76,10 +84,10 @@ export default function InvestorPerformance() {
       <div className="mx-auto w-full max-w-6xl">
         <header className="text-center">
           <h2 className="type-display text-[clamp(1.7rem,5.4vw,3.9rem)] leading-[1.15] text-steel-900 uppercase">
-            {performanceHeading.title}
+            {title}
           </h2>
           <p className="mt-4 text-sm tracking-[0.04em] text-steel-800 sm:text-base">
-            {performanceHeading.standfirst}
+            {standfirst}
           </p>
         </header>
 
@@ -111,7 +119,7 @@ export default function InvestorPerformance() {
 
         <div className="mt-8 grid gap-10 lg:grid-cols-[minmax(0,15rem)_minmax(0,1fr)] lg:gap-14">
           <div role="tablist" aria-label="Metric" className="self-start">
-            {performanceMetrics.map((m) => {
+            {metrics.map((m) => {
               const active = m.id === metric.id;
               return (
                 <button
