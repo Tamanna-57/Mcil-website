@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import ContactCard from "@/components/ContactCard";
 import ContactDetails from "@/components/ContactDetails";
+import SiteFooter from "@/components/SiteFooter";
+import { isAdmin } from "@/lib/admin/session";
 import { getContent } from "@/lib/content/store";
 
 export const metadata: Metadata = {
@@ -12,7 +14,10 @@ export const metadata: Metadata = {
 export const dynamic = "force-dynamic";
 
 export default async function ContactPage() {
-  const { contact, company } = await getContent();
+  const [{ contact, company }, admin] = await Promise.all([
+    getContent(),
+    isAdmin(),
+  ]);
 
   return (
     <>
@@ -35,12 +40,11 @@ export default async function ContactPage() {
       <main className="contact-ground px-5 pt-24 pb-16 sm:px-8 sm:pt-28 lg:px-[5vw] lg:pb-24">
         <div className="mx-auto w-full max-w-5xl">
           <ContactCard locations={contact.locations} />
-          <ContactDetails
-            locations={contact.locations}
-            company={company}
-          />
+          <ContactDetails locations={contact.locations} company={company} />
         </div>
       </main>
+
+      <SiteFooter company={company} isAdmin={admin} />
     </>
   );
 }
