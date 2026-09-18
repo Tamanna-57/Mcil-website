@@ -1,8 +1,11 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { company } from "@/lib/company";
-import { locations } from "@/lib/contact-locations";
+import { company as defaultCompany } from "@/lib/company";
+import {
+  type ContactLocation,
+  locations as defaultLocations,
+} from "@/lib/contact-locations";
 
 function telHref(phone: string) {
   /* Works numbers are published as a pair ("0129-2307602 / 2307422"); the link
@@ -11,7 +14,13 @@ function telHref(phone: string) {
 }
 
 /** The written details under the card — small, on the same blue ground. */
-export default function ContactDetails() {
+export default function ContactDetails({
+  locations = defaultLocations,
+  company = defaultCompany,
+}: {
+  locations?: ContactLocation[];
+  company?: typeof defaultCompany;
+}) {
   const sectionRef = useRef<HTMLElement>(null);
   const [visible, setVisible] = useState(false);
 

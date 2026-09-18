@@ -2,9 +2,14 @@
 
 import { useEffect, useState } from "react";
 import ContactForm from "@/components/ContactForm";
-import { locations, mapEmbed } from "@/lib/contact-locations";
+import {
+  type ContactLocation,
+  locations as defaultLocations,
+  mapEmbed,
+  mapLink,
+} from "@/lib/contact-locations";
 
-const firstId = locations[0].id;
+
 
 /** Mount the remaining maps when the browser is next idle, so warming them
     never competes with the one the visitor is actually looking at. */
@@ -33,7 +38,15 @@ function whenIdle(run: () => void) {
  * rectangle; and each location keeps its own frame once warmed, so switching
  * between them is immediate rather than a fresh load of Google's app.
  */
-export default function ContactCard() {
+export default function ContactCard({
+  locations = defaultLocations,
+}: {
+  locations?: ContactLocation[];
+}) {
+  /* Which frame is in the server-rendered HTML, and so the one whose load
+     the effects below wait on. */
+  const firstId = locations[0]?.id ?? "";
+
   const [activeId, setActiveId] = useState(firstId);
   const [loadedIds, setLoadedIds] = useState<string[]>([]);
   const [mountedIds, setMountedIds] = useState<string[]>([firstId]);
@@ -61,12 +74,12 @@ export default function ContactCard() {
     }
     window.addEventListener("load", onLoad, { once: true });
     return () => window.removeEventListener("load", onLoad);
-  }, [firstLoaded]);
+  }, [firstLoaded, firstId]);
 
   useEffect(() => {
     if (allMounted || !firstLoaded) return;
     return whenIdle(() => setMountedIds(locations.map((l) => l.id)));
-  }, [allMounted, firstLoaded]);
+  }, [allMounted, firstLoaded, locations]);
 
   const mount = (id: string) =>
     setMountedIds((ids) => (ids.includes(id) ? ids : [...ids, id]));
@@ -163,7 +176,7 @@ export default function ContactCard() {
           })}
 
           <a
-            href={active.mapUrl}
+            href={mapLink(active)}
             target="_blank"
             rel="noreferrer"
             className="cc-pill ml-auto rounded-full bg-white/70 px-4 py-2 text-[11px] font-semibold tracking-[0.1em] text-steel-900 uppercase transition-colors hover:bg-white"

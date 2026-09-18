@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, type FormEvent } from "react";
-import { company } from "@/lib/company";
+import { company as defaultCompany } from "@/lib/company";
 
 /**
  * The lower half of the contact card: how to reach us on the left, the message
@@ -12,7 +12,13 @@ import { company } from "@/lib/company";
  * they typed already in the body. Swap the handler for a POST once there is an
  * endpoint to post to; the markup does not change.
  */
-export default function ContactForm({ address }: { address?: string }) {
+export default function ContactForm({
+  address,
+  company = defaultCompany,
+}: {
+  address?: string;
+  company?: typeof defaultCompany;
+}) {
   const [sent, setSent] = useState(false);
 
   function onSubmit(event: FormEvent<HTMLFormElement>) {

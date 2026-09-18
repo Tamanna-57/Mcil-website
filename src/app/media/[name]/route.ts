@@ -1,0 +1,74 @@
+import { createReadStream } from "node:fs";
+import { stat } from "node:fs/promises";
+import path from "node:path";
+import { Readable } from "node:stream";
+import { NextResponse } from "next/server";
+import { getBackend } from "@/lib/content/storage";
+
+export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
+
+/**
+ * Serves images uploaded from the admin panel, for deployments using the file
+ * backend.
+ *
+ * They cannot live in `public/`: Next serves that directory as it stood when
+ * the site was built, so a file written there afterwards is a 404. This route
+ * reads the upload directory at request time instead, which is what makes an
+ * image usable the moment it is uploaded. On Vercel the Blob backend returns
+ * absolute URLs and nothing reaches this route at all.
+ */
+
+const TYPES: Record<string, string> = {
+  ".jpg": "image/jpeg",
+  ".jpeg": "image/jpeg",
+  ".png": "image/png",
+  ".webp": "image/webp",
+  ".avif": "image/avif",
+  ".gif": "image/gif",
+  ".svg": "image/svg+xml",
+};
+
+export async function GET(
+  _request: Request,
+  { params }: { params: Promise<{ name: string }> },
+) {
+  const { name } = await params;
+
+  // The name is the only thing an outside caller controls, so it has to be a
+  // bare filename — no separators, no traversal, nothing but a known type.
+  const safe = path.basename(name);
+  const type = TYPES[path.extname(safe).toLowerCase()];
+  if (safe !== name || !type) {
+    return new NextResponse("Not found", { status: 404 });
+  }
+
+  const backend = getBackend();
+  if (!backend.uploadDir) {
+    return new NextResponse("Not found", { status: 404 });
+  }
+
+  const file = path.join(await backend.uploadDir(), safe);
+  let size: number;
+  try {
+    const info = await stat(file);
+    if (!info.isFile()) throw new Error("not a file");
+    size = info.size;
+  } catch {
+    return new NextResponse("Not found", { status: 404 });
+  }
+
+  const body = Readable.toWeb(
+    createReadStream(file),
+  ) as unknown as ReadableStream;
+
+  return new NextResponse(body, {
+    headers: {
+      "content-type": type,
+      "content-length": String(size),
+      // The filename carries a random token, so a given URL never changes
+      // content and can be cached hard.
+      "cache-control": "public, max-age=31536000, immutable",
+    },
+  });
+}

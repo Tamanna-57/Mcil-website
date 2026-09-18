@@ -12,6 +12,91 @@ npm run build   # production build
 npm run lint
 ```
 
+## The admin panel
+
+`/admin` is a password-protected editor for the site's text and images. Nothing
+on it requires touching the code: whoever has the password can rewrite copy,
+reorder and add list items (hero slides, team members, products, report rows)
+and upload photographs, and the change is live on the next page load.
+
+### Signing in
+
+Set `ADMIN_PASSWORD` on the deployment and go to `/admin`. There are no
+per-user accounts — it is one shared password, which is what a small office
+actually wants. With no password set the panel refuses every login rather than
+falling back to a default, so a deployment that forgot the variable is closed
+rather than open.
+
+To run it locally:
+
+```bash
+cp .env.example .env.local   # then fill in ADMIN_PASSWORD
+npm run dev                  # http://localhost:3000/admin
+```
+
+### How editing works
+
+The copy in `src/lib/*.ts` stays the baseline. What an admin saves is stored
+separately, as an *override*, and merged over that baseline on every request.
+Two things follow:
+
+- A section nobody has edited keeps tracking the repo, so a copy change made in
+  code still reaches the site.
+- **Restore original** on any section deletes its override and brings back
+  exactly what the repo ships. Nothing is lost by experimenting.
+
+Objects merge key by key; lists replace wholesale, because a list is something
+an admin curates and a cleverer merge would make deleting an item impossible.
+
+### Adding a new editable field
+
+Two steps, both mechanical:
+
+1. Add the field to `SiteContent` in `src/lib/content/types.ts` and give it a
+   baseline in `src/lib/content/defaults.ts`.
+2. Describe it in `src/lib/admin/schema.ts`. The dashboard has no hand-written
+   forms — it walks that description and renders the right control, so a new
+   `{ type: "text", key: "...", label: "..." }` is all a new text box takes.
+
+Available field types: `text`, `textarea`, `number`, `image`, `url`, `date`,
+`select`, `boolean`, `strings` (a list of plain strings), `group` (a nested
+object, optionally addable and removable) and `list` (a repeatable row set with
+add, delete, duplicate and reorder).
+
+### Where content is stored
+
+Two interchangeable backends, chosen by environment, so the whole thing is
+testable on a laptop before it touches a cloud account:
+
+| Backend            | Chosen when                   | Content             | Uploads                                        |
+| ------------------ | ----------------------------- | ------------------- | ---------------------------------------------- |
+| **File** (default) | `BLOB_READ_WRITE_TOKEN` unset | `content/site.json` | `content/uploads/`, served by `/media/[name]`   |
+| **Vercel Blob**    | `BLOB_READ_WRITE_TOKEN` set   | one Blob object     | Blob, as absolute URLs                         |
+
+The file backend needs a **persistent disk**, so it suits local development,
+Docker, Render or a VPS — point `CONTENT_DIR` at the mounted volume. On Vercel
+the filesystem is read-only, so attach a Blob store to the project; Vercel then
+sets `BLOB_READ_WRITE_TOKEN` itself and the panel switches over with no code
+change.
+
+Uploads deliberately do not go in `public/`: Next serves that directory as it
+stood when the site was built, so a file written there afterwards is a 404.
+
+If the store is ever unreachable or holding bad JSON the site falls back to the
+copy in the repo and logs the reason — a broken store degrades the site to its
+defaults rather than taking it down.
+
+### Environment variables
+
+| Variable                | Required | What it does                                                   |
+| ----------------------- | -------- | -------------------------------------------------------------- |
+| `ADMIN_PASSWORD`        | yes      | The shared admin password.                                      |
+| `ADMIN_SESSION_SECRET`  | no       | Signs the session cookie. Defaults to `ADMIN_PASSWORD`.         |
+| `BLOB_READ_WRITE_TOKEN` | no       | Present → store content in Vercel Blob instead of on disk.      |
+| `BLOB_PREFIX`           | no       | Blob path prefix. Default `mcil-content`.                       |
+| `CONTENT_DIR`           | no       | File backend directory. Default `./content`.                    |
+| `CONTENT_CACHE_MS`      | no       | Hold the last store read this long. Default `0` — always fresh. |
+
 ## What is built so far
 
 The hero section, modelled on the Aditya Birla Group homepage:
@@ -31,6 +116,10 @@ The hero section, modelled on the Aditya Birla Group homepage:
   indicator reads as full, but the crossfade between slides is preserved.
 
 ## Editing the hero
+
+Slide order, sector words, alt text, focal points and the standfirst are all
+editable from `/admin` — the table below is where their defaults live, and
+what the site falls back to when nothing has been saved.
 
 | What                                                    | Where                           |
 | ------------------------------------------------------- | ------------------------------- |

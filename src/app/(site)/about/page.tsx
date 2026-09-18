@@ -4,6 +4,7 @@ import Link from "next/link";
 import AboutIntro from "@/components/AboutIntro";
 import AboutProcess from "@/components/AboutProcess";
 import AboutTeam from "@/components/AboutTeam";
+import { getContent } from "@/lib/content/store";
 
 export const metadata: Metadata = {
   title: "About Us — Metal Coatings (India) Ltd",
@@ -11,14 +12,18 @@ export const metadata: Metadata = {
     "MCIL manufactures cold rolled steel strips, coils and HRPO steel. How a coil is made, from hot rolled input through to finished, certified despatch.",
 };
 
-export default function AboutPage() {
+export const dynamic = "force-dynamic";
+
+export default async function AboutPage() {
+  const { about } = await getContent();
+
   return (
     <main>
       {/* Page hero */}
       <section className="relative isolate flex min-h-[72svh] items-center overflow-hidden bg-steel-900 px-6 pt-32 pb-20 sm:px-10 lg:px-[6.5vw]">
         <Image
-          src="/images/process-4.jpg"
-          alt="Finished cold rolled coils lined up for despatch"
+          src={about.hero.image}
+          alt={about.hero.alt}
           fill
           priority
           sizes="100vw"
@@ -30,42 +35,56 @@ export default function AboutPage() {
         />
         <div className="relative z-10 mx-auto w-full max-w-6xl">
           <p className="text-[11px] font-semibold tracking-[0.24em] text-brand-pale uppercase">
-            [ About Us ]
+            [ {about.hero.eyebrow} ]
           </p>
           <h1 className="type-display mt-5 max-w-3xl text-[clamp(1.9rem,5.2vw,3.6rem)] leading-[1.12] text-white uppercase">
-            Steel finished to a tolerance, not a target
+            {about.hero.title}
           </h1>
           <p className="mt-6 max-w-xl text-sm leading-relaxed text-white/80 sm:text-base">
-            Metal Coatings (India) Ltd has been cold rolling steel since 1994,
-            supplying auto components, white goods, electrical equipment and
-            power transmission manufacturers across India.
+            {about.hero.standfirst}
           </p>
         </div>
       </section>
 
-      <AboutProcess />
+      <AboutProcess
+        eyebrow={about.process.eyebrow}
+        title={about.process.title}
+        steps={about.process.steps}
+      />
 
-      <AboutIntro />
+      <AboutIntro
+        eyebrow={about.advantage.eyebrow}
+        title={about.advantage.title}
+        standfirst={about.advantage.standfirst}
+        points={about.advantage.points}
+        image={about.advantage.image}
+        alt={about.advantage.alt}
+        badgeLabel={about.advantage.badgeLabel}
+        badgeText={about.advantage.badgeText}
+      />
 
-      <AboutTeam />
+      <AboutTeam
+        heading={about.team.heading}
+        members={about.team.members}
+        footnote={about.team.footnote}
+      />
 
       {/* Closing */}
       <section className="bg-background px-6 pb-24 sm:px-10 lg:px-[6.5vw]">
         <div className="mx-auto flex w-full max-w-6xl flex-col items-start gap-6 rounded-3xl bg-steel-900 p-8 text-white sm:flex-row sm:items-center sm:justify-between sm:p-10">
           <div>
             <h2 className="font-display text-xl font-semibold sm:text-2xl">
-              Need a gauge we have not listed?
+              {about.closing.title}
             </h2>
             <p className="mt-2 max-w-md text-sm text-white/75">
-              Send us the specification and we will come back with what the line
-              can hold.
+              {about.closing.body}
             </p>
           </div>
           <Link
-            href="/contact"
+            href={about.closing.ctaHref}
             className="inline-flex shrink-0 items-center gap-2.5 rounded-full bg-white px-6 py-3 text-[13px] font-semibold text-steel-900 transition-colors hover:bg-brand-pale"
           >
-            Talk to Us
+            {about.closing.ctaLabel}
             <svg
               width="15"
               height="10"

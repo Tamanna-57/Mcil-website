@@ -5,10 +5,25 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import {
   HERO_SLIDE_DURATION,
   HERO_WORD_DURATION,
+  type HeroSlide,
   heroSlides,
 } from "@/lib/hero-slides";
 
-export default function Hero() {
+const DEFAULT_STANDFIRST =
+  "Cold rolled and HRPO steel strips engineered for auto components, white goods, electrical equipment and power transmission.";
+
+/**
+ * Slides and standfirst come from the content store, through the page. The
+ * defaults keep the component usable on its own and are what renders if the
+ * store is ever unreachable.
+ */
+export default function Hero({
+  slides = heroSlides,
+  standfirst = DEFAULT_STANDFIRST,
+}: {
+  slides?: HeroSlide[];
+  standfirst?: string;
+}) {
   const [index, setIndex] = useState(0);
   const [outgoing, setOutgoing] = useState<number | null>(null);
   const plateRefs = useRef<(HTMLDivElement | null)[]>([]);
@@ -26,11 +41,11 @@ export default function Hero() {
   useEffect(() => {
     if (document.hidden) return;
     const timer = window.setTimeout(
-      () => goTo((index + 1) % heroSlides.length),
+      () => goTo((index + 1) % slides.length),
       HERO_SLIDE_DURATION,
     );
     return () => window.clearTimeout(timer);
-  }, [index, goTo]);
+  }, [index, goTo, slides.length]);
 
   useEffect(() => {
     const onVisibility = () => {
@@ -61,7 +76,8 @@ export default function Hero() {
     }
   }, [index]);
 
-  const active = heroSlides[index];
+  const active = slides[index];
+  if (!active) return null;
 
   return (
     <section
@@ -70,9 +86,9 @@ export default function Hero() {
       aria-label="MCIL capabilities"
     >
       {/* Background plates — all mounted, crossfaded by opacity. */}
-      {heroSlides.map((slide, i) => (
+      {slides.map((slide, i) => (
         <div
-          key={slide.image}
+          key={`${slide.image}-${i}`}
           className="absolute inset-0 transition-opacity ease-[cubic-bezier(0.4,0,0.2,1)] motion-reduce:transition-none"
           style={{
             opacity: i === index ? 1 : 0,
@@ -133,7 +149,7 @@ export default function Hero() {
                   className="hero-word hero-word-out absolute top-0 left-0 font-extrabold whitespace-nowrap"
                   aria-hidden
                 >
-                  {heroSlides[outgoing].sector}
+                  {slides[outgoing]?.sector}
                 </span>
               )}
               <span
@@ -146,8 +162,7 @@ export default function Hero() {
           </h1>
 
           <p className="mt-6 max-w-xl text-sm leading-relaxed text-white/75 sm:text-base">
-            Cold rolled and HRPO steel strips engineered for auto components,
-            white goods, electrical equipment and power transmission.
+            {standfirst}
           </p>
 
           {/* Slide indicators — thin rules that fill over the slide duration. */}
@@ -156,9 +171,9 @@ export default function Hero() {
             role="tablist"
             aria-label="Choose a capability"
           >
-            {heroSlides.map((slide, i) => (
+            {slides.map((slide, i) => (
               <button
-                key={slide.image}
+                key={`${slide.image}-${i}`}
                 type="button"
                 role="tab"
                 aria-selected={i === index}

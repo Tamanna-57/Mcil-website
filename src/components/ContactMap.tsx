@@ -1,14 +1,23 @@
 "use client";
 
 import { useState } from "react";
-import { locations, mapEmbed } from "@/lib/contact-locations";
+import {
+  type ContactLocation,
+  locations as defaultLocations,
+  mapEmbed,
+  mapLink,
+} from "@/lib/contact-locations";
 
 /**
  * Page opener: the map is the picture. A scrim across the top keeps the
  * transparent site header legible over whatever the map happens to be showing
  * there, and is click-through so the map underneath still pans.
  */
-export default function ContactMap() {
+export default function ContactMap({
+  locations = defaultLocations,
+}: {
+  locations?: ContactLocation[];
+}) {
   const [activeId, setActiveId] = useState(locations[0].id);
   const [loaded, setLoaded] = useState(false);
   const active = locations.find((l) => l.id === activeId) ?? locations[0];
@@ -83,7 +92,7 @@ export default function ContactMap() {
             {active.address}
           </p>
           <a
-            href={active.mapUrl}
+            href={mapLink(active)}
             target="_blank"
             rel="noreferrer"
             className="mt-3 inline-flex items-center gap-2 text-[12px] font-semibold tracking-[0.08em] text-brand-deep uppercase transition-colors hover:text-steel-900"

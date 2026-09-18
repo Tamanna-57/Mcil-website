@@ -2,28 +2,32 @@
 
 import Image from "next/image";
 import { useState } from "react";
+import {
+  advantage,
+  type AdvantagePoint,
+} from "@/lib/about-advantage";
 
-/** Placeholder copy — MCIL's own wording goes here once it is supplied. */
-const points = [
-  {
-    id: "precision",
-    title: "Precision to Gauge",
-    body: "Thickness is held to ± 0.01 mm across the width, measured continuously rather than sampled, so a coil behaves the same at its tail as at its head.",
-  },
-  {
-    id: "certified",
-    title: "Certified Quality",
-    body: "BIS certified under IS: 513:2008, licence CM/L-9512364723. Every coil ships with its heat number and test certificate.",
-  },
-  {
-    id: "supply",
-    title: "Dependable Supply",
-    body: "Three decades of supplying auto component, white goods, electrical equipment and power transmission manufacturers to schedule.",
-  },
-];
-
-export default function AboutIntro() {
-  const [open, setOpen] = useState(points[0].id);
+export default function AboutIntro({
+  eyebrow = advantage.eyebrow,
+  title = advantage.title,
+  standfirst = advantage.standfirst,
+  points = advantage.points,
+  image = advantage.image,
+  alt = advantage.alt,
+  badgeLabel = advantage.badgeLabel,
+  badgeText = advantage.badgeText,
+}: {
+  eyebrow?: string;
+  title?: string;
+  standfirst?: string;
+  points?: AdvantagePoint[];
+  image?: string;
+  alt?: string;
+  badgeLabel?: string;
+  badgeText?: string;
+}) {
+  /* The first point is open on arrival, as the reference has it. */
+  const [open, setOpen] = useState(points[0]?.id ?? "");
 
   return (
     <section
@@ -33,15 +37,13 @@ export default function AboutIntro() {
       <div className="mx-auto grid w-full max-w-6xl items-center gap-12 lg:grid-cols-[minmax(0,1fr)_minmax(0,0.8fr)] lg:gap-16">
         <div>
           <p className="text-[11px] font-semibold tracking-[0.24em] text-accent uppercase">
-            [ The MCIL Advantage ]
+            [ {eyebrow} ]
           </p>
           <h2 className="type-display mt-4 text-[clamp(1.6rem,4.2vw,2.8rem)] leading-[1.15] text-steel-900 uppercase">
-            Built for the tolerances our customers work to
+            {title}
           </h2>
           <p className="mt-5 max-w-lg text-sm leading-relaxed text-steel-800 sm:text-base">
-            A public limited company promoted by the Khandelwal family in
-            December 1994, manufacturing cold rolled steel strips, coils and
-            HRPO steel from a single integrated line.
+            {standfirst}
           </p>
 
           <dl className="mt-10">
@@ -90,8 +92,8 @@ export default function AboutIntro() {
 
         <div className="relative aspect-[3/4] overflow-hidden rounded-3xl">
           <Image
-            src="/images/hero-2.jpg"
-            alt="Cold rolled coils in the MCIL finished goods bay"
+            src={image}
+            alt={alt}
             fill
             sizes="(min-width: 1024px) 40vw, 92vw"
             className="object-cover"
@@ -106,10 +108,10 @@ export default function AboutIntro() {
             }}
           >
             <p className="text-[11px] tracking-[0.16em] uppercase opacity-80">
-              Since 1994
+              {badgeLabel}
             </p>
             <p className="mt-1 font-display text-lg font-semibold">
-              Cold Rolled · HRPO · Galvanised
+              {badgeText}
             </p>
           </div>
         </div>

@@ -69,7 +69,18 @@ const TONES: Record<
   },
 };
 
-export default function AboutTeam() {
+const DEFAULT_FOOTNOTE =
+  "Board of Directors and Key Managerial Personnel as listed in the FY2025-26 annual report.";
+
+export default function AboutTeam({
+  heading = teamHeading,
+  members = team,
+  footnote = DEFAULT_FOOTNOTE,
+}: {
+  heading?: { eyebrow: string; title: string; standfirst: string };
+  members?: TeamMember[];
+  footnote?: string;
+}) {
   const sectionRef = useRef<HTMLElement | null>(null);
   const [visible, setVisible] = useState(false);
 
@@ -109,28 +120,28 @@ export default function AboutTeam() {
             className="hl-reveal text-[11px] font-semibold tracking-[0.24em] text-accent uppercase"
             data-visible={visible}
           >
-            [ {teamHeading.eyebrow} ]
+            [ {heading.eyebrow} ]
           </p>
           <h2
             className="hl-reveal type-display mt-4 text-[clamp(1.6rem,4.2vw,2.8rem)] leading-[1.15] text-steel-900 uppercase"
             data-visible={visible}
             style={{ animationDelay: "80ms" }}
           >
-            {teamHeading.title}
+            {heading.title}
           </h2>
           <p
             className="hl-reveal mt-5 text-sm leading-relaxed text-steel-800 sm:text-base"
             data-visible={visible}
             style={{ animationDelay: "160ms" }}
           >
-            {teamHeading.standfirst}
+            {heading.standfirst}
           </p>
         </header>
 
         {/* Seven cards with the chairman's running double width — eight column
             units, which fills both rows of the four-column grid exactly. */}
         <div className="mt-12 grid gap-4 sm:grid-cols-2 lg:mt-14 lg:grid-cols-4">
-          {team.map((member, i) => (
+          {members.map((member, i) => (
             <Card key={member.id} member={member} index={i} visible={visible} />
           ))}
         </div>
@@ -140,8 +151,7 @@ export default function AboutTeam() {
           data-visible={visible}
           style={{ animationDelay: "900ms" }}
         >
-          Board of Directors and Key Managerial Personnel as listed in the
-          FY2025-26 annual report.
+          {footnote}
         </p>
       </div>
     </section>
@@ -157,7 +167,7 @@ function Card({
   index: number;
   visible: boolean;
 }) {
-  const tone = TONES[member.tone];
+  const tone = TONES[member.tone] ?? TONES.plain;
 
   return (
     <article
