@@ -3,32 +3,27 @@ import { stat } from "node:fs/promises";
 import path from "node:path";
 import { Readable } from "node:stream";
 import { NextResponse } from "next/server";
+import {
+  ALL_TYPES,
+  displayName,
+  DOCUMENT_TYPES,
+  extensionOf,
+} from "@/lib/admin/uploads";
 import { getBackend } from "@/lib/content/storage";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 /**
- * Serves images uploaded from the admin panel, for deployments using the file
- * backend.
+ * Serves images and documents uploaded from the admin panel, for deployments
+ * using the file backend.
  *
  * They cannot live in `public/`: Next serves that directory as it stood when
  * the site was built, so a file written there afterwards is a 404. This route
- * reads the upload directory at request time instead, which is what makes an
- * image usable the moment it is uploaded. On Vercel the Blob backend returns
+ * reads the upload directory at request time instead, which is what makes a
+ * file usable the moment it is uploaded. On Vercel the Blob backend returns
  * absolute URLs and nothing reaches this route at all.
  */
-
-const TYPES: Record<string, string> = {
-  ".jpg": "image/jpeg",
-  ".jpeg": "image/jpeg",
-  ".png": "image/png",
-  ".webp": "image/webp",
-  ".avif": "image/avif",
-  ".gif": "image/gif",
-  ".svg": "image/svg+xml",
-};
-
 export async function GET(
   _request: Request,
   { params }: { params: Promise<{ name: string }> },
@@ -38,7 +33,8 @@ export async function GET(
   // The name is the only thing an outside caller controls, so it has to be a
   // bare filename — no separators, no traversal, nothing but a known type.
   const safe = path.basename(name);
-  const type = TYPES[path.extname(safe).toLowerCase()];
+  const ext = extensionOf(safe);
+  const type = ALL_TYPES[ext];
   if (safe !== name || !type) {
     return new NextResponse("Not found", { status: 404 });
   }
@@ -62,13 +58,21 @@ export async function GET(
     createReadStream(file),
   ) as unknown as ReadableStream;
 
-  return new NextResponse(body, {
-    headers: {
-      "content-type": type,
-      "content-length": String(size),
-      // The filename carries a random token, so a given URL never changes
-      // content and can be cached hard.
-      "cache-control": "public, max-age=31536000, immutable",
-    },
-  });
+  const headers: Record<string, string> = {
+    "content-type": type,
+    "content-length": String(size),
+    // The filename carries a random token, so a given URL never changes
+    // content and can be cached hard.
+    "cache-control": "public, max-age=31536000, immutable",
+  };
+
+  // A filing is something to keep, and it should land in the visitor's
+  // downloads named the way it was uploaded rather than with our token on the
+  // front. Images stay inline so they can be rendered.
+  if (DOCUMENT_TYPES[ext]) {
+    const clean = displayName(safe).replace(/"/g, "");
+    headers["content-disposition"] = `attachment; filename="${clean}"`;
+  }
+
+  return new NextResponse(body, { headers });
 }

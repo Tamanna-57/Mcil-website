@@ -1,45 +1,24 @@
 import { NextResponse } from "next/server";
 import { isAdmin } from "@/lib/admin/session";
+import {
+  extensionList,
+  maxBytesFor,
+  safeName,
+  type UploadKind,
+} from "@/lib/admin/uploads";
 import { getBackend } from "@/lib/content/storage";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-/** Extensions the site is willing to serve as an image. */
-const ALLOWED = new Map<string, string>([
-  [".jpg", "image/jpeg"],
-  [".jpeg", "image/jpeg"],
-  [".png", "image/png"],
-  [".webp", "image/webp"],
-  [".avif", "image/avif"],
-  [".gif", "image/gif"],
-  [".svg", "image/svg+xml"],
-]);
-
-const MAX_BYTES = 8 * 1024 * 1024;
-
 /**
- * Build the stored filename: the original name, flattened to something safe
- * for a URL, with a short random token in front so two uploads of "photo.jpg"
- * never overwrite each other.
+ * Takes an upload and hands back the URL to store alongside the content.
+ *
+ * This is the path the file backend uses. Deployments on Blob upload straight
+ * from the browser instead (see ./token), because a serverless platform caps
+ * how large a request body a function may receive and an annual report is
+ * routinely over that cap.
  */
-function safeName(original: string): string | null {
-  const dot = original.lastIndexOf(".");
-  if (dot < 0) return null;
-  const ext = original.slice(dot).toLowerCase();
-  if (!ALLOWED.has(ext)) return null;
-
-  const stem = original
-    .slice(0, dot)
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-+|-+$/g, "")
-    .slice(0, 48);
-
-  const token = crypto.randomUUID().slice(0, 8);
-  return `${token}-${stem || "image"}${ext}`;
-}
-
 export async function POST(request: Request) {
   if (!(await isAdmin())) {
     return NextResponse.json({ error: "Not signed in." }, { status: 401 });
@@ -50,30 +29,35 @@ export async function POST(request: Request) {
   if (!(file instanceof File) || file.size === 0) {
     return NextResponse.json({ error: "No file uploaded." }, { status: 400 });
   }
-  if (file.size > MAX_BYTES) {
+
+  const kind: UploadKind =
+    form?.get("kind") === "document" ? "document" : "image";
+
+  const limit = maxBytesFor(kind);
+  if (file.size > limit) {
     return NextResponse.json(
-      { error: "That image is over the 8 MB limit." },
+      {
+        error: `That file is over the ${Math.round(limit / 1024 / 1024)} MB limit.`,
+      },
       { status: 413 },
     );
   }
 
-  const filename = safeName(file.name);
-  if (!filename) {
+  const safe = safeName(file.name, kind);
+  if (!safe) {
     return NextResponse.json(
-      {
-        error: `Unsupported image type. Use ${[...ALLOWED.keys()].join(", ")}.`,
-      },
+      { error: `Unsupported file type. Use ${extensionList(kind)}.` },
       { status: 400 },
     );
   }
 
   try {
-    const url = await getBackend().saveImage(file, filename);
-    return NextResponse.json({ url });
+    const url = await getBackend().saveFile(file, safe, kind);
+    return NextResponse.json({ url, name: file.name });
   } catch (err) {
     console.error("[admin] upload failed:", err);
     return NextResponse.json(
-      { error: "Could not save the image. See the server log." },
+      { error: "Could not save the file. See the server log." },
       { status: 500 },
     );
   }

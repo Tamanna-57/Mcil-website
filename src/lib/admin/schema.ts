@@ -12,7 +12,9 @@ import type { ContentSection } from "@/lib/content/defaults";
 
 export type Field =
   | {
-      type: "text" | "textarea" | "image" | "url" | "date";
+      /** `file` is an uploadable document (a filing, a report); `image` is a
+          picture rendered on the page. */
+      type: "text" | "textarea" | "image" | "file" | "url" | "date";
       key: string;
       label: string;
       help?: string;
@@ -820,10 +822,10 @@ export const sections: SectionSchema[] = [
                         help: "Filing date, as YYYY-MM-DD.",
                       },
                       {
-                        type: "url",
+                        type: "file",
                         key: "href",
-                        label: "File or link",
-                        help: "Upload the PDF elsewhere and paste its URL, or leave empty while the document is pending.",
+                        label: "Document",
+                        help: "Upload the PDF (or Word/Excel file) visitors download. Leave it empty while a filing is still pending — the row shows a greyed-out Download until then.",
                       },
                     ],
                   },

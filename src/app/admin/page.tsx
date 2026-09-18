@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { getBackend, uploadPrefix } from "@/lib/content/storage";
 import { getContent } from "@/lib/content/store";
 import Dashboard from "./Dashboard";
 
@@ -12,5 +13,10 @@ export const metadata: Metadata = {
 export const dynamic = "force-dynamic";
 
 export default async function AdminPage() {
-  return <Dashboard content={await getContent()} />;
+  return (
+    <Dashboard
+      content={await getContent()}
+      storage={{ kind: getBackend().name, prefix: uploadPrefix() }}
+    />
+  );
 }

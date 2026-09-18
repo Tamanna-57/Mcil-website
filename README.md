@@ -58,10 +58,34 @@ Two steps, both mechanical:
    forms — it walks that description and renders the right control, so a new
    `{ type: "text", key: "...", label: "..." }` is all a new text box takes.
 
-Available field types: `text`, `textarea`, `number`, `image`, `url`, `date`,
-`select`, `boolean`, `strings` (a list of plain strings), `group` (a nested
-object, optionally addable and removable) and `list` (a repeatable row set with
-add, delete, duplicate and reorder).
+Available field types: `text`, `textarea`, `number`, `image`, `file`, `url`,
+`date`, `select`, `boolean`, `strings` (a list of plain strings), `group` (a
+nested object, optionally addable and removable) and `list` (a repeatable row
+set with add, delete, duplicate and reorder).
+
+### Uploading filings
+
+Every row under **Investors → Reports & filings** takes a document: open the
+category, then the sub-category, then the row, and upload the PDF. The same
+control accepts `.doc`, `.docx`, `.xls`, `.xlsx` and `.csv`, and a row left
+without one shows its Download greyed out, so a filing can be listed before it
+is available. A filing hosted elsewhere — on BSE, say — still works: paste its
+URL into the box under the upload button instead.
+
+Adding next year's report is **+ Add document**, a title, a date and the file.
+
+Documents are capped at 50 MB (`MAX_DOCUMENT_MB`) and images at 8 MB.
+Downloads are named the way they were uploaded, without the collision-avoiding
+token the stored file carries.
+
+How the file gets there depends on the backend, and the difference matters:
+
+- **File backend** — posted to `/api/admin/upload` and streamed to disk.
+- **Blob backend** — uploaded from the browser **straight to Blob**, using a
+  short-lived token signed by `/api/admin/upload/token`. A serverless function
+  may only receive a request body of about 4.5 MB, which most annual reports
+  exceed, so the file must not pass through one. Anything over 8 MB goes up in
+  parallel parts with failed parts retried.
 
 ### Where content is stored
 
@@ -96,6 +120,7 @@ defaults rather than taking it down.
 | `BLOB_PREFIX`           | no       | Blob path prefix. Default `mcil-content`.                       |
 | `CONTENT_DIR`           | no       | File backend directory. Default `./content`.                    |
 | `CONTENT_CACHE_MS`      | no       | Hold the last store read this long. Default `0` — always fresh. |
+| `MAX_DOCUMENT_MB`       | no       | Upload ceiling for filings. Default `50`.                       |
 
 ## What is built so far
 

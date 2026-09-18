@@ -1,8 +1,20 @@
 "use client";
 
 import Image from "next/image";
-import { useId, useRef, useState } from "react";
+import { createContext, useContext, useId, useRef, useState } from "react";
 import type { Field } from "@/lib/admin/schema";
+import { displayName, extensionList } from "@/lib/admin/uploads";
+import { type StorageInfo, uploadFile } from "./upload-client";
+
+/**
+ * Where this deployment keeps uploads. Set once by the dashboard and read by
+ * whichever field the admin happens to be uploading through, however deeply
+ * nested it is.
+ */
+export const StorageContext = createContext<StorageInfo>({
+  kind: "file",
+  prefix: "mcil-content",
+});
 
 /**
  * The controls the dashboard is built from.
@@ -53,6 +65,54 @@ function Label({
   );
 }
 
+/* --------------------------------------------------------------- uploading */
+
+/** The upload half of a file field: a hidden input, a button, and the wiring. */
+function usePicker(
+  kind: "image" | "document",
+  onDone: (url: string) => void,
+  onError: (message: string) => void,
+) {
+  const storage = useContext(StorageContext);
+  const ref = useRef<HTMLInputElement>(null);
+  const [busy, setBusy] = useState(false);
+
+  async function send(file: File) {
+    setBusy(true);
+    try {
+      onDone(await uploadFile(file, kind, storage));
+    } catch (error) {
+      onError(
+        error instanceof Error
+          ? error.message
+          : "Upload failed — check the connection and try again.",
+      );
+    } finally {
+      setBusy(false);
+      if (ref.current) ref.current.value = "";
+    }
+  }
+
+  const input = (
+    <input
+      ref={ref}
+      type="file"
+      accept={
+        kind === "image"
+          ? "image/*"
+          : extensionList("document").replace(/ /g, "")
+      }
+      className="hidden"
+      onChange={(e) => {
+        const file = e.target.files?.[0];
+        if (file) void send(file);
+      }}
+    />
+  );
+
+  return { busy, input, open: () => ref.current?.click() };
+}
+
 /* ------------------------------------------------------------------ image */
 
 function ImageField({
@@ -65,28 +125,7 @@ function ImageField({
   onError: (message: string) => void;
 }) {
   const src = typeof value === "string" ? value : "";
-  const fileRef = useRef<HTMLInputElement>(null);
-  const [busy, setBusy] = useState(false);
-
-  async function upload(file: File) {
-    setBusy(true);
-    try {
-      const body = new FormData();
-      body.append("file", file);
-      const res = await fetch("/api/admin/upload", { method: "POST", body });
-      const data = (await res.json()) as { url?: string; error?: string };
-      if (!res.ok || !data.url) {
-        onError(data.error || "Upload failed.");
-        return;
-      }
-      onChange(data.url);
-    } catch {
-      onError("Upload failed — check the connection and try again.");
-    } finally {
-      setBusy(false);
-      if (fileRef.current) fileRef.current.value = "";
-    }
-  }
+  const picker = usePicker("image", onChange, onError);
 
   return (
     <div className="flex items-start gap-3">
@@ -118,10 +157,10 @@ function ImageField({
           <button
             type="button"
             className={ghostButton}
-            disabled={busy}
-            onClick={() => fileRef.current?.click()}
+            disabled={picker.busy}
+            onClick={picker.open}
           >
-            {busy ? "Uploading…" : "Upload"}
+            {picker.busy ? "Uploading…" : "Upload"}
           </button>
           {src ? (
             <button
@@ -132,18 +171,105 @@ function ImageField({
               Clear
             </button>
           ) : null}
-          <input
-            ref={fileRef}
-            type="file"
-            accept="image/*"
-            className="hidden"
-            onChange={(e) => {
-              const file = e.target.files?.[0];
-              if (file) void upload(file);
-            }}
-          />
+          {picker.input}
         </div>
       </div>
+    </div>
+  );
+}
+
+/* --------------------------------------------------------------- document */
+
+/**
+ * A filing: a PDF or spreadsheet the site offers as a download. Unlike an
+ * image there is nothing to preview, so the control shows the filename, a way
+ * to open it and check it is the right document, and a way to replace it.
+ */
+function FileField({
+  value,
+  onChange,
+  onError,
+}: {
+  value: unknown;
+  onChange: (next: string) => void;
+  onError: (message: string) => void;
+}) {
+  const href = typeof value === "string" ? value : "";
+  const picker = usePicker("document", onChange, onError);
+
+  const name = href
+    ? displayName(decodeURIComponent(href.split("/").pop() || ""))
+    : "";
+
+  return (
+    <div className="rounded-xl border border-steel-900/12 bg-steel-900/[0.02] p-3">
+      {href ? (
+        <div className="flex items-center gap-3">
+          <svg
+            viewBox="0 0 24 24"
+            className="h-7 w-7 shrink-0 text-steel-800/70"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.4"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            aria-hidden
+          >
+            <path d="M14 3H7a1.5 1.5 0 0 0-1.5 1.5v15A1.5 1.5 0 0 0 7 21h10a1.5 1.5 0 0 0 1.5-1.5V7.5Z" />
+            <path d="M14 3v4.5h4.5" />
+          </svg>
+          <a
+            href={href}
+            target="_blank"
+            rel="noreferrer"
+            className="min-w-0 flex-1 truncate text-sm font-medium text-brand-deep hover:underline"
+            title={name}
+          >
+            {name || href}
+          </a>
+          <button
+            type="button"
+            className={ghostButton}
+            disabled={picker.busy}
+            onClick={picker.open}
+          >
+            {picker.busy ? "Uploading…" : "Replace"}
+          </button>
+          <button
+            type="button"
+            className={`${buttonClass} text-red-700 hover:bg-red-50`}
+            onClick={() => onChange("")}
+          >
+            Remove
+          </button>
+        </div>
+      ) : (
+        <div className="flex flex-wrap items-center gap-2">
+          <button
+            type="button"
+            className={`${buttonClass} border border-dashed border-steel-900/25 text-steel-800 hover:border-brand-deep hover:text-brand-deep`}
+            disabled={picker.busy}
+            onClick={picker.open}
+          >
+            {picker.busy ? "Uploading…" : "+ Upload document"}
+          </button>
+          <span className="text-xs text-steel-800/60">
+            No file yet — the row shows &ldquo;Download&rdquo; greyed out until
+            one is added.
+          </span>
+        </div>
+      )}
+
+      {picker.input}
+
+      {/* An externally hosted filing (a BSE link, say) is still perfectly
+          valid, so the URL stays editable by hand. */}
+      <input
+        className={`${inputClass} mt-3`}
+        value={href}
+        placeholder="…or paste a link to a document hosted elsewhere"
+        onChange={(e) => onChange(e.target.value)}
+      />
     </div>
   );
 }
@@ -164,7 +290,8 @@ function rowTitle(
   index: number,
 ) {
   const raw = isObject(row) ? row[field.titleKey] : undefined;
-  const text = typeof raw === "string" || typeof raw === "number" ? String(raw) : "";
+  const text =
+    typeof raw === "string" || typeof raw === "number" ? String(raw) : "";
   return text.trim() || `Item ${index + 1}`;
 }
 
@@ -507,11 +634,15 @@ function Control({
       return (
         <>
           <Label help={field.help}>{field.label}</Label>
-          <ImageField
-            value={value}
-            onChange={onChange}
-            onError={onError}
-          />
+          <ImageField value={value} onChange={onChange} onError={onError} />
+        </>
+      );
+
+    case "file":
+      return (
+        <>
+          <Label help={field.help}>{field.label}</Label>
+          <FileField value={value} onChange={onChange} onError={onError} />
         </>
       );
 

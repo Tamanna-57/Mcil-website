@@ -21,8 +21,20 @@ import "server-only";
  * rather than breaking it.
  */
 
+import {
+  blobPath,
+  flatName,
+  type SafeName,
+  type UploadKind,
+} from "@/lib/admin/uploads";
+
 const BLOB_API = "https://blob.vercel-storage.com";
 const BLOB_API_VERSION = "7";
+
+/** The Blob path prefix, so the browser can name a direct upload the same way. */
+export function uploadPrefix(): string {
+  return process.env.BLOB_PREFIX || "mcil-content";
+}
 
 export type StoredDoc = {
   /** The override document, exactly as written by the admin panel. */
@@ -31,20 +43,26 @@ export type StoredDoc = {
   updatedAt: string | null;
 };
 
+export type BackendKind = "file" | "blob";
+
 export interface StorageBackend {
-  readonly name: string;
-  /** Where `saveImage` puts files, for the route that serves them back. */
+  readonly name: BackendKind;
+  /** Where `saveFile` puts uploads, for the route that serves them back. */
   uploadDir?(): Promise<string>;
   read(): Promise<StoredDoc>;
   write(data: unknown): Promise<void>;
-  /** Save an uploaded image and return the URL to reference it by. */
-  saveImage(file: File, filename: string): Promise<string>;
+  /**
+   * Save an upload and return the URL to reference it by. The backend decides
+   * where it goes, so there is one layout per store rather than one per
+   * caller.
+   */
+  saveFile(file: File, safe: SafeName, kind: UploadKind): Promise<string>;
 }
 
 /* ------------------------------------------------------------------ files */
 
 class FileBackend implements StorageBackend {
-  readonly name = "file";
+  readonly name = "file" as const;
 
   private async paths() {
     const path = await import("node:path");
@@ -92,12 +110,20 @@ class FileBackend implements StorageBackend {
     return (await this.paths()).uploadDir;
   }
 
-  async saveImage(file: File, filename: string): Promise<string> {
+  async saveFile(file: File, safe: SafeName): Promise<string> {
     const fs = await import("node:fs/promises");
     const { path, uploadDir } = await this.paths();
     await fs.mkdir(uploadDir, { recursive: true });
-    const buffer = Buffer.from(await file.arrayBuffer());
-    await fs.writeFile(path.join(uploadDir, filename), buffer);
+    const filename = flatName(safe);
+    // Streamed rather than buffered: a 50 MB annual report should not have to
+    // sit in memory in one piece to be written to disk.
+    const { Readable } = await import("node:stream");
+    const { pipeline } = await import("node:stream/promises");
+    const target = path.join(uploadDir, filename);
+    await pipeline(
+      Readable.fromWeb(file.stream() as Parameters<typeof Readable.fromWeb>[0]),
+      (await import("node:fs")).createWriteStream(target),
+    );
     // Served by the /media route, which reads this directory at request time.
     return `/media/${filename}`;
   }
@@ -112,13 +138,13 @@ type BlobListItem = {
 };
 
 class BlobBackend implements StorageBackend {
-  readonly name = "blob";
+  readonly name = "blob" as const;
   private readonly token: string;
   private readonly prefix: string;
 
   constructor(token: string) {
     this.token = token;
-    this.prefix = process.env.BLOB_PREFIX || "mcil-content";
+    this.prefix = uploadPrefix();
   }
 
   private get contentPath() {
@@ -172,7 +198,7 @@ class BlobBackend implements StorageBackend {
     body: BodyInit,
     contentType: string,
     { randomSuffix }: { randomSuffix: boolean },
-  ): Promise<string> {
+  ): Promise<{ url: string; downloadUrl?: string }> {
     const res = await fetch(`${BLOB_API}/${pathname}`, {
       method: "PUT",
       headers: this.headers({
@@ -187,8 +213,7 @@ class BlobBackend implements StorageBackend {
     if (!res.ok) {
       throw new Error(`Blob write failed: ${res.status} ${await res.text()}`);
     }
-    const saved = (await res.json()) as { url: string };
-    return saved.url;
+    return (await res.json()) as { url: string; downloadUrl?: string };
   }
 
   async write(data: unknown): Promise<void> {
@@ -200,13 +225,20 @@ class BlobBackend implements StorageBackend {
     );
   }
 
-  async saveImage(file: File, filename: string): Promise<string> {
-    return this.put(
-      `${this.prefix}/uploads/${filename}`,
+  async saveFile(
+    file: File,
+    safe: SafeName,
+    kind: UploadKind,
+  ): Promise<string> {
+    const saved = await this.put(
+      blobPath(this.prefix, safe),
       await file.arrayBuffer(),
-      file.type || "application/octet-stream",
+      safe.contentType,
       { randomSuffix: false },
     );
+    // A filing should land in the visitor's downloads rather than open in a
+    // tab; `downloadUrl` is the same object served with that disposition.
+    return kind === "document" ? (saved.downloadUrl ?? saved.url) : saved.url;
   }
 }
 
