@@ -32,14 +32,13 @@ const DISSOLVE_MS = 940; /* the cut-short exit, unchanged */
 let hasPlayedThisLoad = false;
 
 /*
- * Where each piece of the logo sits inside mcil-logo.png, in the file's own
- * pixels — measured off its alpha channel, not eyeballed. The stage scales all
- * five by one unit (--u), so the pieces land in exactly the arrangement the
- * artwork has and the assembled lockup IS the logo, not a rebuild of it.
+ * The mark's own pixels. The stage scales every piece by one unit (--u), so
+ * the quarters land in exactly the arrangement the artwork has and what
+ * assembles IS the logo, not a rebuild of it.
  *
- * Re-measure these if the logo file is ever replaced.
+ * Re-measure if public/images/mcil-mark.png is ever replaced.
  */
-const LOGO = { w: 2022, top: 178, bottom: 660 } as const;
+const MARK = { w: 390, h: 320 } as const;
 
 type Piece = {
   id: string;
@@ -51,31 +50,24 @@ type Piece = {
   h: number;
 };
 
-const LETTERS: Piece[] = [
-  { id: "m", corner: "tl", x: 408, y: 178, w: 442, h: 328 },
-  { id: "c", corner: "tr", x: 852, y: 178, w: 343, h: 328 },
-  { id: "i", corner: "bl", x: 1225, y: 178, w: 152, h: 328 },
-  { id: "l", corner: "br", x: 1427, y: 178, w: 298, h: 328 },
-];
-
-const TAGLINE: Piece = {
-  id: "tag",
-  corner: "tl",
-  x: 120,
-  y: 542,
-  w: 1779,
-  h: 119,
-};
-
 /*
- * The four letters as one box, in the same artwork pixels — the union of the
- * LETTERS above, and exactly the crop the header mark takes (see .site-logo).
- * The dock maps this box onto that mark, not the whole lockup: the tagline is
- * not in the header, so it is not what has to line up.
+ * The monogram in quarters, one per corner of the screen.
  *
- * `y` is relative to LOGO.top, like the pieces' own --y.
+ * The old sequence had four letters to throw about; a monogram is one shape,
+ * so it is cut into four rectangles instead — each piece a window onto the
+ * same file at its own offset. Because the cuts are straight and the pieces
+ * are adjacent crops, they close with no seam: what lands is the artwork
+ * itself, pixel for pixel.
  */
-const LETTER_BOX = { x: 408, y: 0, w: 1317, h: 328 } as const;
+const HALF_W = MARK.w / 2;
+const HALF_H = MARK.h / 2;
+
+const PIECES: Piece[] = [
+  { id: "tl", corner: "tl", x: 0, y: 0, w: HALF_W, h: HALF_H },
+  { id: "tr", corner: "tr", x: HALF_W, y: 0, w: HALF_W, h: HALF_H },
+  { id: "bl", corner: "bl", x: 0, y: HALF_H, w: HALF_W, h: HALF_H },
+  { id: "br", corner: "br", x: HALF_W, y: HALF_H, w: HALF_W, h: HALF_H },
+];
 
 /* Whether to skip the sequence entirely. Read through useSyncExternalStore
    rather than an effect: the server has no session to read, so it renders the
@@ -90,7 +82,7 @@ function shouldSkip() {
 
 const neverSkipOnServer = () => false;
 
-/** A piece of the logo, windowed out of the one artwork file. */
+/** A quarter of the mark, windowed out of the one artwork file. */
 function LogoPiece({ piece, className }: { piece: Piece; className: string }) {
   return (
     <span
@@ -98,7 +90,7 @@ function LogoPiece({ piece, className }: { piece: Piece; className: string }) {
       style={
         {
           "--x": piece.x,
-          "--y": piece.y - LOGO.top,
+          "--y": piece.y,
           "--w": piece.w,
           "--h": piece.h,
           "--bx": piece.x,
@@ -179,24 +171,16 @@ export default function SiteIntro() {
     const to = mark.getBoundingClientRect();
     if (!from.height || !to.height) return false;
 
-    /* One artwork pixel, on screen, as the lockup is currently drawn. */
-    const unit = from.height / (LOGO.bottom - LOGO.top);
-
-    /* Where the four letters sit inside that box right now. */
-    const lettersLeft = from.left + LETTER_BOX.x * unit;
-    const lettersTop = from.top + LETTER_BOX.y * unit;
-
     /*
-     * The lockup's transform-origin is set to the letters' own top-left corner
-     * (see .intro-lockup), so scaling holds that corner still and the
-     * translation is simply the gap between where it is and where it is going.
+     * The lockup box IS the mark — the name under it is positioned out of
+     * flow, so it neither pads this box nor has to be subtracted from it. With
+     * transform-origin at the box's own top-left (see .intro-lockup), scaling
+     * holds that corner still and the translation is simply the gap between
+     * where it is and where it is going.
      */
-    lockup.style.setProperty(
-      "--dock-s",
-      String(to.height / (LETTER_BOX.h * unit)),
-    );
-    lockup.style.setProperty("--dock-x", `${to.left - lettersLeft}px`);
-    lockup.style.setProperty("--dock-y", `${to.top - lettersTop}px`);
+    lockup.style.setProperty("--dock-s", String(to.height / from.height));
+    lockup.style.setProperty("--dock-x", `${to.left - from.left}px`);
+    lockup.style.setProperty("--dock-y", `${to.top - from.top}px`);
     return true;
   }, []);
 
@@ -284,16 +268,19 @@ export default function SiteIntro() {
         className="intro-lockup"
         style={
           {
-            "--logo-w": LOGO.w,
-            "--logo-h": LOGO.bottom - LOGO.top,
-            "--letters-x": LETTER_BOX.x,
+            "--logo-w": MARK.w,
+            "--logo-h": MARK.h,
           } as React.CSSProperties
         }
       >
-        {LETTERS.map((letter) => (
-          <LogoPiece key={letter.id} piece={letter} className="intro-letter" />
+        {PIECES.map((piece) => (
+          <LogoPiece key={piece.id} piece={piece} className="intro-letter" />
         ))}
-        <LogoPiece piece={TAGLINE} className="intro-tagline" />
+        {/* Real type, as in the header — the name is not part of the mark's
+            artwork, so it is set rather than cropped. */}
+        <span className="intro-tagline" aria-hidden>
+          Metal Coatings (India) Ltd
+        </span>
       </div>
 
       <span className="sr-only">Metal Coatings (India) Ltd</span>

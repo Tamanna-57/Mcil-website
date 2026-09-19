@@ -26,7 +26,7 @@
  * bar taller than it slides over the top of the page. See `.site-logo` and
  * `.site-wordmark` there.
  */
-export const LOGO_HEIGHT = 48;
+export const LOGO_HEIGHT = 58;
 
 /** Set small under the mark, and the link's accessible name. */
 export const LOGO_NAME = "Metal Coatings (India) Limited";
