@@ -115,9 +115,9 @@ export type SiteContent = {
     /**
      * The reported figures, oldest first — the source the panels below are
      * generated from when an annual report is imported. Editing a year here
-     * and re-running "Regenerate" rewrites the hero, highlights and chart from
-     * it; editing those panels directly still works and simply goes out of
-     * step with this until the next regeneration.
+     * and pressing "Regenerate" in the admin panel rewrites the hero,
+     * highlights and chart from it; editing those panels directly still works
+     * and simply goes out of step with this until the next regeneration.
      */
     years: FinancialYear[];
     slides: InvestorSlide[];

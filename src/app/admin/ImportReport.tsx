@@ -48,6 +48,7 @@ type Phase =
   | { kind: "idle" }
   | { kind: "reading" }
   | { kind: "review"; extraction: Extraction; fileName: string }
+  | { kind: "regenerate" }
   | { kind: "error"; message: string };
 
 const MONEY_FIELDS: FieldKey[] = ["revenue", "ebitda", "pat"];
@@ -95,6 +96,34 @@ function yearFrom(draft: Draft): FinancialYear {
     patCr: num(draft.pat),
     eps: num(draft.eps),
     dividendPerShare: num(draft.dividendPerShare),
+  };
+}
+
+/**
+ * The editorial lines currently on the page.
+ *
+ * Regenerating rewrites the figures, and these sentences are not figures — they
+ * are someone's explanation of the year, and rebuilding the panels must not
+ * throw them away. Reading them back out means a regeneration keeps the prose
+ * it finds unless the person editing clears it.
+ */
+function currentNotes(investors: Json): EditorialNotes {
+  const slides = (investors.slides as Json[]) || [];
+  const results = slides.find((s) => s?.id === "results");
+  const groups = ((results?.groups as Json[]) || [])[0];
+
+  const highlights = (investors.highlights as Json) || {};
+  const heading = (highlights.heading as Json) || {};
+  const items = (highlights.items as Json[]) || [];
+  const card = (id: string) => items.find((i) => i?.id === id)?.body;
+
+  const text = (v: unknown) => (typeof v === "string" ? v : "");
+
+  return {
+    operatingFootnote: text(groups?.footnote),
+    highlightsStandfirst: text(heading.standfirst),
+    revenueBody: text(card("revenue")),
+    patBody: text(card("pat")),
   };
 }
 
@@ -300,8 +329,17 @@ export default function ImportReport({
   const [attach, setAttach] = useState(true);
   const [uploading, setUploading] = useState(false);
   const [pending, setPending] = useState<File | null>(null);
+  const [regenNotes, setRegenNotes] = useState<EditorialNotes>({});
 
   const years = (investors.years as FinancialYear[]) || [];
+  const latest = years.length ? years[years.length - 1] : null;
+
+  /** Rebuild the panels from the figures on file, leaving the reports alone. */
+  function regenerateNow() {
+    if (!years.length) return;
+    onApply(regenerate(investors, years, regenNotes));
+    setPhase({ kind: "idle" });
+  }
 
   async function read(file: File) {
     setPhase({ kind: "reading" });
@@ -395,7 +433,9 @@ export default function ImportReport({
         shown here beside the lines they came from. Check them, correct
         anything the parser got wrong, and Apply fills in the hero panel, the
         highlights cards, the performance chart and the reports list below —
-        which you then save as usual.
+        which you then save as usual. Figures can also be typed straight into
+        “Reported figures by year” below; Regenerate rebuilds the panels from
+        them.
       </p>
 
       <input
@@ -409,7 +449,7 @@ export default function ImportReport({
         }}
       />
 
-      {phase.kind !== "review" ? (
+      {phase.kind !== "review" && phase.kind !== "regenerate" ? (
         <div className="mt-4 flex flex-wrap items-center gap-3">
           <button
             type="button"
@@ -419,9 +459,94 @@ export default function ImportReport({
           >
             {phase.kind === "reading" ? "Reading…" : "Choose a PDF"}
           </button>
+          <button
+            type="button"
+            disabled={!years.length || phase.kind === "reading"}
+            onClick={() => {
+              setRegenNotes(currentNotes(investors));
+              setPhase({ kind: "regenerate" });
+            }}
+            className={`${buttonClass} border border-steel-900/15 text-steel-800 hover:bg-steel-900/6`}
+          >
+            Regenerate from the figures on file
+          </button>
           {phase.kind === "error" ? (
             <p className="text-sm text-red-700">{phase.message}</p>
           ) : null}
+        </div>
+      ) : null}
+
+      {/* Regenerating: no PDF involved, just the stored figures re-applied.
+          This is the way back after correcting a figure by hand below. */}
+      {phase.kind === "regenerate" && latest ? (
+        <div className="mt-5 rounded-xl bg-white p-4 ring-1 ring-steel-900/10 sm:p-5">
+          <p className="text-sm leading-relaxed text-steel-800">
+            Rebuild the hero panel, the highlights cards and the performance
+            chart from the {years.length} years of figures below, the most
+            recent being {fyLabel(latest.fy)}. Use this after correcting a
+            figure by hand — editing it below changes the stored number but
+            leaves the panels showing the old one until you do.
+          </p>
+          <p className="mt-2 text-sm leading-relaxed text-steel-800/80">
+            The reports list is left alone, since no new document is involved.
+          </p>
+
+          <div className="mt-4 grid gap-4 border-t border-steel-900/10 pt-4">
+            <p className="text-xs leading-relaxed text-steel-800/80">
+              These lines are kept as they are, because they explain the year
+              rather than restate it. They do quote figures, though — if you
+              have just corrected one, check them. Clearing a box falls back to
+              a plain sentence built from the numbers.
+            </p>
+            <NoteField
+              label="Hero footnote"
+              value={regenNotes.operatingFootnote ?? ""}
+              placeholder="Built from the figures when empty"
+              onChange={(v) =>
+                setRegenNotes({ ...regenNotes, operatingFootnote: v })
+              }
+            />
+            <NoteField
+              label="Highlights standfirst"
+              value={regenNotes.highlightsStandfirst ?? ""}
+              placeholder="Built from the figures when empty"
+              onChange={(v) =>
+                setRegenNotes({ ...regenNotes, highlightsStandfirst: v })
+              }
+            />
+            <NoteField
+              label="Revenue card paragraph"
+              value={regenNotes.revenueBody ?? ""}
+              placeholder="Built from the figures when empty"
+              onChange={(v) => setRegenNotes({ ...regenNotes, revenueBody: v })}
+            />
+            <NoteField
+              label="Profit card paragraph"
+              value={regenNotes.patBody ?? ""}
+              placeholder="Built from the figures when empty"
+              onChange={(v) => setRegenNotes({ ...regenNotes, patBody: v })}
+            />
+          </div>
+
+          <div className="mt-4 flex flex-wrap items-center gap-3">
+            <button
+              type="button"
+              onClick={regenerateNow}
+              className={`${buttonClass} bg-steel-900 text-white hover:bg-navy`}
+            >
+              Regenerate the panels
+            </button>
+            <button
+              type="button"
+              onClick={() => setPhase({ kind: "idle" })}
+              className={`${buttonClass} text-steel-800 hover:bg-steel-900/6`}
+            >
+              Cancel
+            </button>
+            <p className="text-xs text-steel-800/70">
+              Nothing is published until you save the section.
+            </p>
+          </div>
         </div>
       ) : null}
 

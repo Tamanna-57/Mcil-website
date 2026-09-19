@@ -510,8 +510,9 @@ export const sections: SectionSchema[] = [
         help:
           "The figures the hero panel, the highlights cards and the performance " +
           "chart are generated from, oldest last. Importing an annual report fills " +
-          "these in; editing one here changes the stored figure but does not " +
-          "regenerate the panels — re-import, or edit the panels directly. " +
+          "these in, and they can be corrected here by hand — a figure changed " +
+          "here reaches the panels when you press “Regenerate from the figures on " +
+          "file” at the top of this section. " +
           "Money is in ₹ crore; EPS and dividend are per share, in ₹.",
         template: {
           fy: 0,
