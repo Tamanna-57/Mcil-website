@@ -984,6 +984,7 @@ body {
 .intro-lockup {
   --u: clamp(0.16px, 0.027vw, 0.4px);
   --fly: clamp(230px, 46vmin, 560px);
+  --intro-settle: cubic-bezier(0.16, 0.84, 0.24, 1);
 
   position: relative;
   width: calc(var(--logo-w) * var(--u));
@@ -1017,19 +1018,24 @@ body {
   animation: intro-tag-out 280ms cubic-bezier(0.4, 0, 1, 1) both;
 }
 
-/* Each quarter is a window onto the one artwork file: same image, offset so
-   only its own corner shows. One request, four pieces, no slicing into files. */
-.intro-letter {
+/*
+ * Each shape is its own file, laid at its own place in the mark.
+ *
+ * Four small transparent PNGs rather than one sheet windowed four ways: a
+ * window is a rectangle, and a rectangle travelling across the screen reads as
+ * a torn-off crop however smooth the curve inside it. A shape with its own
+ * alpha carries its own edges, so what moves is the curve.
+ */
+.intro-piece {
   position: absolute;
   left: calc(var(--x) * var(--u));
   top: calc(var(--y) * var(--u));
   width: calc(var(--w) * var(--u));
   height: calc(var(--h) * var(--u));
-  background-image: url("/images/mcil-mark.png");
+  background-image: var(--img);
   background-repeat: no-repeat;
-  background-size: calc(390 * var(--u)) calc(320 * var(--u));
-  background-position: calc(var(--bx) * var(--u) * -1)
-    calc(var(--by) * var(--u) * -1);
+  background-size: 100% 100%;
+  will-change: transform, opacity;
 }
 
 /*
@@ -1066,28 +1072,93 @@ body {
 }
 
 /*
- * The four letters fly together rather than in sequence: four arcs turning the
- * same way at the same time is what reads as one circle.
+ * Each shape comes in along its own edge and settles.
+ *
+ * They are staggered rather than simultaneous: the arc over the top lands
+ * first and the two rings close under it, so the mark builds in the order it
+ * reads. The wedge comes last, which is what makes it look set into the gap
+ * rather than revealed with everything else.
  *
  * Each rule carries the whole shorthand, name included. A nameless
  * `animation: 1150ms ... both` on the shared class, with the name set per
- * corner, is minified to `animation: none` — the duration and delay go with
- * it, and nothing moves at all.
+ * side, is minified to `animation: none` — the duration and delay go with it,
+ * and nothing moves at all.
  */
-.intro-letter[data-corner="tl"] {
-  animation: intro-fly-tl 1500ms linear 200ms both;
+.intro-piece[data-side="top"] {
+  animation: intro-in-top 1180ms var(--intro-settle) 200ms both;
 }
 
-.intro-letter[data-corner="tr"] {
-  animation: intro-fly-tr 1500ms linear 200ms both;
+.intro-piece[data-side="left"] {
+  animation: intro-in-left 1180ms var(--intro-settle) 320ms both;
 }
 
-.intro-letter[data-corner="bl"] {
-  animation: intro-fly-bl 1500ms linear 200ms both;
+.intro-piece[data-side="right"] {
+  animation: intro-in-right 1180ms var(--intro-settle) 320ms both;
 }
 
-.intro-letter[data-corner="br"] {
-  animation: intro-fly-br 1500ms linear 200ms both;
+.intro-piece[data-side="bottom"] {
+  animation: intro-in-bottom 900ms var(--intro-settle) 700ms both;
+}
+
+/*
+ * Travel, then settle: most of the distance is gone early and the last of it
+ * eases shut, so each shape arrives rather than stops. The tail is long enough
+ * to read as the piece seating itself into the mark.
+ */
+@keyframes intro-in-top {
+  0% {
+    opacity: 0;
+    transform: translate3d(0, calc(var(--fly) * -1), 0) scale(1.06);
+  }
+  26% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 1;
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+}
+
+@keyframes intro-in-left {
+  0% {
+    opacity: 0;
+    transform: translate3d(calc(var(--fly) * -1), 0, 0) scale(1.06);
+  }
+  26% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 1;
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+}
+
+@keyframes intro-in-right {
+  0% {
+    opacity: 0;
+    transform: translate3d(var(--fly), 0, 0) scale(1.06);
+  }
+  26% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 1;
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+}
+
+@keyframes intro-in-bottom {
+  0% {
+    opacity: 0;
+    transform: translate3d(0, calc(var(--fly) * 0.55), 0);
+  }
+  30% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
 }
 
 /* The line underneath arrives only once the word has settled. */
@@ -1154,370 +1225,6 @@ body {
     clip-path: inset(0 0 0 0);
     filter: blur(0);
     transform: translateY(0) scale(1);
-  }
-}
-
-@keyframes intro-fly-tl {
-  0% {
-    opacity: 0;
-    transform: translate(calc(-0.7071 * var(--fly)), calc(-0.7071 * var(--fly)))
-      rotate(-70deg) scale(0.55);
-  }
-  12% {
-    opacity: 1;
-  }
-  5% {
-    transform: translate(calc(-0.7062 * var(--fly)), calc(-0.7073 * var(--fly)))
-      rotate(-69.97deg) scale(0.5502);
-  }
-  10% {
-    transform: translate(calc(-0.6998 * var(--fly)), calc(-0.7087 * var(--fly)))
-      rotate(-69.72deg) scale(0.5518);
-  }
-  15% {
-    transform: translate(calc(-0.6826 * var(--fly)), calc(-0.7122 * var(--fly)))
-      rotate(-69.06deg) scale(0.5561);
-  }
-  20% {
-    transform: translate(calc(-0.6492 * var(--fly)), calc(-0.718 * var(--fly)))
-      rotate(-67.76deg) scale(0.5644);
-  }
-  25% {
-    transform: translate(calc(-0.5947 * var(--fly)), calc(-0.7247 * var(--fly)))
-      rotate(-65.62deg) scale(0.5781);
-  }
-  30% {
-    transform: translate(calc(-0.5152 * var(--fly)), calc(-0.7282 * var(--fly)))
-      rotate(-62.44deg) scale(0.5986);
-  }
-  35% {
-    transform: translate(calc(-0.4088 * var(--fly)), calc(-0.7206 * var(--fly)))
-      rotate(-58deg) scale(0.6272);
-  }
-  40% {
-    transform: translate(calc(-0.2782 * var(--fly)), calc(-0.69 * var(--fly)))
-      rotate(-52.08deg) scale(0.6652);
-  }
-  45% {
-    transform: translate(calc(-0.1342 * var(--fly)), calc(-0.6212 * var(--fly)))
-      rotate(-44.48deg) scale(0.714);
-  }
-  50% {
-    transform: translate(calc(-0 * var(--fly)), calc(-0.5 * var(--fly)))
-      rotate(-35deg) scale(0.775);
-  }
-  55% {
-    transform: translate(calc(0.077 * var(--fly)), calc(-0.3563 * var(--fly)))
-      rotate(-25.51deg) scale(0.836);
-  }
-  60% {
-    transform: translate(calc(0.0957 * var(--fly)), calc(-0.2374 * var(--fly)))
-      rotate(-17.92deg) scale(0.8848);
-  }
-  65% {
-    transform: translate(calc(0.0846 * var(--fly)), calc(-0.1492 * var(--fly)))
-      rotate(-12deg) scale(0.9228);
-  }
-  70% {
-    transform: translate(calc(0.0624 * var(--fly)), calc(-0.0882 * var(--fly)))
-      rotate(-7.56deg) scale(0.9514);
-  }
-  75% {
-    transform: translate(calc(0.0396 * var(--fly)), calc(-0.0483 * var(--fly)))
-      rotate(-4.38deg) scale(0.9719);
-  }
-  80% {
-    transform: translate(calc(0.0215 * var(--fly)), calc(-0.0237 * var(--fly)))
-      rotate(-2.24deg) scale(0.9856);
-  }
-  85% {
-    transform: translate(calc(0.0093 * var(--fly)), calc(-0.0097 * var(--fly)))
-      rotate(-0.94deg) scale(0.9939);
-  }
-  90% {
-    transform: translate(calc(0.0028 * var(--fly)), calc(-0.0028 * var(--fly)))
-      rotate(-0.28deg) scale(0.9982);
-  }
-  95% {
-    transform: translate(calc(0.0004 * var(--fly)), calc(-0.0004 * var(--fly)))
-      rotate(-0.04deg) scale(0.9998);
-  }
-  100% {
-    transform: translate(calc(0 * var(--fly)), calc(-0 * var(--fly)))
-      rotate(-0deg) scale(1);
-  }
-}
-
-@keyframes intro-fly-tr {
-  0% {
-    opacity: 0;
-    transform: translate(calc(0.7071 * var(--fly)), calc(-0.7071 * var(--fly)))
-      rotate(-70deg) scale(0.55);
-  }
-  12% {
-    opacity: 1;
-  }
-  5% {
-    transform: translate(calc(0.7073 * var(--fly)), calc(-0.7062 * var(--fly)))
-      rotate(-69.97deg) scale(0.5502);
-  }
-  10% {
-    transform: translate(calc(0.7087 * var(--fly)), calc(-0.6998 * var(--fly)))
-      rotate(-69.72deg) scale(0.5518);
-  }
-  15% {
-    transform: translate(calc(0.7122 * var(--fly)), calc(-0.6826 * var(--fly)))
-      rotate(-69.06deg) scale(0.5561);
-  }
-  20% {
-    transform: translate(calc(0.718 * var(--fly)), calc(-0.6492 * var(--fly)))
-      rotate(-67.76deg) scale(0.5644);
-  }
-  25% {
-    transform: translate(calc(0.7247 * var(--fly)), calc(-0.5947 * var(--fly)))
-      rotate(-65.62deg) scale(0.5781);
-  }
-  30% {
-    transform: translate(calc(0.7282 * var(--fly)), calc(-0.5152 * var(--fly)))
-      rotate(-62.44deg) scale(0.5986);
-  }
-  35% {
-    transform: translate(calc(0.7206 * var(--fly)), calc(-0.4088 * var(--fly)))
-      rotate(-58deg) scale(0.6272);
-  }
-  40% {
-    transform: translate(calc(0.69 * var(--fly)), calc(-0.2782 * var(--fly)))
-      rotate(-52.08deg) scale(0.6652);
-  }
-  45% {
-    transform: translate(calc(0.6212 * var(--fly)), calc(-0.1342 * var(--fly)))
-      rotate(-44.48deg) scale(0.714);
-  }
-  50% {
-    transform: translate(calc(0.5 * var(--fly)), calc(-0 * var(--fly)))
-      rotate(-35deg) scale(0.775);
-  }
-  55% {
-    transform: translate(calc(0.3563 * var(--fly)), calc(0.077 * var(--fly)))
-      rotate(-25.51deg) scale(0.836);
-  }
-  60% {
-    transform: translate(calc(0.2374 * var(--fly)), calc(0.0957 * var(--fly)))
-      rotate(-17.92deg) scale(0.8848);
-  }
-  65% {
-    transform: translate(calc(0.1492 * var(--fly)), calc(0.0846 * var(--fly)))
-      rotate(-12deg) scale(0.9228);
-  }
-  70% {
-    transform: translate(calc(0.0882 * var(--fly)), calc(0.0624 * var(--fly)))
-      rotate(-7.56deg) scale(0.9514);
-  }
-  75% {
-    transform: translate(calc(0.0483 * var(--fly)), calc(0.0396 * var(--fly)))
-      rotate(-4.38deg) scale(0.9719);
-  }
-  80% {
-    transform: translate(calc(0.0237 * var(--fly)), calc(0.0215 * var(--fly)))
-      rotate(-2.24deg) scale(0.9856);
-  }
-  85% {
-    transform: translate(calc(0.0097 * var(--fly)), calc(0.0093 * var(--fly)))
-      rotate(-0.94deg) scale(0.9939);
-  }
-  90% {
-    transform: translate(calc(0.0028 * var(--fly)), calc(0.0028 * var(--fly)))
-      rotate(-0.28deg) scale(0.9982);
-  }
-  95% {
-    transform: translate(calc(0.0004 * var(--fly)), calc(0.0004 * var(--fly)))
-      rotate(-0.04deg) scale(0.9998);
-  }
-  100% {
-    transform: translate(calc(0 * var(--fly)), calc(0 * var(--fly)))
-      rotate(-0deg) scale(1);
-  }
-}
-
-@keyframes intro-fly-bl {
-  0% {
-    opacity: 0;
-    transform: translate(calc(-0.7071 * var(--fly)), calc(0.7071 * var(--fly)))
-      rotate(-70deg) scale(0.55);
-  }
-  12% {
-    opacity: 1;
-  }
-  5% {
-    transform: translate(calc(-0.7073 * var(--fly)), calc(0.7062 * var(--fly)))
-      rotate(-69.97deg) scale(0.5502);
-  }
-  10% {
-    transform: translate(calc(-0.7087 * var(--fly)), calc(0.6998 * var(--fly)))
-      rotate(-69.72deg) scale(0.5518);
-  }
-  15% {
-    transform: translate(calc(-0.7122 * var(--fly)), calc(0.6826 * var(--fly)))
-      rotate(-69.06deg) scale(0.5561);
-  }
-  20% {
-    transform: translate(calc(-0.718 * var(--fly)), calc(0.6492 * var(--fly)))
-      rotate(-67.76deg) scale(0.5644);
-  }
-  25% {
-    transform: translate(calc(-0.7247 * var(--fly)), calc(0.5947 * var(--fly)))
-      rotate(-65.62deg) scale(0.5781);
-  }
-  30% {
-    transform: translate(calc(-0.7282 * var(--fly)), calc(0.5152 * var(--fly)))
-      rotate(-62.44deg) scale(0.5986);
-  }
-  35% {
-    transform: translate(calc(-0.7206 * var(--fly)), calc(0.4088 * var(--fly)))
-      rotate(-58deg) scale(0.6272);
-  }
-  40% {
-    transform: translate(calc(-0.69 * var(--fly)), calc(0.2782 * var(--fly)))
-      rotate(-52.08deg) scale(0.6652);
-  }
-  45% {
-    transform: translate(calc(-0.6212 * var(--fly)), calc(0.1342 * var(--fly)))
-      rotate(-44.48deg) scale(0.714);
-  }
-  50% {
-    transform: translate(calc(-0.5 * var(--fly)), calc(0 * var(--fly)))
-      rotate(-35deg) scale(0.775);
-  }
-  55% {
-    transform: translate(calc(-0.3563 * var(--fly)), calc(-0.077 * var(--fly)))
-      rotate(-25.51deg) scale(0.836);
-  }
-  60% {
-    transform: translate(calc(-0.2374 * var(--fly)), calc(-0.0957 * var(--fly)))
-      rotate(-17.92deg) scale(0.8848);
-  }
-  65% {
-    transform: translate(calc(-0.1492 * var(--fly)), calc(-0.0846 * var(--fly)))
-      rotate(-12deg) scale(0.9228);
-  }
-  70% {
-    transform: translate(calc(-0.0882 * var(--fly)), calc(-0.0624 * var(--fly)))
-      rotate(-7.56deg) scale(0.9514);
-  }
-  75% {
-    transform: translate(calc(-0.0483 * var(--fly)), calc(-0.0396 * var(--fly)))
-      rotate(-4.38deg) scale(0.9719);
-  }
-  80% {
-    transform: translate(calc(-0.0237 * var(--fly)), calc(-0.0215 * var(--fly)))
-      rotate(-2.24deg) scale(0.9856);
-  }
-  85% {
-    transform: translate(calc(-0.0097 * var(--fly)), calc(-0.0093 * var(--fly)))
-      rotate(-0.94deg) scale(0.9939);
-  }
-  90% {
-    transform: translate(calc(-0.0028 * var(--fly)), calc(-0.0028 * var(--fly)))
-      rotate(-0.28deg) scale(0.9982);
-  }
-  95% {
-    transform: translate(calc(-0.0004 * var(--fly)), calc(-0.0004 * var(--fly)))
-      rotate(-0.04deg) scale(0.9998);
-  }
-  100% {
-    transform: translate(calc(-0 * var(--fly)), calc(-0 * var(--fly)))
-      rotate(-0deg) scale(1);
-  }
-}
-
-@keyframes intro-fly-br {
-  0% {
-    opacity: 0;
-    transform: translate(calc(0.7071 * var(--fly)), calc(0.7071 * var(--fly)))
-      rotate(-70deg) scale(0.55);
-  }
-  12% {
-    opacity: 1;
-  }
-  5% {
-    transform: translate(calc(0.7062 * var(--fly)), calc(0.7073 * var(--fly)))
-      rotate(-69.97deg) scale(0.5502);
-  }
-  10% {
-    transform: translate(calc(0.6998 * var(--fly)), calc(0.7087 * var(--fly)))
-      rotate(-69.72deg) scale(0.5518);
-  }
-  15% {
-    transform: translate(calc(0.6826 * var(--fly)), calc(0.7122 * var(--fly)))
-      rotate(-69.06deg) scale(0.5561);
-  }
-  20% {
-    transform: translate(calc(0.6492 * var(--fly)), calc(0.718 * var(--fly)))
-      rotate(-67.76deg) scale(0.5644);
-  }
-  25% {
-    transform: translate(calc(0.5947 * var(--fly)), calc(0.7247 * var(--fly)))
-      rotate(-65.62deg) scale(0.5781);
-  }
-  30% {
-    transform: translate(calc(0.5152 * var(--fly)), calc(0.7282 * var(--fly)))
-      rotate(-62.44deg) scale(0.5986);
-  }
-  35% {
-    transform: translate(calc(0.4088 * var(--fly)), calc(0.7206 * var(--fly)))
-      rotate(-58deg) scale(0.6272);
-  }
-  40% {
-    transform: translate(calc(0.2782 * var(--fly)), calc(0.69 * var(--fly)))
-      rotate(-52.08deg) scale(0.6652);
-  }
-  45% {
-    transform: translate(calc(0.1342 * var(--fly)), calc(0.6212 * var(--fly)))
-      rotate(-44.48deg) scale(0.714);
-  }
-  50% {
-    transform: translate(calc(0 * var(--fly)), calc(0.5 * var(--fly)))
-      rotate(-35deg) scale(0.775);
-  }
-  55% {
-    transform: translate(calc(-0.077 * var(--fly)), calc(0.3563 * var(--fly)))
-      rotate(-25.51deg) scale(0.836);
-  }
-  60% {
-    transform: translate(calc(-0.0957 * var(--fly)), calc(0.2374 * var(--fly)))
-      rotate(-17.92deg) scale(0.8848);
-  }
-  65% {
-    transform: translate(calc(-0.0846 * var(--fly)), calc(0.1492 * var(--fly)))
-      rotate(-12deg) scale(0.9228);
-  }
-  70% {
-    transform: translate(calc(-0.0624 * var(--fly)), calc(0.0882 * var(--fly)))
-      rotate(-7.56deg) scale(0.9514);
-  }
-  75% {
-    transform: translate(calc(-0.0396 * var(--fly)), calc(0.0483 * var(--fly)))
-      rotate(-4.38deg) scale(0.9719);
-  }
-  80% {
-    transform: translate(calc(-0.0215 * var(--fly)), calc(0.0237 * var(--fly)))
-      rotate(-2.24deg) scale(0.9856);
-  }
-  85% {
-    transform: translate(calc(-0.0093 * var(--fly)), calc(0.0097 * var(--fly)))
-      rotate(-0.94deg) scale(0.9939);
-  }
-  90% {
-    transform: translate(calc(-0.0028 * var(--fly)), calc(0.0028 * var(--fly)))
-      rotate(-0.28deg) scale(0.9982);
-  }
-  95% {
-    transform: translate(calc(-0.0004 * var(--fly)), calc(0.0004 * var(--fly)))
-      rotate(-0.04deg) scale(0.9998);
-  }
-  100% {
-    transform: translate(calc(-0 * var(--fly)), calc(0 * var(--fly)))
-      rotate(-0deg) scale(1);
   }
 }
 

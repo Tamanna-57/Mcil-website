@@ -42,8 +42,9 @@ const MARK = { w: 390, h: 320 } as const;
 
 type Piece = {
   id: string;
-  /** Corner it flies in from — the angle its arc starts at. */
-  corner: "tl" | "tr" | "bl" | "br";
+  /** The edge it travels in from. */
+  side: "top" | "right" | "bottom" | "left";
+  /** Where it sits in the finished mark, in the artwork's own pixels. */
   x: number;
   y: number;
   w: number;
@@ -51,22 +52,26 @@ type Piece = {
 };
 
 /*
- * The monogram in quarters, one per corner of the screen.
+ * The monogram's own four shapes, one per side of the screen.
  *
- * The old sequence had four letters to throw about; a monogram is one shape,
- * so it is cut into four rectangles instead — each piece a window onto the
- * same file at its own offset. Because the cuts are straight and the pieces
- * are adjacent crops, they close with no seam: what lands is the artwork
- * itself, pixel for pixel.
+ * Not a grid: cutting the mark into rectangles gave four torn frames sliding
+ * about, which is what a crop looks like and not what a logo assembling looks
+ * like. The mark is genuinely made of four separate shapes — the arc over the
+ * top, the two rings under it, and the wedge between them — and they come
+ * apart cleanly, because nothing in the artwork touches anything else. Each
+ * one is its own file, so what travels is a whole smooth shape with its own
+ * curves, and what lands is the artwork itself, pixel for pixel.
+ *
+ * Each enters from the side it belongs on, so the mark closes inward rather
+ * than being posted in from off-stage.
+ *
+ * Re-run tools/split-mark.py if the artwork is ever replaced.
  */
-const HALF_W = MARK.w / 2;
-const HALF_H = MARK.h / 2;
-
 const PIECES: Piece[] = [
-  { id: "tl", corner: "tl", x: 0, y: 0, w: HALF_W, h: HALF_H },
-  { id: "tr", corner: "tr", x: HALF_W, y: 0, w: HALF_W, h: HALF_H },
-  { id: "bl", corner: "bl", x: 0, y: HALF_H, w: HALF_W, h: HALF_H },
-  { id: "br", corner: "br", x: HALF_W, y: HALF_H, w: HALF_W, h: HALF_H },
+  { id: "top", side: "top", x: 78, y: 0, w: 193, h: 219 },
+  { id: "left", side: "left", x: 0, y: 113, w: 121, h: 204 },
+  { id: "right", side: "right", x: 207, y: 105, w: 183, h: 212 },
+  { id: "tri", side: "bottom", x: 170, y: 240, w: 52, h: 80 },
 ];
 
 /* Whether to skip the sequence entirely. Read through useSyncExternalStore
@@ -82,7 +87,7 @@ function shouldSkip() {
 
 const neverSkipOnServer = () => false;
 
-/** A quarter of the mark, windowed out of the one artwork file. */
+/** One shape of the mark, drawn from its own file. */
 function LogoPiece({ piece, className }: { piece: Piece; className: string }) {
   return (
     <span
@@ -93,19 +98,17 @@ function LogoPiece({ piece, className }: { piece: Piece; className: string }) {
           "--y": piece.y,
           "--w": piece.w,
           "--h": piece.h,
-          "--bx": piece.x,
-          "--by": piece.y,
+          "--img": `url("/images/mark-${piece.id}.png")`,
         } as React.CSSProperties
       }
-      data-corner={piece.corner}
+      data-side={piece.side}
     />
   );
 }
 
 /**
- * The opening: M, C, I and L start in the four corners, each swings in along
- * its own arc — all four turning the same way, so the four arcs read as one
- * circle — and they close into the wordmark. METAL COATINGS (INDIA) LTD then
+ * The opening: the mark's four shapes come in from the four sides, each along
+ * its own edge, and close into the monogram. METAL COATINGS (INDIA) LTD then
  * opens from its centre underneath.
  *
  * Then the lockup travels to the top-left and parks exactly on the header's
@@ -274,7 +277,7 @@ export default function SiteIntro() {
         }
       >
         {PIECES.map((piece) => (
-          <LogoPiece key={piece.id} piece={piece} className="intro-letter" />
+          <LogoPiece key={piece.id} piece={piece} className="intro-piece" />
         ))}
         {/* Real type, as in the header — the name is not part of the mark's
             artwork, so it is set rather than cropped. */}
