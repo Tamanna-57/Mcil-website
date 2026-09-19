@@ -53,7 +53,7 @@ export const products: Product[] = [
     id: "cold-rolled",
     name: "Cold Rolled Strips & Coils",
     wordmark: "Cold Rolled",
-    body: "{Cold rolled strips and coils} are reduced from hot rolled input at room temperature and finished to gauge, with thickness held across the full width rather than sampled at the edges.",
+    body: "{Cold rolled strips and coils} are reduced from hot rolled input at room temperature and finished to gauge, with thickness held across the full width.",
     layout: "wordmark",
     plate: {
       src: "/images/hero-2.jpg",
