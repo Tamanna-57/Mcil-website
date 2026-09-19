@@ -8,8 +8,8 @@ import {
 } from "@/lib/contact-locations";
 
 function telHref(phone: string) {
-  /* Works numbers are published as a pair ("0129-2307602 / 2307422"); the link
-     takes the first, the label keeps both. */
+  /* A number may be published as a pair separated by a slash, as the works
+     landlines were; the link takes the first, the label keeps both. */
   return `tel:${phone.split("/")[0].trim().replace(/[\s-]/g, "")}`;
 }
 
