@@ -27,6 +27,9 @@
   /* Warm accent. Low contrast on white by design — decorative eyebrows and
      marks only, never body copy. */
   --accent: #d99a5b;
+  /* The same copper taken down far enough to carry small type on a pale
+     ground, where --accent itself would not be readable. */
+  --accent-ink: #8f5320;
 
   /*
    * Brand navy — the ground the MCIL logo is set on. The bar carries it on
@@ -1742,4 +1745,41 @@ body {
     font-size: 8px;
     letter-spacing: 0.11em;
   }
+}
+
+/* ------------------------------------------------------------------ */
+/* Latest News                                                         */
+/* ------------------------------------------------------------------ */
+
+/*
+ * Card grounds for the news section.
+ *
+ * The section sits between the near-white page and the navy footer, so a flat
+ * navy card there reads as a piece of the chrome that has drifted up the page.
+ * These grounds are deliberately off that navy: a warm graphite that the steel
+ * photography and the copper accent both sit well on, and a sand card cut from
+ * the accent itself for the card that alternates with it.
+ */
+.news-ink {
+  background: linear-gradient(
+    155deg,
+    color-mix(in srgb, var(--accent) 7%, #262128) 0%,
+    #1f1b22 100%
+  );
+}
+
+.news-sand {
+  background: color-mix(in srgb, var(--accent) 20%, var(--surface));
+}
+
+/* White card on the page's own ground, with a hairline to hold its edge. */
+.news-paper {
+  background: var(--surface);
+  box-shadow: inset 0 0 0 1px
+    color-mix(in srgb, var(--steel-900) 10%, transparent);
+}
+
+/* Deep slate-teal — furthest from the navy, and the accent's near opposite. */
+.news-teal {
+  background: linear-gradient(155deg, #1b3a39 0%, #122a2b 100%);
 }
