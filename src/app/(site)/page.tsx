@@ -1,4 +1,5 @@
 import Hero from "@/components/Hero";
+import LatestNews from "@/components/LatestNews";
 import SiteIntro from "@/components/SiteIntro";
 import { getContent } from "@/lib/content/store";
 
@@ -29,6 +30,8 @@ export default async function Home() {
           {home.about.body}
         </p>
       </section>
+
+      <LatestNews />
     </main>
   );
 }
