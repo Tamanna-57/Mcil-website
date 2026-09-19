@@ -27,95 +27,60 @@ import {
 /**
  * Colourway.
  *
- * The section sits between a near-white page and the navy footer, so the cards
- * are the one thing here with a ground of their own. Cards alternate between
- * two tones — the reference runs a darker card above a lighter one — and the
- * feed carries the lighter of the two so it reads as a panel rather than a
- * third card.
+ * The section sits between a near-white page and the navy footer, so left on
+ * the site's blues it read as a piece of the chrome that had drifted up the
+ * page. Each card carries its own ground instead, cycling through a deep
+ * teal, a copper cut from the accent, and a pale sand — the three colours the
+ * steel photography sits on without fighting it. The feed keeps the warm
+ * graphite so it reads as a panel rather than a fourth card.
+ *
+ * Tones are applied in order and repeat, so a fourth card starts again at
+ * teal. Reordering this array reorders the section.
  */
-type Scheme = {
-  /** Card grounds, applied in order and repeated. */
-  cards: [string, string];
-  /** Text on a card. */
-  card: {
-    eyebrow: string;
-    title: string;
-    link: string;
-    date: string;
-  };
-  /** The feed panel. */
-  feed: {
-    panel: string;
-    rule: string;
-    avatar: string;
-    name: string;
-    meta: string;
-    body: string;
-    frame: string;
-  };
+type CardTone = {
+  /** Ground class, defined in globals.css. */
+  ground: string;
+  /** Category pill. */
+  chip: string;
+  title: string;
+  link: string;
+  date: string;
 };
 
-const SCHEMES: Record<string, Scheme> = {
-  /* Ink and sand: a warm near-black against a pale sand card, both lifted off
-     the page rather than continuing the navy of the chrome. */
-  ink: {
-    cards: ["news-ink", "news-sand"],
-    card: {
-      eyebrow: "text-accent",
-      title: "text-white",
-      link: "text-accent",
-      date: "text-white/55",
-    },
-    feed: {
-      panel: "news-ink",
-      rule: "border-white/10",
-      avatar: "bg-white/10",
-      name: "text-white",
-      meta: "text-white/45",
-      body: "text-white/75",
-      frame: "ring-white/10",
-    },
+const CARD_TONES: CardTone[] = [
+  {
+    ground: "news-teal",
+    chip: "bg-white/12 text-[var(--news-gold)]",
+    title: "text-white",
+    link: "text-[var(--news-gold)]",
+    date: "text-white/55",
   },
-  /* Teal: a deep slate-teal, the accent's near opposite and the furthest of
-     the three from the navy of the header and footer. */
-  teal: {
-    cards: ["news-teal", "news-sand"],
-    card: {
-      eyebrow: "text-accent",
-      title: "text-white",
-      link: "text-accent",
-      date: "text-white/55",
-    },
-    feed: {
-      panel: "news-teal",
-      rule: "border-white/10",
-      avatar: "bg-white/10",
-      name: "text-white",
-      meta: "text-white/45",
-      body: "text-white/75",
-      frame: "ring-white/10",
-    },
+  {
+    ground: "news-copper",
+    chip: "bg-black/25 text-[var(--news-cream)]",
+    title: "text-white",
+    link: "text-[var(--news-cream)]",
+    date: "text-white/65",
   },
-  /* Paper: white cards on the page's own ground, navy type, the warm accent
-     doing the work the dark ground used to. */
-  paper: {
-    cards: ["news-paper", "news-paper"],
-    card: {
-      eyebrow: "text-brand-deep",
-      title: "text-steel-900",
-      link: "text-accent",
-      date: "text-steel-800/70",
-    },
-    feed: {
-      panel: "news-paper",
-      rule: "border-steel-900/10",
-      avatar: "bg-brand-pale",
-      name: "text-steel-900",
-      meta: "text-steel-800/60",
-      body: "text-steel-800",
-      frame: "ring-steel-900/10",
-    },
+  {
+    ground: "news-sand",
+    chip: "bg-[var(--accent-ink)]/12 text-[var(--accent-ink)]",
+    title: "text-steel-900",
+    link: "text-[var(--accent-ink)]",
+    date: "text-steel-800/70",
   },
+];
+
+/** The feed panel, which keeps one tone of its own. */
+const FEED_TONE = {
+  panel: "news-ink",
+  rule: "border-white/10",
+  divide: "divide-white/10",
+  avatar: "bg-[var(--accent-ink)]",
+  name: "text-white",
+  meta: "text-[var(--news-gold)]/80",
+  body: "text-white/75",
+  frame: "ring-white/10",
 };
 
 export default function LatestNews({
@@ -123,15 +88,12 @@ export default function LatestNews({
   items = newsItems,
   channel = socialChannel,
   posts = socialPosts,
-  scheme = "ink",
 }: {
   heading?: typeof newsHeading;
   items?: NewsItem[];
   channel?: typeof socialChannel;
   posts?: SocialPost[];
-  scheme?: keyof typeof SCHEMES;
 }) {
-  const tone = SCHEMES[scheme] ?? SCHEMES.ink;
   const sectionRef = useRef<HTMLElement | null>(null);
   const [visible, setVisible] = useState(false);
 
@@ -164,7 +126,7 @@ export default function LatestNews({
       ref={sectionRef}
       id="news"
       aria-label={heading.label}
-      className="bg-background px-6 py-20 sm:px-10 lg:px-[6.5vw] lg:py-28"
+      className="news-band px-6 py-20 sm:px-10 lg:px-[6.5vw] lg:py-28"
     >
       <div className="mx-auto w-full max-w-6xl">
         <h2
@@ -174,17 +136,25 @@ export default function LatestNews({
           {heading.title}
         </h2>
 
+        {/* A short copper rule under the title, so the heading carries some of
+            the section's colour rather than sitting on the page alone. */}
+        <span
+          className="hl-reveal mx-auto mt-5 block h-px w-16 bg-[var(--accent-ink)]/50"
+          data-visible={visible}
+          style={{ animationDelay: "60ms" }}
+          aria-hidden
+        />
+
         {/* The feed is the narrower column; the cards take the rest. */}
         <div className="mt-10 grid gap-4 lg:mt-14 lg:grid-cols-[minmax(0,0.82fr)_minmax(0,1.18fr)] lg:items-stretch">
-          <Feed channel={channel} posts={posts} tone={tone} visible={visible} />
+          <Feed channel={channel} posts={posts} visible={visible} />
 
           <div className="flex flex-col gap-4">
             {items.map((item, i) => (
               <Card
                 key={item.id}
                 item={item}
-                tone={tone}
-                ground={tone.cards[i % tone.cards.length]}
+                tone={CARD_TONES[i % CARD_TONES.length]}
                 /* Odd cards carry the photograph on the right. */
                 flipped={i % 2 === 1}
                 index={i}
@@ -201,35 +171,19 @@ export default function LatestNews({
 function Card({
   item,
   tone,
-  ground,
   flipped,
   index,
   visible,
 }: {
   item: NewsItem;
-  tone: Scheme;
-  ground: string;
+  tone: CardTone;
   flipped: boolean;
   index: number;
   visible: boolean;
 }) {
-  /* A card on a pale ground carries its type in navy; the tone map's card
-     colours are written for the dark ground, so the pale one overrides them. */
-  const pale = ground === "news-sand" || ground === "news-paper";
-  const text = pale
-    ? {
-        /* The copper the accent is cut from, dark enough to carry small type —
-           the accent itself is a decorative tint and too pale to read here. */
-        eyebrow: "text-[var(--accent-ink)]",
-        title: "text-steel-900",
-        link: "text-[var(--accent-ink)]",
-        date: "text-steel-800/70",
-      }
-    : tone.card;
-
   return (
     <article
-      className={`hl-reveal group relative grid overflow-hidden rounded-2xl sm:grid-cols-2 ${ground}`}
+      className={`hl-reveal group relative grid overflow-hidden rounded-2xl sm:grid-cols-2 ${tone.ground}`}
       data-visible={visible}
       style={{ animationDelay: `${200 + index * 110}ms` }}
     >
@@ -248,14 +202,16 @@ function Card({
       </div>
 
       <div className="flex flex-col p-6 sm:p-8">
-        <p
-          className={`text-[10px] font-semibold tracking-[0.24em] uppercase ${text.eyebrow}`}
+        {/* The category is a pill rather than a line of type, so each card
+            carries a second patch of its own colour above the headline. */}
+        <span
+          className={`inline-flex w-fit rounded-full px-2.5 py-1 text-[10px] font-semibold tracking-[0.2em] uppercase ${tone.chip}`}
         >
           {item.category}
-        </p>
+        </span>
 
         <h3
-          className={`mt-4 font-display text-base leading-snug font-light sm:text-lg ${text.title}`}
+          className={`mt-4 font-display text-base leading-snug font-light sm:text-lg ${tone.title}`}
         >
           {/* The whole card is the link; the headline carries it so the
               accessible name is the headline itself. */}
@@ -268,7 +224,7 @@ function Card({
         </h3>
 
         <span
-          className={`mt-4 inline-flex w-fit items-center gap-1.5 text-[10px] font-semibold tracking-[0.2em] uppercase ${text.link}`}
+          className={`mt-4 inline-flex w-fit items-center gap-1.5 text-[10px] font-semibold tracking-[0.2em] uppercase ${tone.link}`}
         >
           Read more
           <svg width="14" height="8" viewBox="0 0 14 8" fill="none" aria-hidden>
@@ -285,7 +241,7 @@ function Card({
 
         <time
           dateTime={item.date}
-          className={`mt-auto pt-6 text-xs italic ${text.date}`}
+          className={`mt-auto pt-6 text-xs italic ${tone.date}`}
         >
           {item.dateLabel}
         </time>
@@ -297,15 +253,13 @@ function Card({
 function Feed({
   channel,
   posts,
-  tone,
   visible,
 }: {
   channel: typeof socialChannel;
   posts: SocialPost[];
-  tone: Scheme;
   visible: boolean;
 }) {
-  const feed = tone.feed;
+  const feed = FEED_TONE;
 
   return (
     /* On lg the panel is taken out of flow so the row's height is set by the
@@ -349,7 +303,7 @@ function Feed({
             than the cards beside it are tall. On lg it is stretched to the
             cards' height by the grid; below that it keeps its own max height. */}
         <ol
-          className={`min-h-0 flex-1 divide-y overflow-y-auto ${feed.rule.replace("border-", "divide-")}`}
+          className={`min-h-0 flex-1 divide-y overflow-y-auto ${feed.divide}`}
         >
           {posts.map((post) => (
             <li key={post.id} className="px-5 py-5">
