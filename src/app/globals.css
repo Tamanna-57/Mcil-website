@@ -52,7 +52,7 @@
   /* Hero rhythm. One slide = sweep-in, hold, sweep-out, rest. */
   /* Height of the fixed site header; sticky sections reserve it. */
   /* The logo lockup plus the bar's padding — see LOGO_HEIGHT in brand.ts. */
-  --header-h: 87px;
+  --header-h: 97px;
 
   --hero-slide-duration: 4500ms;
   --hero-fade-duration: 1000ms;
@@ -995,7 +995,7 @@ body {
    * shrink holds it still — so the offset it hands over is the whole story and
    * the scale does not drag the logo off course.
    */
-  transform-origin: calc(var(--letters-x) * var(--u)) 0;
+  transform-origin: 0 0;
 }
 
 /*
@@ -1017,20 +1017,52 @@ body {
   animation: intro-tag-out 280ms cubic-bezier(0.4, 0, 1, 1) both;
 }
 
-/* Each piece is a window onto the one artwork file: same image, offset so only
-   its own glyph shows. One request, five pieces, no slicing into files. */
-.intro-letter,
-.intro-tagline {
+/* Each quarter is a window onto the one artwork file: same image, offset so
+   only its own corner shows. One request, four pieces, no slicing into files. */
+.intro-letter {
   position: absolute;
   left: calc(var(--x) * var(--u));
   top: calc(var(--y) * var(--u));
   width: calc(var(--w) * var(--u));
   height: calc(var(--h) * var(--u));
-  background-image: url("/images/mcil-logo.png");
+  background-image: url("/images/mcil-mark.png");
   background-repeat: no-repeat;
-  background-size: calc(2022 * var(--u)) calc(778 * var(--u));
+  background-size: calc(390 * var(--u)) calc(320 * var(--u));
   background-position: calc(var(--bx) * var(--u) * -1)
     calc(var(--by) * var(--u) * -1);
+}
+
+/*
+ * The name, set rather than cropped — the same real type the header carries.
+ *
+ * Centred under the mark and out of flow, so the lockup box stays exactly the
+ * mark and the dock has nothing to subtract. It is sized off --u like
+ * everything else here, so it grows and shrinks with the stage.
+ */
+.intro-tagline {
+  position: absolute;
+  top: calc((320 + 46) * var(--u));
+  /*
+   * A box of its own, wider than the mark and centred on it, with the line
+   * centred inside that.
+   *
+   * Two things rule out the obvious centring. `intro-tag` animates
+   * `transform`, so a centring translate here is simply replaced by the
+   * animation's own — which left the line hanging off the mark's middle. And
+   * the same animation ends on `clip-path: inset(0 0 0 0)`, which clips to
+   * this element's box — so a box only as wide as the mark cut the line off
+   * mid-word however it was centred. Hence an explicit width, in the stage's
+   * own unit, with room for the line to sit inside it.
+   */
+  left: calc((390 - 1500) / 2 * var(--u));
+  width: calc(1500 * var(--u));
+  text-align: center;
+  white-space: nowrap;
+  font-size: calc(46 * var(--u));
+  line-height: 1;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: color-mix(in srgb, #fff 88%, transparent);
 }
 
 /*
