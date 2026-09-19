@@ -44,8 +44,8 @@ export const navItems: NavItem[] = [
     href: "/about",
     panel: {
       title: "Who We Are",
-      body: "Metal Coatings (India) Ltd has been cold rolling steel since 1994 — strips, coils and HRPO, finished to a tolerance rather than a target.",
-      caption: "Promoted by the Khandelwal family, December 1994",
+      body: "Metal Coatings (India) Ltd has been cold rolling steel since 1996 — strips, coils and HRPO, finished to a tolerance rather than a target.",
+      caption: "Promoted by the Khandelwal family, December 1996",
       links: [
         { label: "Our Story", href: "/about" },
         { label: "How a Coil Is Made", href: "/about#process" },

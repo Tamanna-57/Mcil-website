@@ -8,7 +8,7 @@
 
 export const company = {
   legalName: "Metal Coatings (India) Limited",
-  incorporated: "December 1994",
+  incorporated: "December 1996",
   promoters: "Khandelwal family",
   cin: "L74899DL1994PLC063387",
   bseScripCode: "531810",

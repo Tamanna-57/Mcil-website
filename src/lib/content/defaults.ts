@@ -33,7 +33,7 @@ export const defaultContent: SiteContent = {
     about: {
       eyebrow: "About MCIL",
       title:
-        "A public limited company promoted by the Khandelwal family in December 1994, manufacturing cold rolled steel strips, coils and HRPO steel.",
+        "A public limited company promoted by the Khandelwal family in December 1996, manufacturing cold rolled steel strips, coils and HRPO steel.",
       body: "MCIL supplies auto components, white goods, electrical equipment and power transmission manufacturers, and is BIS certified under IS: 513:2008 (Licence no. CM/L-9512364723).",
     },
   },
@@ -43,7 +43,7 @@ export const defaultContent: SiteContent = {
       eyebrow: "About Us",
       title: "Steel finished to a tolerance, not a target",
       standfirst:
-        "Metal Coatings (India) Ltd has been cold rolling steel since 1994, supplying auto components, white goods, electrical equipment and power transmission manufacturers across India.",
+        "Metal Coatings (India) Ltd has been cold rolling steel since 1996, supplying to auto components, white goods, electrical equipment and power transmission manufacturers across India.",
       image: "/images/process-4.jpg",
       alt: "Finished cold rolled coils lined up for despatch",
     },
