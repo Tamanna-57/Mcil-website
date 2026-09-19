@@ -17,10 +17,10 @@ export const advantage = {
   eyebrow: "The MCIL Advantage",
   title: "Built for the tolerances our customers work to",
   standfirst:
-    "A public limited company promoted by the Khandelwal family in December 1994, manufacturing cold rolled steel strips, coils and HRPO steel from a single integrated line.",
+    "A public limited company promoted by the Khandelwal family in December 1996, manufacturing cold rolled steel strips, coils and HRPO steel from a single integrated line.",
   image: "/images/hero-2.jpg",
   alt: "Cold rolled coils in the MCIL finished goods bay",
-  badgeLabel: "Since 1994",
+  badgeLabel: "Since 1996",
   badgeText: "Cold Rolled · HRPO · Galvanised",
   points: [
     {
@@ -36,7 +36,7 @@ export const advantage = {
     {
       id: "supply",
       title: "Dependable Supply",
-      body: "Three decades of supplying auto component, white goods, electrical equipment and power transmission manufacturers to schedule.",
+      body: "Three decades of supplying to auto components, white goods, electrical equipment and power transmission manufacturers to schedule.",
     },
   ] as AdvantagePoint[],
 };

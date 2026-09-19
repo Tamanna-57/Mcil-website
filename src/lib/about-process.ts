@@ -26,7 +26,7 @@ export const processSteps: ProcessStep[] = [
     title: "Hot rolled coils arrive",
     body: "Every run starts with hot rolled coil sourced to specification. Each lot is checked for gauge, width and surface condition before it is cleared to the pickling line.",
     facts: [
-      { label: "Coil weight", value: "Up to 25 MT" },
+      { label: "Coil weight", value: "Up to 30 MT" },
       { label: "Incoming gauge", value: "1.8 – 6.0 mm" },
     ],
     image: "/images/process-1.jpg",
@@ -38,8 +38,8 @@ export const processSteps: ProcessStep[] = [
     title: "Reduced at room temperature",
     body: "The strip passes through a series of rolls that bring it down to finished gauge without heat. Cold work tightens the grain, lifts yield strength and leaves a far brighter surface than hot rolling can.",
     facts: [
-      { label: "Reduction", value: "Up to 75%" },
-      { label: "Finished gauge", value: "0.12 – 2.5 mm" },
+      { label: "Reduction", value: "Up to 85%" },
+      { label: "Finished gauge", value: "0.15 – 3.2 mm" },
     ],
     image: "/images/process-2.jpg",
     alt: "Steel strip running through the cold rolling mill stands",
@@ -51,7 +51,7 @@ export const processSteps: ProcessStep[] = [
     body: "Thickness and flatness are measured continuously along the line. Strip is slit to ordered width, edge-trimmed and inspected before it is wound, so what reaches the customer needs no rework.",
     facts: [
       { label: "Gauge tolerance", value: "± 0.01 mm" },
-      { label: "Width range", value: "25 – 1250 mm" },
+      { label: "Width range", value: "25 – 500 mm" },
     ],
     image: "/images/process-3.jpg",
     alt: "Cold rolled steel strip running out along the finishing line",
