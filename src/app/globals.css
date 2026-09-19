@@ -983,8 +983,26 @@ body {
  */
 .intro-lockup {
   --u: clamp(0.16px, 0.027vw, 0.4px);
-  --fly: clamp(230px, 46vmin, 560px);
+  /*
+   * How far each shape starts outside its resting place.
+   *
+   * Short on purpose. Thrown in from across the screen the four shapes read
+   * as a logo that has come apart — four things moving separately, which is
+   * exactly what a mark assembling should not look like. Starting just
+   * outside the mark keeps them reading as one thing gathering.
+   */
+  --fly: clamp(64px, 11vmin, 132px);
   --intro-settle: cubic-bezier(0.16, 0.84, 0.24, 1);
+  /*
+   * The turn gets its own curve.
+   *
+   * --intro-settle is heavily front-loaded, which is right for a shape
+   * travelling into place and wrong for a rotation: it spent the turn in the
+   * first fifth of the beat and then crawled, so the mark looked static while
+   * it was still nominally moving. This one holds back at the start, carries
+   * the turn through the middle where the shapes are meeting, and eases shut.
+   */
+  --intro-turn: cubic-bezier(0.62, 0.02, 0.24, 1);
 
   position: relative;
   width: calc(var(--logo-w) * var(--u));
@@ -1019,6 +1037,32 @@ body {
 }
 
 /*
+ * The turn.
+ *
+ * The reference this follows does not simply slide its parts into place: the
+ * assembly revolves about its own centre as it closes, and that turn is most
+ * of why it reads as one mark forming rather than several pieces arriving.
+ * It runs long and settles late, so the last of the movement is the whole
+ * mark rotating home after the shapes have met.
+ */
+.intro-mark {
+  position: absolute;
+  inset: 0;
+  transform-origin: 50% 50%;
+  animation: intro-revolve 1560ms var(--intro-turn) both;
+  will-change: transform;
+}
+
+@keyframes intro-revolve {
+  0% {
+    transform: rotate(-26deg) scale(1.1);
+  }
+  100% {
+    transform: rotate(0deg) scale(1);
+  }
+}
+
+/*
  * Each shape is its own file, laid at its own place in the mark.
  *
  * Four small transparent PNGs rather than one sheet windowed four ways: a
@@ -1047,7 +1091,7 @@ body {
  */
 .intro-tagline {
   position: absolute;
-  top: calc((320 + 46) * var(--u));
+  top: calc((320 + 54) * var(--u));
   /*
    * A box of its own, wider than the mark and centred on it, with the line
    * centred inside that.
@@ -1064,7 +1108,7 @@ body {
   width: calc(1500 * var(--u));
   text-align: center;
   white-space: nowrap;
-  font-size: calc(46 * var(--u));
+  font-size: calc(62 * var(--u));
   line-height: 1;
   letter-spacing: 0.22em;
   text-transform: uppercase;
@@ -1085,19 +1129,19 @@ body {
  * and nothing moves at all.
  */
 .intro-piece[data-side="top"] {
-  animation: intro-in-top 1180ms var(--intro-settle) 200ms both;
+  animation: intro-in-top 980ms var(--intro-settle) 120ms both;
 }
 
 .intro-piece[data-side="left"] {
-  animation: intro-in-left 1180ms var(--intro-settle) 320ms both;
+  animation: intro-in-left 980ms var(--intro-settle) 200ms both;
 }
 
 .intro-piece[data-side="right"] {
-  animation: intro-in-right 1180ms var(--intro-settle) 320ms both;
+  animation: intro-in-right 980ms var(--intro-settle) 200ms both;
 }
 
 .intro-piece[data-side="bottom"] {
-  animation: intro-in-bottom 900ms var(--intro-settle) 700ms both;
+  animation: intro-in-bottom 860ms var(--intro-settle) 380ms both;
 }
 
 /*
@@ -1108,7 +1152,7 @@ body {
 @keyframes intro-in-top {
   0% {
     opacity: 0;
-    transform: translate3d(0, calc(var(--fly) * -1), 0) scale(1.06);
+    transform: translate3d(0, calc(var(--fly) * -1), 0);
   }
   26% {
     opacity: 1;
@@ -1122,7 +1166,7 @@ body {
 @keyframes intro-in-left {
   0% {
     opacity: 0;
-    transform: translate3d(calc(var(--fly) * -1), 0, 0) scale(1.06);
+    transform: translate3d(calc(var(--fly) * -1), 0, 0);
   }
   26% {
     opacity: 1;
@@ -1136,7 +1180,7 @@ body {
 @keyframes intro-in-right {
   0% {
     opacity: 0;
-    transform: translate3d(var(--fly), 0, 0) scale(1.06);
+    transform: translate3d(var(--fly), 0, 0);
   }
   26% {
     opacity: 1;
