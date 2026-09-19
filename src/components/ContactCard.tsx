@@ -11,6 +11,21 @@ import {
 
 
 
+/**
+ * A 68-byte image on the host the map draws its tiles and sprites from.
+ *
+ * Content blockers — Brave's Shields, uBlock and the rest — stop the Google
+ * Maps embed at the network, and when they do the browser paints its own
+ * broken-frame icon inside the iframe. Nothing in the page can see that: the
+ * frame is cross-origin, and it reports a perfectly ordinary `load` either
+ * way. Asking for one small asset from the same host is the way to tell the
+ * two apart, and /contact already preconnects here so it costs no handshake.
+ */
+const MAPS_PROBE = "https://maps.gstatic.com/mapfiles/transparent.png";
+
+/** How long to wait for the probe before treating the map as unavailable. */
+const PROBE_TIMEOUT_MS = 4000;
+
 /** Mount the remaining maps when the browser is next idle, so warming them
     never competes with the one the visitor is actually looking at. */
 function whenIdle(run: () => void) {
@@ -50,6 +65,8 @@ export default function ContactCard({
   const [activeId, setActiveId] = useState(firstId);
   const [loadedIds, setLoadedIds] = useState<string[]>([]);
   const [mountedIds, setMountedIds] = useState<string[]>([firstId]);
+  /* null while the probe is out; true once we know the embed cannot draw. */
+  const [blocked, setBlocked] = useState<boolean | null>(null);
   const active = locations.find((l) => l.id === activeId) ?? locations[0];
   const allMounted = mountedIds.length === locations.length;
   const firstLoaded = loadedIds.includes(firstId);
@@ -81,6 +98,32 @@ export default function ContactCard({
     return whenIdle(() => setMountedIds(locations.map((l) => l.id)));
   }, [allMounted, firstLoaded, locations]);
 
+  /* Is Google Maps actually reachable from this browser? See MAPS_PROBE. */
+  useEffect(() => {
+    let settled = false;
+    const probe = new Image();
+
+    const decide = (isBlocked: boolean) => {
+      if (settled) return;
+      settled = true;
+      setBlocked(isBlocked);
+    };
+
+    probe.onload = () => decide(false);
+    probe.onerror = () => decide(true);
+    /* A blocker that stalls the request rather than refusing it never fires
+       either handler, so the timeout is the answer in that case. */
+    const timer = window.setTimeout(() => decide(true), PROBE_TIMEOUT_MS);
+    probe.src = `${MAPS_PROBE}?v=${Date.now()}`;
+
+    return () => {
+      settled = true;
+      window.clearTimeout(timer);
+      probe.onload = null;
+      probe.onerror = null;
+    };
+  }, []);
+
   const mount = (id: string) =>
     setMountedIds((ids) => (ids.includes(id) ? ids : [...ids, id]));
 
@@ -88,7 +131,7 @@ export default function ContactCard({
     <div className="contact-card overflow-hidden rounded-[1.75rem]">
       <div className="relative isolate h-[400px] bg-brand-pale sm:h-[420px] lg:h-[450px]">
         {locations.map((location) => {
-          if (!mountedIds.includes(location.id)) return null;
+          if (blocked || !mountedIds.includes(location.id)) return null;
           const isActive = location.id === active.id;
           return (
             <iframe
@@ -120,11 +163,51 @@ export default function ContactCard({
             has the same ground to arrive over. */}
         <div
           className={`cc-map-skeleton absolute inset-0 -z-10 transition-opacity duration-500 ${
-            loadedIds.includes(active.id) ? "opacity-0" : "opacity-100"
+            loadedIds.includes(active.id) && !blocked ? "opacity-0" : "opacity-100"
           }`}
-          data-loaded={loadedIds.includes(active.id)}
+          data-loaded={loadedIds.includes(active.id) && !blocked}
           aria-hidden
         />
+
+        {/* What stands in when the embed cannot draw at all.
+            Without this the browser fills the frame with its own broken-page
+            icon, which reads as a broken site rather than a blocked one — and
+            leaves no way to reach the map. The address and the link do the
+            job the map was there to do.
+
+            It sits in the band between the headline and the location pills,
+            which both keep their place whether or not the map draws. */}
+        {blocked ? (
+          <div className="absolute inset-0 z-[1] flex items-center justify-center px-6 pt-24 pb-16 sm:pt-28">
+            <div className="max-w-sm rounded-2xl bg-white/85 px-5 py-4 text-center backdrop-blur-sm">
+              <p className="text-sm leading-relaxed text-steel-900">
+                {active.address}
+              </p>
+              <p className="mt-2 text-xs leading-relaxed text-steel-800/70">
+                The map cannot be shown — this browser is blocking Google Maps.
+              </p>
+              <a
+                href={mapLink(active)}
+                target="_blank"
+                rel="noreferrer"
+                className="mt-3 inline-flex items-center gap-2 rounded-full bg-brand-deep px-4 py-2 text-[11px] font-semibold tracking-[0.1em] text-white uppercase transition-colors hover:bg-navy"
+              >
+                Open in Google Maps
+                <svg
+                  width="13"
+                  height="9"
+                  viewBox="0 0 15 10"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="1.8"
+                  aria-hidden
+                >
+                  <path d="M0 5h13M9 1l4 4-4 4" strokeLinecap="round" />
+                </svg>
+              </a>
+            </div>
+          </div>
+        ) : null}
 
         {/* Only as much wash as the headline needs: a band at the top that is
             gone by the middle, so the streets and the pin stay crisp. It is
