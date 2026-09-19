@@ -23,7 +23,7 @@ export const company = {
   works:
     "Plot No. 113, HSIIDC Industrial Estate, Sector 59, Faridabad 121 004, Haryana",
   phone: "011-4180 8125",
-  worksPhone: "0129-2307602 / 2307422",
+  worksPhone: "98990 56287",
   email: "info@mcilindia.net",
   complianceOfficer: {
     name: "Mrs. Shimpy Goyal",
