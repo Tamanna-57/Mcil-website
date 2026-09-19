@@ -6,6 +6,7 @@ import { useCallback, useMemo, useState } from "react";
 import { sections } from "@/lib/admin/schema";
 import type { SiteContent } from "@/lib/content/types";
 import { FieldList } from "./Fields";
+import ImportReport from "./ImportReport";
 
 type Json = Record<string, unknown>;
 type SectionId = (typeof sections)[number]["id"];
@@ -195,6 +196,20 @@ export default function Dashboard({ content }: { content: SiteContent }) {
                   {schema.blurb}
                 </p>
               </div>
+
+              {/* The investor figures can be lifted out of the annual report
+                  rather than retyped; everything it fills in is still edited
+                  and saved through the ordinary form below. */}
+              {active === "investors" ? (
+                <div className="mb-6">
+                  <ImportReport
+                    investors={draft.investors ?? {}}
+                    onApply={(next) =>
+                      setDraft((current) => ({ ...current, investors: next }))
+                    }
+                  />
+                </div>
+              ) : null}
 
               <div className="rounded-2xl bg-surface p-5 ring-1 ring-steel-900/10 sm:p-7">
                 <FieldList

@@ -503,6 +503,66 @@ export const sections: SectionSchema[] = [
     fields: [
       {
         type: "list",
+        key: "years",
+        label: "Reported figures by year",
+        titleKey: "fy",
+        addLabel: "Add a year",
+        help:
+          "The figures the hero panel, the highlights cards and the performance " +
+          "chart are generated from, oldest last. Importing an annual report fills " +
+          "these in; editing one here changes the stored figure but does not " +
+          "regenerate the panels — re-import, or edit the panels directly. " +
+          "Money is in ₹ crore; EPS and dividend are per share, in ₹.",
+        template: {
+          fy: 0,
+          revenueCr: 0,
+          ebitdaCr: 0,
+          patCr: 0,
+          eps: 0,
+          dividendPerShare: 0,
+        },
+        fields: [
+          {
+            type: "number",
+            key: "fy",
+            label: "Financial year ending",
+            step: 1,
+            help: "2026 means FY 2025-26.",
+          },
+          {
+            type: "number",
+            key: "revenueCr",
+            label: "Revenue from operations (₹ Cr)",
+            step: 0.0001,
+          },
+          {
+            type: "number",
+            key: "ebitdaCr",
+            label: "EBITDA (₹ Cr)",
+            step: 0.0001,
+          },
+          {
+            type: "number",
+            key: "patCr",
+            label: "Profit after tax (₹ Cr)",
+            step: 0.0001,
+          },
+          {
+            type: "number",
+            key: "eps",
+            label: "Earnings per share (₹)",
+            step: 0.01,
+          },
+          {
+            type: "number",
+            key: "dividendPerShare",
+            label: "Dividend per share (₹)",
+            step: 0.01,
+          },
+        ],
+      },
+      {
+        type: "list",
         key: "slides",
         label: "Investor hero slides",
         identify: true,

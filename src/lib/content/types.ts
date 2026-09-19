@@ -18,6 +18,7 @@ import type { InvestorSlide } from "@/lib/investor-hero";
 import type { Highlight } from "@/lib/investor-highlights";
 import type { PerformanceMetric } from "@/lib/investor-performance";
 import type { ReportCategory } from "@/lib/investor-reports";
+import type { FinancialYear } from "@/lib/investor/years";
 import type { Product } from "@/lib/products";
 
 /** Eyebrow / title / standfirst — the heading trio most sections open with. */
@@ -111,6 +112,14 @@ export type SiteContent = {
   };
 
   investors: {
+    /**
+     * The reported figures, oldest first — the source the panels below are
+     * generated from when an annual report is imported. Editing a year here
+     * and re-running "Regenerate" rewrites the hero, highlights and chart from
+     * it; editing those panels directly still works and simply goes out of
+     * step with this until the next regeneration.
+     */
+    years: FinancialYear[];
     slides: InvestorSlide[];
     highlights: {
       heading: Heading;
