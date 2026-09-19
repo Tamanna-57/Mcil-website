@@ -51,7 +51,8 @@
 
   /* Hero rhythm. One slide = sweep-in, hold, sweep-out, rest. */
   /* Height of the fixed site header; sticky sections reserve it. */
-  --header-h: 68px;
+  /* The logo lockup plus the bar's padding — see LOGO_HEIGHT in brand.ts. */
+  --header-h: 87px;
 
   --hero-slide-duration: 4500ms;
   --hero-fade-duration: 1000ms;
@@ -1964,12 +1965,42 @@ body {
  * four letters occupy x 408 to 1725 (1317 wide) at y 178, 328 tall. Every
  * figure below is one of those, scaled by --u so the crop follows --logo-h.
  */
+/*
+ * The header and footer lockup: the monogram, with the company name set small
+ * underneath it.
+ *
+ * The mark is its own file with a transparent ground, so it needs no crop —
+ * `--logo-h` drives the height and the width follows the artwork's 390:320.
+ */
 .site-logo {
-  --u: calc(var(--logo-h) / 328);
-  width: calc(1317 * var(--u));
+  width: calc(var(--logo-h) * 390 / 320);
   height: var(--logo-h);
-  background-image: url("/images/mcil-logo.png");
+  background-image: url("/images/mcil-mark.png");
   background-repeat: no-repeat;
-  background-size: calc(2022 * var(--u)) calc(778 * var(--u));
-  background-position: calc(408 * var(--u) * -1) calc(178 * var(--u) * -1);
+  background-size: contain;
+  background-position: center;
+}
+
+/*
+ * The name under the mark. Small by intent — it names the company for anyone
+ * who does not know the monogram, and stays out of the way of the nav.
+ *
+ * Letter-spacing is what keeps it readable this far down: at 8px the glyphs
+ * are close enough to knit together without it. It is held to one line, since
+ * wrapping it would push the bar past the height the rest of the site reserves.
+ */
+.site-wordmark {
+  font-size: 7px;
+  line-height: 1;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  color: color-mix(in srgb, #fff 78%, transparent);
+}
+
+@media (min-width: 640px) {
+  .site-wordmark {
+    font-size: 8px;
+    letter-spacing: 0.11em;
+  }
 }

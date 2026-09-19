@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { LOGO_HEIGHT, LOGO_NAME } from "@/lib/brand";
+import { LOGO_HEIGHT, LOGO_LINE, LOGO_NAME } from "@/lib/brand";
 import { navItems, type NavItem, type NavLink } from "@/lib/site-nav";
 
 /*
@@ -169,13 +169,14 @@ export default function SiteHeader() {
         if (e.key === "Escape") closeNow();
       }}
     >
-      <div className="flex items-center justify-between gap-6 px-6 py-4 sm:px-10 lg:px-[3vw]">
-        {/* The mark is a CSS crop of the logo artwork, so the link carries the
-            company name for anything that cannot see it. Its height is what
-            sets the bar's, and with it --header-h. */}
+      <div className="flex items-center justify-between gap-6 px-6 py-3.5 sm:px-10 lg:px-[3vw]">
+        {/* The monogram with the company name under it. The mark is a
+            background image and the name is decorative beside the link's own
+            accessible name, so both are hidden from the reading order and the
+            link announces the company once. */}
         <Link
           href="/"
-          className="flex shrink-0 items-center"
+          className="flex shrink-0 flex-col items-center gap-[3px]"
           onFocus={closeNow}
           onClick={closeNow}
         >
@@ -184,6 +185,9 @@ export default function SiteHeader() {
             style={{ "--logo-h": `${LOGO_HEIGHT}px` } as React.CSSProperties}
             aria-hidden
           />
+          <span className="site-wordmark block" aria-hidden>
+            {LOGO_LINE}
+          </span>
           <span className="sr-only">{LOGO_NAME}</span>
         </Link>
 

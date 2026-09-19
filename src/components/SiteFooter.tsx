@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { LOGO_HEIGHT, LOGO_NAME } from "@/lib/brand";
+import { LOGO_HEIGHT, LOGO_LINE, LOGO_NAME } from "@/lib/brand";
 import type { SiteContent } from "@/lib/content/types";
 import { navItems } from "@/lib/site-nav";
 import AdminLink from "./AdminLink";
@@ -41,12 +41,19 @@ export default function SiteFooter({
         <div className="grid gap-10 sm:grid-cols-2 lg:grid-cols-[1.4fr_repeat(4,minmax(0,1fr))] lg:gap-8">
           {/* Who and where */}
           <div>
-            <span
-              className="site-logo block"
-              style={{ "--logo-h": `${LOGO_HEIGHT}px` } as React.CSSProperties}
-              aria-hidden
-            />
-            <span className="sr-only">{LOGO_NAME}</span>
+            <div className="flex w-fit flex-col items-center gap-1">
+              <span
+                className="site-logo block"
+                style={
+                  { "--logo-h": `${LOGO_HEIGHT + 6}px` } as React.CSSProperties
+                }
+                aria-hidden
+              />
+              <span className="site-wordmark block" aria-hidden>
+                {LOGO_LINE}
+              </span>
+              <span className="sr-only">{LOGO_NAME}</span>
+            </div>
 
             <address className="mt-6 text-sm leading-relaxed not-italic">
               <p className="text-[11px] font-semibold tracking-[0.16em] text-white/45 uppercase">
