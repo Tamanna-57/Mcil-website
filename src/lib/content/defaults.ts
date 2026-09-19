@@ -20,6 +20,7 @@ import {
   performanceMetrics,
 } from "@/lib/investor-performance";
 import { reportCategories, reportsHeading } from "@/lib/investor-reports";
+import { financialYears } from "@/lib/investor/years";
 import { products, productsIntro } from "@/lib/products";
 import type { SiteContent } from "./types";
 
@@ -79,6 +80,7 @@ export const defaultContent: SiteContent = {
   company,
 
   investors: {
+    years: financialYears,
     slides: investorSlides,
     highlights: {
       heading: highlightsHeading,

@@ -36,7 +36,7 @@ export const advantage = {
     {
       id: "supply",
       title: "Dependable Supply",
-      body: "Three decades of supplying to auto components, white goods, electrical equipment and power transmission manufacturers to schedule.",
+      body: "Three decades of supplying to auto components, white goods, electrical equipment and power transmission manufacturers as per their schedule.",
     },
   ] as AdvantagePoint[],
 };
