@@ -276,9 +276,16 @@ export default function SiteIntro() {
           } as React.CSSProperties
         }
       >
-        {PIECES.map((piece) => (
-          <LogoPiece key={piece.id} piece={piece} className="intro-piece" />
-        ))}
+        {/* The shapes turn as one. Their own travel is on each piece; the
+            turn is on this wrapper, so the mark revolves about its centre
+            while the pieces are still closing rather than each spinning
+            separately. It rests at no rotation, which is what lets the dock
+            measure the lockup afterwards without allowing for a tilt. */}
+        <span className="intro-mark" aria-hidden>
+          {PIECES.map((piece) => (
+            <LogoPiece key={piece.id} piece={piece} className="intro-piece" />
+          ))}
+        </span>
         {/* Real type, as in the header — the name is not part of the mark's
             artwork, so it is set rather than cropped. */}
         <span className="intro-tagline" aria-hidden>
