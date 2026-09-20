@@ -112,14 +112,19 @@ export const navItems: NavItem[] = [
   {
     id: "sustainability",
     label: "Sustainability",
+    href: "/sustainability",
     panel: {
       title: "Sustainability",
-      body: "Our environmental, social and governance disclosures, published here as they are prepared.",
+      body: "How the Faridabad works is run — the material, the line, the people on it, and the board the company answers to. Measured figures follow as they are prepared.",
       links: [
-        { label: "Environment", soon: true },
-        { label: "People & Safety", soon: true },
-        { label: "Governance", soon: true },
-        { label: "Policies & Codes", soon: true },
+        { label: "Our Approach", href: "/sustainability#approach" },
+        { label: "Environment", href: "/sustainability#environment" },
+        { label: "People & Safety", href: "/sustainability#people" },
+        { label: "Governance", href: "/sustainability#governance" },
+        {
+          label: "Policies & Codes",
+          href: "/investors#policies",
+        },
       ],
     },
   },
