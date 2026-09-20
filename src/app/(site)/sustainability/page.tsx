@@ -2,8 +2,8 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import SustainabilityBands from "@/components/SustainabilityBands";
-import SustainabilityPillars from "@/components/SustainabilityPillars";
-import { approach, closing, hero, note } from "@/lib/sustainability";
+import SustainabilityFoundations from "@/components/SustainabilityFoundations";
+import { approach, closing, hero, intro, note } from "@/lib/sustainability";
 
 export const metadata: Metadata = {
   title: "Sustainability — Metal Coatings (India) Ltd",
@@ -32,13 +32,18 @@ export default function SustainabilityPage() {
           <p className="text-[11px] font-semibold tracking-[0.24em] text-brand-pale uppercase">
             [ {hero.eyebrow} ]
           </p>
-          <h1 className="type-display mt-5 max-w-3xl text-[clamp(1.9rem,5.2vw,3.6rem)] leading-[1.12] text-white uppercase">
+          <h1 className="type-display mt-5 max-w-4xl text-[clamp(2rem,5.6vw,4rem)] leading-[1.08] text-white uppercase">
             {hero.title}
           </h1>
-          <p className="mt-6 max-w-xl text-sm leading-relaxed text-white/80 sm:text-base">
-            {hero.standfirst}
-          </p>
         </div>
+      </section>
+
+      {/* The opening line, set centred under the hero as the reference sets
+          its own — the page's one paragraph before any section starts. */}
+      <section className="bg-background px-6 pt-16 sm:px-10 lg:px-[6.5vw] lg:pt-20">
+        <p className="mx-auto max-w-3xl text-center text-base leading-relaxed text-steel-800 sm:text-lg">
+          {intro}
+        </p>
       </section>
 
       {/* Approach */}
@@ -71,7 +76,7 @@ export default function SustainabilityPage() {
         </div>
       </section>
 
-      <SustainabilityPillars />
+      <SustainabilityFoundations />
 
       <SustainabilityBands />
 

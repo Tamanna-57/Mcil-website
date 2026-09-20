@@ -37,3 +37,16 @@ keyframes in `src/app/globals.css`.
 - **Prefer darker frames.** White type sits directly on the image.
 - Optimise before committing — these are re-encoded at JPEG quality 86,
   progressive, and kept under ~500 KB each.
+
+## Sustainability hero
+
+`sustainability-hero.jpg` is the photograph behind the heading on
+`/sustainability`. **It is currently a copy of `hero-4.jpg` standing in for an
+environmental photograph** — greenery, the site seen from outside, planting at
+the works. Save the real one over the same filename; nothing in the code needs
+to change. Landscape, 1920×1080 or larger, and dark enough for white type to
+sit on the left third.
+
+The five photographs in the Sustainability Foundations cards are likewise
+existing site imagery standing in for pictures of their own subjects. Their
+paths live in `src/lib/sustainability.ts`.

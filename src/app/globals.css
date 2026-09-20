@@ -1805,3 +1805,16 @@ body {
     ),
     var(--background);
 }
+
+/*
+ * The foundations rail. The scrollbar is hidden because the row carries its
+ * own arrows and, on touch, is swiped — a bar under the cards would read as a
+ * second control that does not match them.
+ */
+.news-rail {
+  scrollbar-width: none;
+}
+
+.news-rail::-webkit-scrollbar {
+  display: none;
+}

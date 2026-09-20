@@ -24,14 +24,16 @@
  * when they are prepared, which is the honest position until they are.
  */
 
-export type Pillar = {
+export type Foundation = {
   id: string;
-  /** Plate tone, matching the product bands and the news cards. */
-  tone: "ink" | "amber" | "pale";
-  label: string;
   title: string;
+  /** Shown once the card opens. Two sentences is what the card holds. */
   body: string;
-  points: string[];
+  /** Where "Read more" goes — an anchor on this page or another page. */
+  href: string;
+  linkLabel: string;
+  image: string;
+  alt: string;
 };
 
 export type Band = {
@@ -46,13 +48,21 @@ export type Band = {
 };
 
 export const hero = {
-  eyebrow: "Sustainability",
+  eyebrow: "Sustainability at MCIL",
   title: "Rolled to a tolerance, run with a conscience",
-  standfirst:
-    "Steel is among the few materials that can be melted and made again without losing what makes it steel. That is the ground our approach stands on: a long-lived product, a process run at room temperature, and a company small enough to know what happens on its own floor.",
-  image: "/images/hero-4.jpg",
-  alt: "Coil warehouse aisle at the Faridabad works",
+  /*
+   * PLACEHOLDER PHOTOGRAPH. `sustainability-hero.jpg` is currently a copy of
+   * the coil warehouse shot. The photograph that belongs here is an
+   * environmental one — greenery, the site from outside, planting at the
+   * works. Save it over the same filename and nothing else needs to change.
+   */
+  image: "/images/sustainability-hero.jpg",
+  alt: "The Faridabad works",
 };
+
+/** Set centred under the hero, as the reference sets its opening line. */
+export const intro =
+  "Steel is among the few materials that can be melted and made again without losing what makes it steel. That is the ground this page stands on: a long-lived product, a process run at room temperature, and a company small enough to know what happens on its own floor.";
 
 export const approach = {
   eyebrow: "Our approach",
@@ -64,44 +74,67 @@ export const approach = {
   ],
 };
 
-export const pillars: Pillar[] = [
+/**
+ * The foundations, after the reference's card row: a photograph with the
+ * title on it, which opens to the paragraph under it.
+ *
+ * PLACEHOLDER PHOTOGRAPHS. All five are existing site imagery standing in for
+ * pictures that belong to these subjects — planting at the works, the line,
+ * the board, the certificate, the people. Replacing a `image` path is the only
+ * change each one needs.
+ */
+export const foundations: Foundation[] = [
   {
     id: "environment",
-    tone: "ink",
-    label: "Environment",
-    title: "A process that does not reheat the steel",
-    body: "Cold rolling reduces a coil to gauge at room temperature. There is no reheating furnace in the line, and the energy the works draws is electrical rather than burnt on site to soften steel.",
-    points: [
-      "Offcuts, trimmings and end cuts are steel, and steel is recycled without loss — we segregate them for return to the melting cycle rather than to landfill.",
-      "Pickling is the part of the line that needs the most care, and it is handled under the consents and approvals the works operates within.",
-      "We work to reduce what the line consumes per tonne rolled — power, water, oil and packaging — and to buy from suppliers close enough that the coil is not carried further than it needs to be.",
-    ],
+    title: "Environment",
+    body: "Cold rolling reduces a coil to gauge at room temperature — there is no reheating furnace in the line, and no fuel burnt on site to soften steel. We work to reduce what the line consumes per tonne rolled, and to keep offcuts and trimmings segregated for return to the melting cycle rather than to landfill.",
+    href: "#material",
+    linkLabel: "Read more",
+    image: "/images/process-2.jpg",
+    alt: "Steel strip running through the cold rolling mill stands",
   },
   {
     id: "people",
-    tone: "amber",
-    label: "People & Safety",
-    title: "The floor is where this is decided",
-    body: "A rolling mill is a place of moving coil, and nothing about our approach to safety is delegated to a poster. The works team runs it, and the standard we hold ourselves to is that every incident is both reportable and preventable.",
-    points: [
-      "Guarding, handling practice and protective equipment are the works team's standing responsibility, not a periodic exercise.",
-      "Most of the people at Sector 59 come from Faridabad and the districts around it; steady employment is the most direct contribution we make to the neighbourhood we sit in.",
-      "We aim to pay our people and our vendors on time, which for a small supplier is a form of support that outlasts a donation.",
-    ],
+    title: "People & Safety",
+    body: "A rolling mill is a place of moving coil, and the standard we hold ourselves to is that every incident is both reportable and preventable. Guarding, handling practice and protective equipment are the works team's standing responsibility rather than a periodic exercise.",
+    href: "/about#team",
+    linkLabel: "Meet the team",
+    image: "/images/hero-1.jpg",
+    alt: "Fabricators grinding steel sections on the shop floor",
   },
   {
     id: "governance",
-    tone: "pale",
-    label: "Governance",
-    title: "Answerable to a board we do not control",
-    body: "MCIL is listed on the BSE and reports to a board on which the independent directors outnumber the executive ones — three of the five seats. The finance and secretarial functions report into that board, not around it.",
-    points: [
-      "Three of the five directors are independent and non-executive, as listed in the FY2025-26 annual report.",
-      "The company's policies, codes and disclosures are published under Investor Relations and filed with the exchange.",
-      "The Company Secretary & Compliance Officer is the named point of contact for shareholder and investor correspondence.",
-    ],
+    title: "Governance",
+    body: "MCIL is listed on the BSE and reports to a board on which the independent directors outnumber the executive ones — three of the five seats, as listed in the FY2025-26 annual report. The finance and secretarial functions report into that board, not around it.",
+    href: "/investors#policies",
+    linkLabel: "Policies & codes",
+    image: "/images/process-3.jpg",
+    alt: "Cold rolled steel strip running out along the finishing line",
+  },
+  {
+    id: "quality",
+    title: "Certification & Compliance",
+    body: "Every coil leaves under a heat number and a test certificate, and the product is certified to the BIS licence the works holds. Disclosures go to the exchange on the schedule a listed company is held to, and the Company Secretary is the named point of contact for them.",
+    href: "/products",
+    linkLabel: "What we make",
+    image: "/images/process-4.jpg",
+    alt: "Finished cold rolled coils lined up for despatch",
+  },
+  {
+    id: "community",
+    title: "Community & Livelihood",
+    body: "Most of the people at Sector 59 come from Faridabad and the districts around it, and steady employment is the most direct contribution we make to the neighbourhood the works sits in. We aim to pay our people and our vendors on time, which for a small supplier outlasts a donation.",
+    href: "/contact",
+    linkLabel: "Talk to us",
+    image: "/images/hero-3.jpg",
+    alt: "Bundled galvanised stock across the warehouse floor",
   },
 ];
+
+export const foundationsHeading = {
+  eyebrow: "What holds it up",
+  title: "Our Sustainability Foundations",
+};
 
 export const bands: Band[] = [
   {
