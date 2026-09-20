@@ -124,53 +124,73 @@ export default function Customers({
   );
 }
 
+/** A logo's height as a share of its cell, before its own `scale`. */
+const LOGO_BASE = 58;
+
 /**
  * One customer.
  *
- * Supplied artwork is printed at a fixed height and left to find its own width
+ * A logo is printed at the row's common height and left to find its own width
  * — logos differ wildly in proportion, and matching their widths instead would
- * shrink a long wordmark to nothing beside a square mark. Anything without
- * artwork is set in type on the same baseline, so a band that is half pictures
- * and half wordmarks still lines up.
+ * shrink a long wordmark to nothing beside a square badge. Height alone does
+ * not balance them either, so `scale` nudges the few that need it. A company
+ * with no artwork is set in type on the same line, so a band that is part
+ * pictures and part wordmarks still reads as one row.
+ *
+ * SVG logos are served as they are rather than through the image optimiser,
+ * which will not process SVG without `dangerouslyAllowSVG` — a flag worth
+ * avoiding for a handful of files that are already a few kilobytes each.
  */
 function Mark({ customer }: { customer: Customer }) {
-  const { name, mark, suffix, font, logo, logoAlt } = customer;
+  const { name, mark, suffix, font, logo, logoAlt, scale = 1 } = customer;
+
+  if (logo) {
+    return (
+      <span
+        title={name}
+        className="customer-mark flex h-16 items-center justify-center"
+      >
+        {/* The cell is taller than the mark it holds, so a logo `scale` above
+            1 grows into space that is already there rather than into the row
+            below it. */}
+        <Image
+          src={logo}
+          alt={logoAlt ?? name}
+          width={320}
+          height={128}
+          unoptimized={logo.endsWith(".svg")}
+          className="w-auto max-w-[8.5rem] object-contain sm:max-w-[10rem] lg:max-w-[11rem]"
+          style={{ height: `${Math.round(LOGO_BASE * scale)}%` }}
+        />
+      </span>
+    );
+  }
 
   return (
     <span
       title={name}
-      className="customer-mark flex h-11 items-center justify-center"
+      className="customer-mark flex h-16 items-center justify-center text-steel-900"
     >
-      {logo ? (
-        <Image
-          src={logo}
-          alt={logoAlt ?? name}
-          width={200}
-          height={80}
-          className="h-full w-auto object-contain"
-        />
-      ) : (
+      <span
+        className={`flex items-baseline gap-1.5 whitespace-nowrap ${
+          font === "display" ? "type-display" : ""
+        }`}
+      >
         <span
-          className={`flex items-baseline gap-1.5 whitespace-nowrap ${
-            font === "display" ? "type-display" : ""
-          }`}
+          className={
+            font === "display"
+              ? "text-[clamp(1.05rem,2.4vw,1.5rem)] font-medium tracking-[0.12em]"
+              : "text-[clamp(1rem,2.2vw,1.32rem)] font-bold tracking-[0.02em]"
+          }
         >
-          <span
-            className={
-              font === "display"
-                ? "text-[clamp(1.05rem,2.4vw,1.5rem)] font-medium tracking-[0.12em]"
-                : "text-[clamp(1rem,2.2vw,1.32rem)] font-bold tracking-[0.02em]"
-            }
-          >
-            {mark}
-          </span>
-          {suffix ? (
-            <span className="text-[clamp(0.62rem,1.4vw,0.76rem)] font-light tracking-[0.22em]">
-              {suffix}
-            </span>
-          ) : null}
+          {mark}
         </span>
-      )}
+        {suffix ? (
+          <span className="text-[clamp(0.62rem,1.4vw,0.76rem)] font-light tracking-[0.22em]">
+            {suffix}
+          </span>
+        ) : null}
+      </span>
     </span>
   );
 }
