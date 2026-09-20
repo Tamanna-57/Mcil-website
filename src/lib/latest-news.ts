@@ -83,6 +83,16 @@ export const newsItems: NewsItem[] = [
     image: "/images/hero-3.jpg",
     alt: "Bundled galvanised stock across the warehouse floor",
   },
+  {
+    id: "faridabad-solar",
+    category: "Sustainability",
+    title: "Rooftop solar at the Faridabad works crosses its first full year",
+    href: "#",
+    date: "2026-08-21",
+    dateLabel: "21 August 2026",
+    image: "/images/process-3.jpg",
+    alt: "Cold rolled steel strip running out along the finishing line",
+  },
 ];
 
 /**

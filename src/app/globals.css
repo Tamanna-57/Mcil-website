@@ -27,6 +27,12 @@
   /* Warm accent. Low contrast on white by design — decorative eyebrows and
      marks only, never body copy. */
   --accent: #d99a5b;
+  /* The same copper taken down far enough to carry small type on a pale
+     ground, where --accent itself would not be readable. */
+  --accent-ink: #8f5320;
+  /* Likewise the brand blue: --brand-deep is set for type on white and drops
+     to about 2.8:1 on the pale blue plate, which small type cannot take. */
+  --brand-ink: #33517d;
 
   /*
    * Brand navy — the ground the MCIL logo is set on. The bar carries it on
@@ -1786,4 +1792,60 @@ body {
     font-size: 8px;
     letter-spacing: 0.11em;
   }
+}
+
+/* ------------------------------------------------------------------ */
+/* Latest News                                                         */
+/* ------------------------------------------------------------------ */
+
+/*
+ * Card grounds for the news section: the same three plate tones the product
+ * bands use — navy ink, the amber accent, pale blue — so the section is
+ * painted from the site's own set rather than a palette of its own.
+ *
+ * Each is a shallow gradient rather than a flat fill. At card size a flat dark
+ * fill goes dead against the photograph beside it, and the shift across the
+ * card is what keeps the two halves reading as one piece.
+ */
+.news-ink {
+  background: linear-gradient(
+    150deg,
+    color-mix(in srgb, var(--brand-deep) 14%, var(--steel-900)) 0%,
+    var(--steel-900) 100%
+  );
+}
+
+.news-amber {
+  background: linear-gradient(
+    150deg,
+    color-mix(in srgb, var(--accent) 92%, #fff) 0%,
+    color-mix(in srgb, var(--accent) 86%, var(--accent-ink)) 100%
+  );
+}
+
+.news-pale {
+  background: linear-gradient(
+    150deg,
+    color-mix(in srgb, var(--brand-pale) 80%, #fff) 0%,
+    var(--brand-light) 100%
+  );
+}
+
+/*
+ * The section's own ground: the pale blue and the amber washed across the page
+ * white, so the band under the cards is drawn from the same three.
+ */
+.news-band {
+  background:
+    radial-gradient(
+      110% 70% at 12% 0%,
+      color-mix(in srgb, var(--brand-pale) 46%, transparent) 0%,
+      transparent 60%
+    ),
+    radial-gradient(
+      90% 60% at 95% 100%,
+      color-mix(in srgb, var(--accent) 18%, transparent) 0%,
+      transparent 62%
+    ),
+    var(--background);
 }
