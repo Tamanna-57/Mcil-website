@@ -27,15 +27,14 @@ import {
 /**
  * Colourway.
  *
- * The section sits between a near-white page and the navy footer, so left on
- * the site's blues it read as a piece of the chrome that had drifted up the
- * page. Each card carries its own ground instead, cycling through a deep
- * teal, a copper cut from the accent, and a pale sand — the three colours the
- * steel photography sits on without fighting it. The feed keeps the warm
- * graphite so it reads as a panel rather than a fourth card.
+ * The three plate tones the product bands already use — the navy ink, the
+ * amber accent and the pale blue — so the news cards are the same set of
+ * colours the rest of the site paints with rather than a palette of their own.
+ * Cards take them in order and the cycle repeats, so a fourth card starts
+ * again at ink.
  *
- * Tones are applied in order and repeat, so a fourth card starts again at
- * teal. Reordering this array reorders the section.
+ * Each ground is a shallow gradient rather than a flat fill: at card size a
+ * single flat colour goes dead next to the photograph beside it.
  */
 type CardTone = {
   /** Ground class, defined in globals.css. */
@@ -49,36 +48,39 @@ type CardTone = {
 
 const CARD_TONES: CardTone[] = [
   {
-    ground: "news-teal",
-    chip: "bg-white/12 text-[var(--news-gold)]",
+    ground: "news-ink",
+    chip: "bg-white/12 text-brand-pale",
     title: "text-white",
-    link: "text-[var(--news-gold)]",
+    link: "text-accent",
     date: "text-white/55",
   },
   {
-    ground: "news-copper",
-    chip: "bg-black/25 text-[var(--news-cream)]",
-    title: "text-white",
-    link: "text-[var(--news-cream)]",
-    date: "text-white/65",
+    /* Navy type on the amber, not white: white on this accent is about 2:1,
+       which is under the floor for a headline. The plates it is borrowed from
+       carry white only on decorative captions. */
+    ground: "news-amber",
+    chip: "bg-steel-900/15 text-steel-900",
+    title: "text-steel-900",
+    link: "text-steel-900",
+    date: "text-steel-900/70",
   },
   {
-    ground: "news-sand",
-    chip: "bg-[var(--accent-ink)]/12 text-[var(--accent-ink)]",
+    ground: "news-pale",
+    chip: "bg-white/70 text-[var(--brand-ink)]",
     title: "text-steel-900",
-    link: "text-[var(--accent-ink)]",
+    link: "text-[var(--brand-ink)]",
     date: "text-steel-800/70",
   },
 ];
 
-/** The feed panel, which keeps one tone of its own. */
+/** The feed panel, which stays on the ink so the colours read as the cards'. */
 const FEED_TONE = {
   panel: "news-ink",
   rule: "border-white/10",
   divide: "divide-white/10",
-  avatar: "bg-[var(--accent-ink)]",
+  avatar: "bg-accent",
   name: "text-white",
-  meta: "text-[var(--news-gold)]/80",
+  meta: "text-brand-pale/70",
   body: "text-white/75",
   frame: "ring-white/10",
 };

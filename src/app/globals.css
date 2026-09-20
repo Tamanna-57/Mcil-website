@@ -30,6 +30,9 @@
   /* The same copper taken down far enough to carry small type on a pale
      ground, where --accent itself would not be readable. */
   --accent-ink: #8f5320;
+  /* Likewise the brand blue: --brand-deep is set for type on white and drops
+     to about 2.8:1 on the pale blue plate, which small type cannot take. */
+  --brand-ink: #33517d;
 
   /*
    * Brand navy — the ground the MCIL logo is set on. The bar carries it on
@@ -1752,67 +1755,53 @@ body {
 /* ------------------------------------------------------------------ */
 
 /*
- * Card grounds for the news section.
+ * Card grounds for the news section: the same three plate tones the product
+ * bands use — navy ink, the amber accent, pale blue — so the section is
+ * painted from the site's own set rather than a palette of its own.
  *
- * The section sits between the near-white page and the navy footer, so cards
- * left on that navy read as a piece of the chrome that had drifted up the
- * page. Each card takes a ground of its own instead and the section cycles
- * through them: a deep pine teal, a copper cut from the accent, and a pale
- * sand. All three are colours the steel photography sits on without fighting
- * it, and the copper is the accent the rest of the site already uses.
- *
- * Each is a gradient rather than a flat fill — a single dark fill at this size
- * goes dead, and the shift across the card keeps it from flattening against
- * the photograph beside it.
+ * Each is a shallow gradient rather than a flat fill. At card size a flat dark
+ * fill goes dead against the photograph beside it, and the shift across the
+ * card is what keeps the two halves reading as one piece.
  */
-.news-teal {
-  background: linear-gradient(150deg, #1d4a45 0%, #0f2e2c 100%);
-}
-
-.news-copper {
-  background: linear-gradient(150deg, #9a5327 0%, #63321a 100%);
-}
-
-.news-sand {
+.news-ink {
   background: linear-gradient(
     150deg,
-    color-mix(in srgb, var(--accent) 26%, var(--surface)) 0%,
-    color-mix(in srgb, var(--accent) 12%, var(--surface)) 100%
+    color-mix(in srgb, var(--brand-deep) 14%, var(--steel-900)) 0%,
+    var(--steel-900) 100%
   );
 }
 
-/* The feed panel: the warm graphite the cards' colours sit against, so it
-   reads as the ground of the section rather than a fourth card. */
-.news-ink {
+.news-amber {
   background: linear-gradient(
-    155deg,
-    color-mix(in srgb, var(--accent) 7%, #262128) 0%,
-    #1f1b22 100%
+    150deg,
+    color-mix(in srgb, var(--accent) 92%, #fff) 0%,
+    color-mix(in srgb, var(--accent) 86%, var(--accent-ink)) 100%
+  );
+}
+
+.news-pale {
+  background: linear-gradient(
+    150deg,
+    color-mix(in srgb, var(--brand-pale) 80%, #fff) 0%,
+    var(--brand-light) 100%
   );
 }
 
 /*
- * The section's own ground. A wash of the accent and the brand pale across the
- * page white — enough tint to carry the cards without becoming a colour block
- * of its own, and it hands off to the footer's navy underneath.
+ * The section's own ground: the pale blue and the amber washed across the page
+ * white, so the band under the cards is drawn from the same three.
  */
 .news-band {
   background:
     radial-gradient(
       110% 70% at 12% 0%,
-      color-mix(in srgb, var(--brand-pale) 42%, transparent) 0%,
+      color-mix(in srgb, var(--brand-pale) 46%, transparent) 0%,
       transparent 60%
     ),
     radial-gradient(
       90% 60% at 95% 100%,
-      color-mix(in srgb, var(--accent) 20%, transparent) 0%,
+      color-mix(in srgb, var(--accent) 18%, transparent) 0%,
       transparent 62%
     ),
     var(--background);
-}
-
-/* Type colours that sit on the dark grounds above. */
-:root {
-  --news-gold: #e9b276;
-  --news-cream: #f6e3cd;
 }
