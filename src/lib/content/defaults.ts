@@ -12,6 +12,7 @@ import { processSteps } from "@/lib/about-process";
 import { team, teamHeading } from "@/lib/about-team";
 import { company } from "@/lib/company";
 import { locations } from "@/lib/contact-locations";
+import { customers, customersHeading } from "@/lib/customers";
 import { heroSlides } from "@/lib/hero-slides";
 import { investorSlides } from "@/lib/investor-hero";
 import { highlights, highlightsHeading } from "@/lib/investor-highlights";
@@ -36,6 +37,10 @@ export const defaultContent: SiteContent = {
       title:
         "A public limited company promoted by the Khandelwal family in December 1996, manufacturing cold rolled steel strips, coils and HRPO steel.",
       body: "MCIL supplies auto components, white goods, electrical equipment and power transmission manufacturers, and is BIS certified under IS: 513:2008 (Licence no. CM/L-9512364723).",
+    },
+    customers: {
+      ...customersHeading,
+      items: customers,
     },
   },
 

@@ -13,6 +13,7 @@ import type { AdvantagePoint } from "@/lib/about-advantage";
 import type { ProcessStep } from "@/lib/about-process";
 import type { TeamMember } from "@/lib/about-team";
 import type { ContactLocation } from "@/lib/contact-locations";
+import type { Customer } from "@/lib/customers";
 import type { HeroSlide } from "@/lib/hero-slides";
 import type { InvestorSlide } from "@/lib/investor-hero";
 import type { Highlight } from "@/lib/investor-highlights";
@@ -39,6 +40,15 @@ export type SiteContent = {
       eyebrow: string;
       title: string;
       body: string;
+    };
+    /** The customer band under the process walkthrough. */
+    customers: {
+      eyebrow: string;
+      title: string;
+      standfirst: string;
+      /** Small print under the row; empty hides it. */
+      footnote: string;
+      items: Customer[];
     };
   };
 

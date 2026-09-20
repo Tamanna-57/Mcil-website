@@ -32,6 +32,17 @@ const nextConfig: NextConfig = {
       "./node_modules/pdfjs-dist/standard_fonts/**",
     ],
   },
+  /*
+   * About Us is now part of the landing page rather than a page of its own.
+   *
+   * A permanent redirect rather than a deleted route: the anchors the old page
+   * carried (#process, #advantage, #team) are all on the landing page now, and
+   * a browser keeps the fragment across a redirect, so an old link to
+   * /about#team still arrives at the team cards.
+   */
+  async redirects() {
+    return [{ source: "/about", destination: "/", permanent: true }];
+  },
   images: {
     /*
      * Images uploaded from the admin panel. With a persistent disk they are
