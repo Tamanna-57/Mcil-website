@@ -1093,9 +1093,11 @@ body {
   position: absolute;
   inset: 0;
   transform-origin: 50% 50%;
-  /* Starts as the strokes land, so the turn is what they do next rather than
-     something that happened to them on the way in. */
-  animation: intro-revolve 1060ms var(--intro-turn) 780ms both;
+  /* Starts while the strokes are still travelling. Waiting for them to land
+     put a beat of four bars sitting still in the middle of the sequence, and
+     a pause is the one thing an opening like this cannot afford: the turn has
+     to take them, not follow them. */
+  animation: intro-revolve 1260ms var(--intro-turn) 440ms both;
   will-change: transform;
 }
 
@@ -1139,19 +1141,19 @@ body {
 }
 
 .intro-runner[data-runner="top"] {
-  animation: intro-run-top 1000ms var(--intro-settle) 140ms both;
+  animation: intro-run-top 1060ms var(--intro-settle) 120ms both;
 }
 
 .intro-runner[data-runner="left"] {
-  animation: intro-run-left 1000ms var(--intro-settle) 200ms both;
+  animation: intro-run-left 1060ms var(--intro-settle) 170ms both;
 }
 
 .intro-runner[data-runner="right"] {
-  animation: intro-run-right 1000ms var(--intro-settle) 200ms both;
+  animation: intro-run-right 1060ms var(--intro-settle) 170ms both;
 }
 
 .intro-runner[data-runner="wedge"] {
-  animation: intro-run-wedge 900ms var(--intro-settle) 320ms both;
+  animation: intro-run-wedge 980ms var(--intro-settle) 260ms both;
 }
 
 /*
@@ -1163,17 +1165,13 @@ body {
 @keyframes intro-run-top {
   0% {
     opacity: 0;
-    transform: translate3d(0, calc(var(--run) * -1), 0) scaleY(1.6);
+    transform: translate3d(0, calc(var(--run) * -1), 0) scaleY(1.7);
   }
   14% {
     opacity: 1;
   }
-  58% {
-    transform: translate3d(0, 0, 0) scaleY(1);
-  }
-  76% {
+  62% {
     opacity: 1;
-    transform: translate3d(0, 0, 0) scaleY(1);
   }
   100% {
     opacity: 0;
@@ -1184,17 +1182,13 @@ body {
 @keyframes intro-run-left {
   0% {
     opacity: 0;
-    transform: translate3d(calc(var(--run) * -1), 0, 0) scaleX(1.6);
+    transform: translate3d(calc(var(--run) * -1), 0, 0) scaleX(1.7);
   }
   14% {
     opacity: 1;
   }
-  58% {
-    transform: translate3d(0, 0, 0) scaleX(1);
-  }
-  76% {
+  62% {
     opacity: 1;
-    transform: translate3d(0, 0, 0) scaleX(1);
   }
   100% {
     opacity: 0;
@@ -1205,17 +1199,13 @@ body {
 @keyframes intro-run-right {
   0% {
     opacity: 0;
-    transform: translate3d(var(--run), 0, 0) scaleX(1.6);
+    transform: translate3d(var(--run), 0, 0) scaleX(1.7);
   }
   14% {
     opacity: 1;
   }
-  58% {
-    transform: translate3d(0, 0, 0) scaleX(1);
-  }
-  76% {
+  62% {
     opacity: 1;
-    transform: translate3d(0, 0, 0) scaleX(1);
   }
   100% {
     opacity: 0;
@@ -1226,17 +1216,13 @@ body {
 @keyframes intro-run-wedge {
   0% {
     opacity: 0;
-    transform: translate3d(0, var(--run), 0) scaleY(1.5);
+    transform: translate3d(0, var(--run), 0) scaleY(1.6);
   }
   16% {
     opacity: 1;
   }
-  58% {
-    transform: translate3d(0, 0, 0) scaleY(1);
-  }
-  76% {
+  60% {
     opacity: 1;
-    transform: translate3d(0, 0, 0) scaleY(1);
   }
   100% {
     opacity: 0;
@@ -1266,15 +1252,15 @@ body {
 }
 
 .intro-arc[data-ring="top"] {
-  animation: intro-sweep 900ms cubic-bezier(0.3, 0.72, 0.2, 1) 780ms both;
+  animation: intro-sweep 960ms cubic-bezier(0.32, 0.7, 0.2, 1) 620ms both;
 }
 
 .intro-arc[data-ring="left"] {
-  animation: intro-sweep 880ms cubic-bezier(0.3, 0.72, 0.2, 1) 830ms both;
+  animation: intro-sweep 940ms cubic-bezier(0.32, 0.7, 0.2, 1) 680ms both;
 }
 
 .intro-arc[data-ring="right"] {
-  animation: intro-sweep 880ms cubic-bezier(0.3, 0.72, 0.2, 1) 830ms both;
+  animation: intro-sweep 940ms cubic-bezier(0.32, 0.7, 0.2, 1) 680ms both;
 }
 
 @keyframes intro-sweep {
@@ -1291,7 +1277,7 @@ body {
   opacity: 0;
   transform-box: fill-box;
   transform-origin: 50% 100%;
-  animation: intro-wedge-open 400ms cubic-bezier(0.22, 0.9, 0.24, 1) 1000ms both;
+  animation: intro-wedge-open 420ms cubic-bezier(0.22, 0.9, 0.24, 1) 880ms both;
 }
 
 @keyframes intro-wedge-open {

@@ -134,11 +134,7 @@ const neverSkipOnServer = () => false;
  */
 function LogoDraw({ maskId }: { maskId: string }) {
   return (
-    <svg
-      className="intro-draw"
-      viewBox={`0 0 ${MARK.w} ${MARK.h}`}
-      aria-hidden
-    >
+    <svg className="intro-draw" viewBox={`0 0 ${MARK.w} ${MARK.h}`} aria-hidden>
       <defs>
         <mask
           id={maskId}
@@ -162,7 +158,9 @@ function LogoDraw({ maskId }: { maskId: string }) {
                  cascade here would be one more thing to keep out of its way. */
               transform={`rotate(${ring.from} ${ring.cx} ${ring.cy})`}
               style={
-                { "--dash": circumference(ring.r).toFixed(1) } as React.CSSProperties
+                {
+                  "--dash": circumference(ring.r).toFixed(1),
+                } as React.CSSProperties
               }
             />
           ))}
@@ -359,33 +357,34 @@ export default function SiteIntro() {
           } as React.CSSProperties
         }
       >
-        {/* The strokes are outside the turn: they travel straight, as they
-            do in the reference, and it is the mark they have just met in the
-            middle that revolves. Inside the turn there is only the artwork
-            and the sweeps uncovering it. */}
-        {RUNNERS.map((runner) => (
-          <span
-            key={runner.id}
-            className="intro-runner"
-            data-runner={runner.id}
-            data-axis={runner.axis}
-            style={
-              {
-                "--x": runner.x,
-                "--y": runner.y,
-                "--w": runner.w,
-                "--h": runner.h,
-              } as React.CSSProperties
-            }
-            aria-hidden
-          />
-        ))}
-
-        {/* One turn of the whole mark, starting the moment the strokes land
-            and ending square — which is both what the reference does and what
-            lets the dock measure the lockup afterwards without allowing for a
+        {/* The strokes are inside the turn, and the turn starts while they
+            are still travelling.
+            
+            Outside it they arrived, stopped, and only then began to revolve —
+            a beat of four bars sitting still, which is the one thing in the
+            sequence the eye catches. In here their last stretch curves: they
+            come in, the turn takes them, and the sweeps pick them up without
+            anything ever coming to rest. It ends square, which is what lets
+            the dock measure the lockup afterwards without allowing for a
             tilt. */}
         <span className="intro-mark" aria-hidden>
+          {RUNNERS.map((runner) => (
+            <span
+              key={runner.id}
+              className="intro-runner"
+              data-runner={runner.id}
+              data-axis={runner.axis}
+              style={
+                {
+                  "--x": runner.x,
+                  "--y": runner.y,
+                  "--w": runner.w,
+                  "--h": runner.h,
+                } as React.CSSProperties
+              }
+            />
+          ))}
+
           <LogoDraw maskId={maskId} />
         </span>
         {/* Real type, as in the header — the name is not part of the mark's
