@@ -25,7 +25,11 @@ export default function SiteFooter({
   const columns = navItems
     // The contact panel is phone, email and address, which is exactly what the
     // block on the left already carries — as a column too it just reads twice.
-    .filter((item) => item.id !== "contact")
+    // MCIL Advantage goes for the same reason: since About Us was folded into
+    // the landing page, its three links are the same three anchors the About
+    // column lists. Dropping it also brings the row back to the five columns
+    // the grid below is cut for — six wrapped the last one under the address.
+    .filter((item) => item.id !== "contact" && item.id !== "advantage")
     .map((item) => ({
       id: item.id,
       label: item.label,
