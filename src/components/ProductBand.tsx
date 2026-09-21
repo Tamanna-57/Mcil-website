@@ -15,6 +15,9 @@ import type { Product, ProductPlate } from "@/lib/products";
  *
  * Below `lg` the absolute positioning is dropped — the plates stack, since at
  * phone width the reference's overlaps collapse into an unreadable pile.
+ *
+ * A plate carrying a second photograph wipes between the two as the cursor
+ * crosses the band; see `useCursorWipe`.
  */
 /**
  * Holds an element blank until it is genuinely on screen, once.
@@ -53,6 +56,97 @@ function useReveal<T extends HTMLElement>(threshold: number, lift = "-12%") {
   return [ref, visible] as const;
 }
 
+/** Where the wipe sits before the cursor has said otherwise: dead centre. */
+const WIPE_REST = 50;
+
+/** How much of the gap to the cursor is closed each frame. Low enough that
+    the divider trails the pointer rather than snapping to it. */
+const WIPE_EASE = 0.14;
+
+/**
+ * Drives a plate's wipe off the cursor.
+ *
+ * The divider takes the pointer's x — measured across the plate and clamped to
+ * it, so the wipe still runs to its ends when the cursor passes above or below
+ * the plate rather than through it — and the second photograph is clipped to
+ * everything left of that divider. Each frame closes part of the gap to the
+ * cursor instead of jumping, which is what makes the photograph read as
+ * sliding across rather than following the mouse.
+ *
+ * Positions are written straight to the nodes. A wipe that ran through state
+ * would re-render the band on every pointer event, which at this size is a
+ * dropped frame on the plates either side of it.
+ *
+ * `active` stays false where the wipe has nothing to drive it — a touch
+ * screen, or a reader who has asked for less motion — and the plate is left
+ * showing its own photograph, undivided.
+ */
+function useCursorWipe(enabled: boolean) {
+  const revealRef = useRef<HTMLDivElement | null>(null);
+  const lineRef = useRef<HTMLDivElement | null>(null);
+  const chevronRef = useRef<SVGSVGElement | null>(null);
+  const [active, setActive] = useState(false);
+
+  /* Whether there is a cursor to follow at all is settled first, and on its
+     own frame: the plate renders undivided on the server, where nothing can
+     be known about the pointer, and takes the divider on from there. */
+  useEffect(() => {
+    if (!enabled) return;
+    if (typeof window === "undefined" || !window.matchMedia) return;
+
+    const cursor = window.matchMedia("(hover: hover) and (pointer: fine)");
+    const still = window.matchMedia("(prefers-reduced-motion: reduce)");
+    if (!cursor.matches || still.matches) return;
+
+    const frame = requestAnimationFrame(() => setActive(true));
+    return () => cancelAnimationFrame(frame);
+  }, [enabled]);
+
+  useEffect(() => {
+    if (!active) return;
+
+    let target = WIPE_REST;
+    let at = WIPE_REST;
+    let frame = 0;
+
+    const paint = () => {
+      at += (target - at) * WIPE_EASE;
+      if (Math.abs(target - at) < 0.05) at = target;
+
+      if (revealRef.current) {
+        revealRef.current.style.clipPath = `inset(0 ${100 - at}% 0 0)`;
+      }
+      if (lineRef.current) lineRef.current.style.left = `${at}%`;
+      /* The chevron points at whichever side still has the most to give. */
+      if (chevronRef.current) {
+        chevronRef.current.style.transform =
+          at > 50 ? "scaleX(-1)" : "scaleX(1)";
+      }
+
+      frame = at === target ? 0 : requestAnimationFrame(paint);
+    };
+
+    const onMove = (event: PointerEvent) => {
+      const box = revealRef.current?.parentElement;
+      if (!box) return;
+      const rect = box.getBoundingClientRect();
+      if (!rect.width) return;
+
+      const across = ((event.clientX - rect.left) / rect.width) * 100;
+      target = Math.min(100, Math.max(0, across));
+      if (!frame) frame = requestAnimationFrame(paint);
+    };
+
+    window.addEventListener("pointermove", onMove, { passive: true });
+    return () => {
+      window.removeEventListener("pointermove", onMove);
+      if (frame) cancelAnimationFrame(frame);
+    };
+  }, [active]);
+
+  return { active, revealRef, lineRef, chevronRef };
+}
+
 export default function ProductBand({
   product,
   divider,
@@ -79,10 +173,10 @@ export default function ProductBand({
           />
         )}
 
-        {/* Name and paragraph both hang off the same left edge, halfway across
-            the container, as in the reference. */}
+        {/* Name and paragraph both hang off the container's own left edge,
+            over the first half of the grid, so every band on the page reads
+            from the same margin the page head is set to. */}
         <div className="lg:grid lg:grid-cols-2 lg:gap-8">
-          <div className="hidden lg:block" aria-hidden />
           <div>
             <h2
               className="pb-rise text-[clamp(1.5rem,4.6vw,2.5rem)] leading-[1.05] font-extrabold tracking-[-0.01em] text-steel-900 uppercase"
@@ -98,6 +192,7 @@ export default function ProductBand({
               <Body text={product.body} />
             </p>
           </div>
+          <div className="hidden lg:block" aria-hidden />
         </div>
 
         <div className="mt-12 lg:mt-16">
@@ -274,6 +369,12 @@ function Plate({
      it is still blank when the band's heading is read. */
   const [ref, visible] = useReveal<HTMLDivElement>(0.34);
 
+  /* Nothing listens for the cursor until the plate has actually arrived. */
+  const compare = plate?.compare && plate.src ? plate.compare : undefined;
+  const { active, revealRef, lineRef, chevronRef } = useCursorWipe(
+    Boolean(compare) && visible,
+  );
+
   if (!plate) return null;
 
   return (
@@ -293,6 +394,62 @@ function Plate({
         />
       ) : (
         <Placeholder plate={plate} compact={overlapped} />
+      )}
+
+      {compare && (
+        <>
+          {/*
+            Clipped to nothing until the wipe says otherwise, so a plate that
+            never gets a cursor — a phone, or reduced motion — renders as the
+            single photograph above rather than as half of each. From there
+            the hook writes the clip itself.
+          */}
+          <div
+            ref={revealRef}
+            className="absolute inset-0"
+            style={{
+              clipPath: active
+                ? `inset(0 ${100 - WIPE_REST}% 0 0)`
+                : "inset(0 100% 0 0)",
+            }}
+            /* Kept off the accessible tree while there is no wipe to bring it
+               into view, so a reader is never given a photograph that nobody
+               on that device can be shown. */
+            aria-hidden={!active}
+          >
+            <Image
+              src={compare.src}
+              alt={compare.alt}
+              fill
+              sizes={sizes}
+              className="object-cover"
+            />
+          </div>
+
+          {active && (
+            <div
+              ref={lineRef}
+              className="pointer-events-none absolute inset-y-0 z-10 w-[2px] -translate-x-1/2 bg-accent"
+              style={{ left: `${WIPE_REST}%` }}
+              aria-hidden
+            >
+              <span className="absolute top-1/2 left-1/2 flex h-8 w-8 -translate-x-1/2 -translate-y-1/2 items-center justify-center">
+                <svg
+                  ref={chevronRef}
+                  viewBox="0 0 24 24"
+                  className="h-5 w-5 text-white [filter:drop-shadow(0_1px_2px_rgb(0_0_0/0.45))]"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <path d="m9 5 7 7-7 7" />
+                </svg>
+              </span>
+            </div>
+          )}
+        </>
       )}
     </div>
   );

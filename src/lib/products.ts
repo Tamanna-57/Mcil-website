@@ -2,8 +2,8 @@
  * The two products MCIL makes, and the layout each one gets.
  *
  * Both bands follow the reference composition: the product name set heavy
- * above a short paragraph in the right-hand column, then a block of imagery
- * below. The first product carries the giant-wordmark block with one
+ * above a short paragraph, both hung off the page's left margin, then a block
+ * of imagery below. The first product carries the giant-wordmark block with one
  * photograph inset into it; the second carries a four-plate gallery row.
  *
  * Photographs: a plate with `src` renders the photograph, a plate without one
@@ -19,6 +19,14 @@ export type ProductPlate = {
   alt: string;
   /** Tint of the plate behind the photograph. */
   tone: "navy" | "accent" | "pale";
+  /**
+   * A second photograph, wiped in over `src` as the cursor crosses the band:
+   * a divider tracks the pointer's x, and this photograph fills the plate to
+   * the left of it. Needs `src` to wipe against, and is ignored where there is
+   * no cursor to drive it — a coarse pointer, or reduced motion — so the plate
+   * falls back to `src` alone rather than to half of each.
+   */
+  compare?: { src: string; alt: string };
 };
 
 export type Product = {
@@ -86,10 +94,17 @@ export const products: Product[] = [
         alt: "The coil warehouse aisle, stock staged for despatch",
         tone: "navy",
       },
+      /* The centre plate, the one that shows whole and sits over the middle
+         of the row, is the one that carries the wipe: the stock bay, with
+         the line that filled it drawn across as the cursor moves. */
       {
         src: "/images/works-coil-bay.jpg",
         alt: "Coils stacked down the bay at the Faridabad works",
         tone: "accent",
+        compare: {
+          src: "/images/works-coil-line.jpg",
+          alt: "The coil line running down the length of the works",
+        },
       },
       {
         src: "/images/hrpo-coils-banded.jpg",

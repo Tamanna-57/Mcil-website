@@ -62,7 +62,7 @@ so the paths carry no spaces.
 | --------------------- | ------------------------------------------- | --------------------------------------------------------- | ----------- |
 | `works-coil-bay.jpg`  | Finished coils stacked down the bay          | Sustainability hero; Latest News card 3                   | 1200 × 1200 |
 | `works-inspection.jpg`| An engineer checking a coil on the line      | Sustainability People & Safety; Latest News card 2        | 1200 × 1200 |
-| `works-coil-line.jpg` | The coil line down the length of the works   | Sustainability "The works" band; Latest News card 1       | 800 × 800   |
+| `works-coil-line.jpg` | The coil line down the length of the works   | Sustainability "The works" band; Latest News card 1; Products, HRPO gallery wipe | 800 × 800   |
 | `hrpo-coils.jpg`      | Hot rolled coils in stock                    | Products, HRPO gallery; Sustainability "Material" band    | 1200 × 1600 |
 | `hrpo-coils-banded.jpg` | Banded hot rolled coils, close up          | Products, HRPO gallery                                    | 1200 × 630  |
 
