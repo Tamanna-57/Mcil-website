@@ -153,9 +153,18 @@ function WordmarkBlock({
       data-visible={visible}
       style={{ animationDelay: "200ms" }}
     >
-      {/* Runs deliberately wide: the photograph is meant to cut across it. */}
+      {/*
+        Set on the left and sized to reach about the middle of the block, as
+        the reference sets its own: the photograph is meant to cut across the
+        back of it, which only reads if the word ends behind the photograph
+        rather than running out past it.
+
+        Tight tracking and a slight horizontal squeeze bring Montserrat's
+        extrabold closer to the condensed face the reference uses; the squeeze
+        is anchored left so the word grows in from its own edge.
+      */}
       <span
-        className="pb-wordmark block text-[clamp(2.6rem,13vw,10rem)] leading-[0.9] font-extrabold tracking-[-0.03em] whitespace-nowrap text-accent lg:absolute lg:top-[7.8%] lg:left-[4.1%]"
+        className="pb-wordmark block origin-left scale-x-[0.94] text-[clamp(2.2rem,6.4vw,7rem)] leading-[0.9] font-extrabold tracking-[-0.055em] whitespace-nowrap text-accent lg:absolute lg:top-[11%] lg:left-[4.1%]"
         aria-hidden
       >
         {product.wordmark}
