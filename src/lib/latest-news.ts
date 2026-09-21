@@ -98,6 +98,12 @@ export const newsItems: NewsItem[] = [
 /**
  * The feed column. It scrolls on its own inside the panel, so the list can run
  * longer than the cards beside it.
+ *
+ * Posts carry photographs: a timeline of nothing but text beside three cards
+ * that each have one reads as the part of the section that failed to load.
+ * They are drawn from photographs the cards are NOT using, so the column is
+ * not the same three pictures over again — check `newsItems` above before
+ * changing one.
  */
 export const socialPosts: SocialPost[] = [
   {
@@ -105,6 +111,8 @@ export const socialPosts: SocialPost[] = [
     dateLabel: "Sep 17",
     date: "2026-09-17",
     body: "Thirty years of rolling steel in Faridabad. Our cold rolled strips leave the line held to gauge across the full width — the same tolerance our customers have built their own lines around since 1996.",
+    image: "/images/hero-2.jpg",
+    alt: "Cold rolled coils down the finished goods bay",
     href: "#",
   },
   {
@@ -112,6 +120,8 @@ export const socialPosts: SocialPost[] = [
     dateLabel: "Sep 12",
     date: "2026-09-12",
     body: "Hot rolled input arrives, is pickled, oiled and staged for the mill. Every coil is logged against its heat number before it moves an inch further down the line.",
+    image: "/images/hrpo-coils.jpg",
+    alt: "Hot rolled coils staged for the mill",
     href: "#",
   },
   {
@@ -126,6 +136,8 @@ export const socialPosts: SocialPost[] = [
     dateLabel: "Aug 28",
     date: "2026-08-28",
     body: "Precision strips for auto components, white goods and general engineering — rolled, finished and certified to IS 513 at a single site.",
+    image: "/images/hero-1.jpg",
+    alt: "Fabricators working steel sections on the shop floor",
     href: "#",
   },
 ];
