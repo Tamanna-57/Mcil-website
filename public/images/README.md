@@ -50,3 +50,33 @@ sit on the left third.
 The five photographs in the Sustainability Foundations cards are likewise
 existing site imagery standing in for pictures of their own subjects. Their
 paths live in `src/lib/sustainability.ts`.
+
+## Works photographs
+
+Four photographs of the works, used away from the hero and the process
+walkthrough. They were uploaded as `image 1 mcil.jpg`, `mcil imqge 2.jpg`,
+`mcil4 image.jpg` and `hot rolled steel coil imge.jpg`, and renamed to these
+so the paths carry no spaces.
+
+| File                  | Photograph                                  | Where it is used                                          | Source size |
+| --------------------- | ------------------------------------------- | --------------------------------------------------------- | ----------- |
+| `works-coil-bay.jpg`  | Finished coils stacked down the bay          | Sustainability hero; Latest News card 3                   | 1200 × 1200 |
+| `works-inspection.jpg`| An engineer checking a coil on the line      | Sustainability People & Safety; Latest News card 2        | 1200 × 1200 |
+| `works-coil-line.jpg` | The coil line down the length of the works   | Sustainability "The works" band; Latest News card 1       | 800 × 800   |
+| `hrpo-coils.jpg`      | Hot rolled coils in stock                    | Products, HRPO gallery; Sustainability "Material" band    | 1200 × 1600 |
+
+## process-1..4
+
+**Used by the process walkthrough and nothing else.** Each carries its step
+number and caption burned into the top-left corner, so anywhere else on the
+site they read as a numbered stage of something the reader is not looking at.
+The unlabelled originals are the four `ChatGPT Image …png` files.
+
+## Still wanted
+
+Four slots on the Sustainability page are hero slides standing in for
+photographs that do not exist yet, each marked `PLACEHOLDER` in
+`src/lib/sustainability.ts`: planting or the site from outside (Environment),
+the board or the works from the gate (Governance), the BIS or a test
+certificate (Certification), and the works team (Community). The hero there
+wants an environmental photograph too.

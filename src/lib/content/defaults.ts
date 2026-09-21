@@ -52,14 +52,6 @@ export const defaultContent: SiteContent = {
   },
 
   about: {
-    hero: {
-      eyebrow: "About Us",
-      title: "Steel finished to a tolerance, not a target",
-      standfirst:
-        "Metal Coatings (India) Ltd has been cold rolling steel since 1996, supplying to auto components, white goods, electrical equipment and power transmission manufacturers across India.",
-      image: "/images/process-4.jpg",
-      alt: "Finished cold rolled coils lined up for despatch",
-    },
     process: {
       eyebrow: "Process",
       title: "How a coil is made",
@@ -71,12 +63,6 @@ export const defaultContent: SiteContent = {
       members: team,
       footnote:
         "Board of Directors and Key Managerial Personnel as listed in the FY2025-26 annual report.",
-    },
-    closing: {
-      title: "Need a gauge we have not listed?",
-      body: "Send us the specification and we will come back with what the line can hold.",
-      ctaLabel: "Talk to Us",
-      ctaHref: "/contact",
     },
   },
 

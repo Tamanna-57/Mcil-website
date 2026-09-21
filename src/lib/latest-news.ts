@@ -69,8 +69,8 @@ export const newsItems: NewsItem[] = [
     href: "#",
     date: "2026-09-18",
     dateLabel: "18 September 2026",
-    image: "/images/process-2.jpg",
-    alt: "Steel strip running through the cold rolling mill stands",
+    image: "/images/works-coil-line.jpg",
+    alt: "The coil line running the length of the Faridabad works",
   },
   {
     id: "q1-results",
@@ -80,8 +80,8 @@ export const newsItems: NewsItem[] = [
     href: "#",
     date: "2026-09-09",
     dateLabel: "9 September 2026",
-    image: "/images/hero-3.jpg",
-    alt: "Bundled galvanised stock across the warehouse floor",
+    image: "/images/works-inspection.jpg",
+    alt: "A works engineer checking a coil on the line",
   },
   {
     id: "faridabad-solar",
@@ -90,8 +90,8 @@ export const newsItems: NewsItem[] = [
     href: "#",
     date: "2026-08-21",
     dateLabel: "21 August 2026",
-    image: "/images/process-3.jpg",
-    alt: "Cold rolled steel strip running out along the finishing line",
+    image: "/images/works-coil-bay.jpg",
+    alt: "Finished coils stacked down the bay at the Faridabad works",
   },
 ];
 
@@ -105,8 +105,6 @@ export const socialPosts: SocialPost[] = [
     dateLabel: "Sep 17",
     date: "2026-09-17",
     body: "Thirty years of rolling steel in Faridabad. Our cold rolled strips leave the line held to gauge across the full width — the same tolerance our customers have built their own lines around since 1996.",
-    image: "/images/process-4.jpg",
-    alt: "Finished cold rolled coils lined up for despatch",
     href: "#",
   },
   {
@@ -114,8 +112,6 @@ export const socialPosts: SocialPost[] = [
     dateLabel: "Sep 12",
     date: "2026-09-12",
     body: "Hot rolled input arrives, is pickled, oiled and staged for the mill. Every coil is logged against its heat number before it moves an inch further down the line.",
-    image: "/images/process-1.jpg",
-    alt: "Hot rolled steel coils staged in the input bay",
     href: "#",
   },
   {
@@ -130,8 +126,6 @@ export const socialPosts: SocialPost[] = [
     dateLabel: "Aug 28",
     date: "2026-08-28",
     body: "Precision strips for auto components, white goods and general engineering — rolled, finished and certified to IS 513 at a single site.",
-    image: "/images/hero-1.jpg",
-    alt: "Fabricators grinding steel sections on the shop floor",
     href: "#",
   },
 ];
