@@ -5,14 +5,16 @@ import { navItems } from "@/lib/site-nav";
 import AdminLink from "./AdminLink";
 
 /**
- * Site footer: a sitemap, the registered-office details, and the legal line a
- * listed company is expected to carry.
+ * Site footer: the mark, where the company is, one row of sections, and the
+ * legal line a listed company is expected to carry.
  *
- * The link columns are built from `navItems` rather than a second list of
- * their own, so the footer cannot drift from the header. Destinations that do
- * not exist yet (`soon`) are left out — the header shows them greyed to signal
- * what is coming, but a footer sitemap full of dead entries just reads as
- * broken.
+ * It was a five-column sitemap repeating every link in the header's drop
+ * panels, which ran to about 780px — a screenful of footer under every page.
+ * The panels are one hover away at the top of the page, so the footer keeps
+ * only the top-level destinations, on a single row.
+ *
+ * Those come from `navItems`, so the row cannot drift from the header. Items
+ * with no page of their own are skipped.
  */
 export default function SiteFooter({
   company,
@@ -22,34 +24,19 @@ export default function SiteFooter({
   /** Whether this visitor is signed into the admin panel. */
   isAdmin: boolean;
 }) {
-  const columns = navItems
-    // The contact panel is phone, email and address, which is exactly what the
-    // block on the left already carries — as a column too it just reads twice.
-    // MCIL Advantage goes for the same reason: since About Us was folded into
-    // the landing page, its three links are the same three anchors the About
-    // column lists. Dropping it also brings the row back to the five columns
-    // the grid below is cut for — six wrapped the last one under the address.
-    .filter((item) => item.id !== "contact" && item.id !== "advantage")
-    .map((item) => ({
-      id: item.id,
-      label: item.label,
-      href: item.href,
-      links: item.panel.links.filter((link) => link.href && !link.soon),
-    }))
-    .filter((column) => column.links.length > 0);
+  const sections = navItems.filter((item) => item.href);
 
   return (
-    <footer className="bg-navy text-white/75">
-      {/* Sitemap */}
-      <div className="mx-auto w-full max-w-6xl px-6 pt-16 pb-12 sm:px-10">
-        <div className="grid gap-10 sm:grid-cols-2 lg:grid-cols-[1.4fr_repeat(4,minmax(0,1fr))] lg:gap-8">
+    <footer className="bg-navy text-white/70">
+      <div className="mx-auto w-full max-w-6xl px-6 py-8 sm:px-10">
+        <div className="flex flex-col gap-8 lg:flex-row lg:items-start lg:justify-between lg:gap-12">
           {/* Who and where */}
-          <div>
+          <div className="lg:max-w-[21rem]">
             <div className="flex w-fit flex-col items-center gap-1">
               <span
                 className="site-logo block"
                 style={
-                  { "--logo-h": `${LOGO_HEIGHT + 6}px` } as React.CSSProperties
+                  { "--logo-h": `${LOGO_HEIGHT}px` } as React.CSSProperties
                 }
                 aria-hidden
               />
@@ -59,27 +46,27 @@ export default function SiteFooter({
               <span className="sr-only">{LOGO_NAME}</span>
             </div>
 
-            <address className="mt-6 text-sm leading-relaxed not-italic">
-              <p className="text-[11px] font-semibold tracking-[0.16em] text-white/45 uppercase">
-                Registered Office
+            {/* Both addresses on one line each: the contact page sets them out
+                properly, and this is the reminder, not the record. */}
+            <address className="mt-5 space-y-1 text-[13px] leading-relaxed not-italic">
+              <p>
+                <span className="text-white/40">Office</span>{" "}
+                {company.registeredOffice}
               </p>
-              <p className="mt-2">{company.registeredOffice}</p>
-
-              <p className="mt-5 text-[11px] font-semibold tracking-[0.16em] text-white/45 uppercase">
-                Works
+              <p>
+                <span className="text-white/40">Works</span> {company.works}
               </p>
-              <p className="mt-2">{company.works}</p>
-
-              <p className="mt-5 flex flex-col gap-1">
+              <p className="pt-1">
                 <a
                   href={`tel:${company.phone.replace(/\s/g, "")}`}
-                  className="w-fit transition-colors hover:text-white"
+                  className="transition-colors hover:text-white"
                 >
                   {company.phone}
                 </a>
+                <span className="px-2 text-white/25">·</span>
                 <a
                   href={`mailto:${company.email}`}
-                  className="w-fit transition-colors hover:text-white"
+                  className="transition-colors hover:text-white"
                 >
                   {company.email}
                 </a>
@@ -87,67 +74,38 @@ export default function SiteFooter({
             </address>
           </div>
 
-          {columns.map((column) => (
-            <nav key={column.id} aria-label={column.label}>
-              <h2 className="text-[11px] font-semibold tracking-[0.16em] text-white/45 uppercase">
-                {column.href ? (
+          {/* One row of sections; the header's panels carry the rest. */}
+          <nav aria-label="Sections">
+            <ul className="flex flex-wrap gap-x-5 gap-y-2.5 text-[13px] lg:justify-end">
+              {sections.map((item) => (
+                <li key={item.id}>
                   <Link
-                    href={column.href}
+                    href={item.href as string}
                     className="transition-colors hover:text-white"
                   >
-                    {column.label}
+                    {item.label}
                   </Link>
-                ) : (
-                  column.label
-                )}
-              </h2>
-              <ul className="mt-4 flex flex-col gap-2.5">
-                {column.links.map((link) => (
-                  <li key={`${link.label}-${link.href}`}>
-                    <Link
-                      href={link.href as string}
-                      className="text-sm transition-colors hover:text-white"
-                      {...(link.external
-                        ? { target: "_blank", rel: "noreferrer" }
-                        : {})}
-                    >
-                      {link.label}
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            </nav>
-          ))}
+                </li>
+              ))}
+            </ul>
+          </nav>
         </div>
       </div>
 
       {/* Legal line */}
       <div className="border-t border-white/12">
-        <div className="mx-auto flex w-full max-w-6xl flex-col gap-4 px-6 py-6 sm:px-10 lg:flex-row lg:items-center lg:justify-between">
-          <p className="text-xs leading-relaxed text-white/50">
-            © {new Date().getFullYear()} {company.legalName}. All rights
-            reserved.
-            <span className="mt-1 block">
-              CIN {company.cin} · BSE {company.bseScripCode} · ISIN{" "}
-              {company.isin}
-            </span>
+        <div className="mx-auto flex w-full max-w-6xl flex-col gap-2 px-6 py-4 text-xs text-white/45 sm:px-10 lg:flex-row lg:items-center lg:justify-between">
+          <p>
+            © {new Date().getFullYear()} {company.legalName}
+            <span className="px-2 text-white/25">·</span>
+            CIN {company.cin}
+            <span className="px-2 text-white/25">·</span>
+            BSE {company.bseScripCode}
+            <span className="px-2 text-white/25">·</span>
+            ISIN {company.isin}
           </p>
 
-          <div className="flex flex-wrap items-center gap-x-5 gap-y-2 text-xs">
-            <Link
-              href="/contact"
-              className="text-white/50 transition-colors hover:text-white"
-            >
-              Contact
-            </Link>
-            <Link
-              href="/investors"
-              className="text-white/50 transition-colors hover:text-white"
-            >
-              Investors
-            </Link>
-            <AdminLink isAdmin={isAdmin} />
-          </div>
+          <AdminLink isAdmin={isAdmin} />
         </div>
       </div>
     </footer>

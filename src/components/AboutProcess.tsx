@@ -197,7 +197,7 @@ function Stage({ steps, current }: { steps: ProcessStep[]; current: number }) {
   return (
     /* The photograph fills whatever height the panel has on a wide screen,
        rather than holding its own ratio and leaving the card half empty. */
-    <div className="ap-figure relative order-1 aspect-[16/10] overflow-hidden rounded-2xl bg-steel-900/5 lg:order-2 lg:aspect-auto lg:h-full lg:min-h-[20rem]">
+    <div className="ap-figure relative order-1 aspect-[16/10] w-full min-w-0 overflow-hidden rounded-2xl bg-steel-900/5 lg:order-2 lg:aspect-auto lg:h-full lg:min-h-[20rem]">
       {steps.map((s, i) => {
         const offset = i - current;
         return (

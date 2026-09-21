@@ -726,7 +726,16 @@ body {
     padding: 1.5rem;
     margin-top: 1.25rem;
   }
+}
 
+/*
+ * Only below `lg`, where the photograph sits in flow above the copy and holds
+ * a ratio of its own. From `lg` it is stretched to the panel's height instead,
+ * and a ratio on top of that height would compute its WIDTH from it — on a
+ * short window that width ran past the end of the card and out of the page,
+ * taking a horizontal scrollbar with it.
+ */
+@media (max-height: 860px) and (max-width: 1023.98px) {
   .ap-figure {
     aspect-ratio: 16 / 9;
   }
