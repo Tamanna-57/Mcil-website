@@ -89,7 +89,7 @@ export default function AboutProcess({
           size, and what is left over stays a margin rather than growing into a
           hole between the sections.
         */}
-        <div className="ap-pin sticky top-0 flex h-[100svh] items-center px-4 py-10 sm:px-8 lg:px-[5vw]">
+        <div className="ap-pin sticky top-0 flex h-[100svh] items-center px-4 py-6 sm:px-8 lg:px-[5vw]">
           <div className="mx-auto w-full max-w-6xl">
             <header className="text-center">
               <p className="text-[11px] font-semibold tracking-[0.24em] text-accent uppercase">
@@ -129,7 +129,7 @@ export default function AboutProcess({
               </div>
             </div>
 
-            <div className="ap-panel mt-6 grid items-center gap-8 rounded-3xl bg-surface p-5 ring-1 ring-steel-900/10 sm:p-7 lg:min-h-[62svh] lg:grid-cols-[minmax(0,0.78fr)_minmax(0,1fr)] lg:items-stretch lg:gap-12 lg:p-9">
+            <div className="ap-panel mt-6 grid items-center gap-8 rounded-3xl bg-surface p-5 ring-1 ring-steel-900/10 sm:p-7 lg:min-h-[66svh] lg:grid-cols-[minmax(0,0.78fr)_minmax(0,1fr)] lg:items-stretch lg:gap-12 lg:p-9">
               <Copy step={active} index={step} />
               <Stage steps={steps} current={step} />
             </div>
