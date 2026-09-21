@@ -56,14 +56,12 @@ export type SiteContent = {
     };
   };
 
+  /**
+   * The three sections that used to be the About page and now sit on the
+   * landing page. Its page hero and closing panel went with the page itself,
+   * so neither is here any more.
+   */
   about: {
-    hero: {
-      eyebrow: string;
-      title: string;
-      standfirst: string;
-      image: string;
-      alt: string;
-    };
     process: {
       eyebrow: string;
       title: string;
@@ -83,12 +81,6 @@ export type SiteContent = {
       heading: Heading;
       members: TeamMember[];
       footnote: string;
-    };
-    closing: {
-      title: string;
-      body: string;
-      ctaLabel: string;
-      ctaHref: string;
     };
   };
 

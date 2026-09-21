@@ -67,7 +67,11 @@ export const products: Product[] = [
     body: "{HRPO steel coils} are hot rolled, pickled and oiled — acid descaled in line and surface protected, so they can be formed or welded without further preparation. Every coil ships with its heat number and test certificate.",
     layout: "gallery",
     plates: [
-      { alt: "Hot rolled coil staged in the input bay", tone: "pale" },
+      {
+        src: "/images/hrpo-coils.jpg",
+        alt: "Hot rolled coils in stock at the works",
+        tone: "pale",
+      },
       { alt: "The pickling line, scale coming off the strip", tone: "navy" },
       { alt: "Oiled strip surface, close up", tone: "accent" },
       { alt: "Finished HRPO coils banded for despatch", tone: "navy" },
