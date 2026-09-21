@@ -44,7 +44,7 @@ export default async function Home() {
       */}
       <section
         id="about"
-        className="bg-background px-6 pt-24 pb-16 sm:px-10 lg:px-[6.5vw] lg:pt-28 lg:pb-14"
+        className="bg-background px-6 pt-20 pb-12 sm:px-10 lg:px-[6.5vw] lg:pt-24 lg:pb-10"
       >
         <div className="mx-auto grid w-full max-w-6xl gap-10 lg:grid-cols-[minmax(0,0.46fr)_minmax(0,1fr)] lg:gap-16">
           <div>
@@ -60,11 +60,11 @@ export default async function Home() {
           </div>
 
           <div>
-            <p className="max-w-2xl font-display text-base leading-snug font-semibold text-steel-900 sm:text-lg">
+            <p className="max-w-2xl font-display text-lg leading-snug font-semibold text-steel-900 sm:text-xl">
               {home.about.lead}
             </p>
 
-            <div className="mt-8 text-sm leading-relaxed text-steel-800 sm:columns-2 sm:gap-10 lg:mt-10">
+            <div className="mt-8 text-[15px] leading-relaxed text-steel-800 sm:columns-2 sm:gap-10 sm:text-base lg:mt-10">
               {home.about.body
                 .split(/\n\s*\n/)
                 .map((paragraph) => paragraph.trim())

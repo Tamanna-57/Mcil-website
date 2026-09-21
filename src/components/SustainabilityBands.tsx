@@ -42,7 +42,7 @@ export default function SustainabilityBands({
   return (
     <section
       ref={sectionRef}
-      className="news-band px-6 py-20 sm:px-10 lg:px-[6.5vw] lg:py-28"
+      className="sustain-band px-6 py-20 sm:px-10 lg:px-[6.5vw] lg:py-28"
     >
       <div className="mx-auto flex w-full max-w-6xl flex-col gap-16 lg:gap-24">
         {bands.map((band, i) => (
