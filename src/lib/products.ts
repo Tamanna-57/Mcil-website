@@ -45,7 +45,7 @@ export type Product = {
   wordmark?: string;
   /** layout: "wordmark" — the single plate, which pops up on scroll. */
   plate?: ProductPlate;
-  /** layout: "gallery" — exactly four plates, in row order. */
+  /** layout: "gallery" — exactly three plates, in row order. */
   plates?: ProductPlate[];
 };
 
@@ -74,29 +74,21 @@ export const products: Product[] = [
     name: "HRPO Steel Coils",
     body: "{HRPO steel coils} are hot rolled, pickled and oiled — acid descaled in line and surface protected, so they can be formed or welded without further preparation. Every coil ships with its heat number and test certificate.",
     layout: "gallery",
-    /* Four photographs of the coils themselves rather than of the line that
-       makes them: the pickling and oiling stages have never been photographed
-       here, and a frame naming a shot nobody has taken reads as unfinished
-       once the plates either side of it are full. Each alt says what its own
-       photograph shows, so none of them claims a stage it does not. */
+    /* Photographs of the coils themselves rather than of the line that makes
+       them: the pickling and oiling stages have never been photographed here,
+       and a frame naming a shot nobody has taken reads as unfinished once the
+       plates either side of it are full. Each alt says what its own photograph
+       shows, so none of them claims a stage it does not. */
     plates: [
       {
         src: "/images/hrpo-coils.jpg",
         alt: "Hot rolled coils in stock at the works",
         tone: "pale",
       },
-      /* The third plate laps over most of the second, so the second is the
-         slot to spend on the weakest photograph — here the hero slide — and
-         the two on the right, which show whole, are the ones the HRPO
-         photographs get. */
-      {
-        src: "/images/hero-4.jpg",
-        alt: "The coil warehouse aisle, stock staged for despatch",
-        tone: "navy",
-      },
-      /* The centre plate, the one that shows whole and sits over the middle
-         of the row, is the one that carries the wipe: the stock bay, with
-         the line that filled it drawn across as the cursor moves. */
+      /* The centre plate is the one that carries the wipe, and it carries two
+         photographs and nothing else: it stands clear of the plates either
+         side, so what the divider sweeps between is those two and only those
+         two. The stock bay, and the line that filled it. */
       {
         src: "/images/works-coil-bay.jpg",
         alt: "Coils stacked down the bay at the Faridabad works",
