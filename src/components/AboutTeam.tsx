@@ -129,8 +129,10 @@ export default function AboutTeam({
           >
             {heading.title}
           </h2>
+          {/* Deliberately a step down from the section standfirsts elsewhere:
+              it is a note on who runs the company, not a second headline. */}
           <p
-            className="hl-reveal mt-5 text-sm leading-relaxed text-steel-800 sm:text-base"
+            className="hl-reveal mt-4 text-[13px] leading-relaxed text-steel-800/85 sm:text-sm"
             data-visible={visible}
             style={{ animationDelay: "160ms" }}
           >
