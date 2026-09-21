@@ -66,15 +66,36 @@ export const products: Product[] = [
     name: "HRPO Steel Coils",
     body: "{HRPO steel coils} are hot rolled, pickled and oiled — acid descaled in line and surface protected, so they can be formed or welded without further preparation. Every coil ships with its heat number and test certificate.",
     layout: "gallery",
+    /* Four photographs of the coils themselves rather than of the line that
+       makes them: the pickling and oiling stages have never been photographed
+       here, and a frame naming a shot nobody has taken reads as unfinished
+       once the plates either side of it are full. Each alt says what its own
+       photograph shows, so none of them claims a stage it does not. */
     plates: [
       {
         src: "/images/hrpo-coils.jpg",
         alt: "Hot rolled coils in stock at the works",
         tone: "pale",
       },
-      { alt: "The pickling line, scale coming off the strip", tone: "navy" },
-      { alt: "Oiled strip surface, close up", tone: "accent" },
-      { alt: "Finished HRPO coils banded for despatch", tone: "navy" },
+      /* The third plate laps over most of the second, so the second is the
+         slot to spend on the weakest photograph — here the hero slide — and
+         the two on the right, which show whole, are the ones the HRPO
+         photographs get. */
+      {
+        src: "/images/hero-4.jpg",
+        alt: "The coil warehouse aisle, stock staged for despatch",
+        tone: "navy",
+      },
+      {
+        src: "/images/works-coil-bay.jpg",
+        alt: "Coils stacked down the bay at the Faridabad works",
+        tone: "accent",
+      },
+      {
+        src: "/images/hrpo-coils-banded.jpg",
+        alt: "Hot rolled coils banded and marked, staged for the mill",
+        tone: "navy",
+      },
     ],
   },
 ];
