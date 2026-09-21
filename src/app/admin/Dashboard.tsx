@@ -20,7 +20,7 @@ type Status =
 /** Where each section's edits show up, so the panel can offer a look. */
 const PREVIEW: Record<SectionId, string> = {
   home: "/",
-  about: "/about",
+  about: "/#process",
   products: "/products",
   contact: "/contact",
   company: "/contact",

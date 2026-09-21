@@ -41,16 +41,16 @@ export const navItems: NavItem[] = [
   {
     id: "about",
     label: "About Us",
-    href: "/about",
+    href: "/#about",
     panel: {
       title: "Who We Are",
       body: "Metal Coatings (India) Ltd has been cold rolling steel since 1996 — strips, coils and HRPO, finished to a tolerance rather than a target.",
       caption: "Promoted by the Khandelwal family, December 1996",
       links: [
-        { label: "Our Story", href: "/about" },
-        { label: "How a Coil Is Made", href: "/about#process" },
-        { label: "The MCIL Advantage", href: "/about#advantage" },
-        { label: "Our Team", href: "/about#team" },
+        { label: "Our Story", href: "/#about" },
+        { label: "How a Coil Is Made", href: "/#process" },
+        { label: "The MCIL Advantage", href: "/#advantage" },
+        { label: "Our Team", href: "/#team" },
       ],
     },
   },
@@ -65,7 +65,7 @@ export const navItems: NavItem[] = [
       links: [
         { label: "Cold Rolled Strips & Coils", href: "/products#cold-rolled" },
         { label: "HRPO Steel Coils", href: "/products#hrpo" },
-        { label: "How a Coil Is Made", href: "/about#process" },
+        { label: "How a Coil Is Made", href: "/#process" },
         { label: "Grades & Tolerances", soon: true },
       ],
     },
@@ -97,14 +97,14 @@ export const navItems: NavItem[] = [
   {
     id: "advantage",
     label: "MCIL Advantage",
-    href: "/about#advantage",
+    href: "/#advantage",
     panel: {
       title: "The MCIL Advantage",
       body: "Thickness held across the width rather than sampled, every coil certified, and three decades of supplying auto components, white goods and electrical manufacturers to schedule.",
       links: [
-        { label: "Precision & Quality", href: "/about#advantage" },
-        { label: "The Process, Step by Step", href: "/about#process" },
-        { label: "The People Behind the Line", href: "/about#team" },
+        { label: "Precision & Quality", href: "/#advantage" },
+        { label: "The Process, Step by Step", href: "/#process" },
+        { label: "The People Behind the Line", href: "/#team" },
         { label: "Certifications", soon: true },
       ],
     },

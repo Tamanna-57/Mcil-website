@@ -122,7 +122,8 @@ export const sections: SectionSchema[] = [
   {
     id: "home",
     label: "Home",
-    blurb: "The landing hero and the About band beneath it.",
+    blurb:
+      "The landing hero, the About band beneath it and the customer row further down.",
     fields: [
       {
         type: "group",
@@ -176,26 +177,79 @@ export const sections: SectionSchema[] = [
           { type: "textarea", key: "body", label: "Paragraph" },
         ],
       },
+      {
+        type: "group",
+        key: "customers",
+        label: "Customers",
+        fields: [
+          { type: "text", key: "eyebrow", label: "Eyebrow" },
+          { type: "textarea", key: "title", label: "Headline" },
+          { type: "textarea", key: "standfirst", label: "Standfirst" },
+          {
+            type: "textarea",
+            key: "footnote",
+            label: "Footnote",
+            help: "Small print under the row. Clear it to hide the line.",
+          },
+          {
+            type: "list",
+            key: "items",
+            label: "Companies",
+            identify: true,
+            titleKey: "name",
+            addLabel: "Add customer",
+            help: "Each cell prints the supplied logo if there is one, and the typeset wordmark below it if there is not.",
+            template: {
+              name: "New customer",
+              mark: "",
+              suffix: "",
+              font: "body",
+              logo: "",
+              logoAlt: "",
+            },
+            fields: [
+              { type: "text", key: "name", label: "Company" },
+              {
+                type: "text",
+                key: "mark",
+                label: "Wordmark",
+                help: "The heavy first word, normally set in capitals.",
+              },
+              {
+                type: "text",
+                key: "suffix",
+                label: "Second word",
+                help: 'Set lighter and tracked beside the first, e.g. the "AUTO" in "SATYAM AUTO". Leave empty for a one-word name.',
+              },
+              {
+                type: "select",
+                key: "font",
+                label: "Typeface",
+                options: [
+                  { value: "body", label: "Montserrat (bold)" },
+                  { value: "display", label: "Josefin (tracked)" },
+                ],
+              },
+              {
+                type: "image",
+                key: "logo",
+                label: "Logo",
+                help: "The company's own artwork. Upload it and the wordmark above is no longer used; a transparent PNG or an SVG on no background sits best.",
+              },
+              { type: "text", key: "logoAlt", label: "Logo alt text" },
+            ],
+          },
+        ],
+      },
     ],
   },
 
   {
     id: "about",
-    label: "About page",
-    blurb: "Page hero, the process walkthrough, the advantage list and the team.",
+    label: "About sections",
+    blurb:
+      "The process walkthrough, the advantage list and the team — all three on the landing page, under the About band.",
     fields: [
-      {
-        type: "group",
-        key: "hero",
-        label: "Page hero",
-        fields: [
-          { type: "text", key: "eyebrow", label: "Eyebrow" },
-          { type: "textarea", key: "title", label: "Headline" },
-          { type: "textarea", key: "standfirst", label: "Standfirst" },
-          { type: "image", key: "image", label: "Background photograph" },
-          { type: "text", key: "alt", label: "Alt text" },
-        ],
-      },
       {
         type: "group",
         key: "process",
@@ -326,17 +380,6 @@ export const sections: SectionSchema[] = [
             ],
           },
           { type: "textarea", key: "footnote", label: "Footnote" },
-        ],
-      },
-      {
-        type: "group",
-        key: "closing",
-        label: "Closing call to action",
-        fields: [
-          { type: "text", key: "title", label: "Heading" },
-          { type: "textarea", key: "body", label: "Body" },
-          { type: "text", key: "ctaLabel", label: "Button label" },
-          { type: "text", key: "ctaHref", label: "Button link" },
         ],
       },
     ],
