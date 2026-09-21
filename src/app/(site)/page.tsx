@@ -33,19 +33,52 @@ export default async function Home() {
 
       <Hero slides={home.hero.slides} standfirst={home.hero.standfirst} />
 
+      {/*
+        The about band: the title set large down the left, and the copy to the
+        right of it — a bold lead line across the top, then the paragraphs
+        flowed into two columns beneath.
+
+        The columns are CSS multi-column rather than a grid, so the text fills
+        and balances itself however many paragraphs the admin panel saves. They
+        collapse to one column below `sm`, where two would be a few words wide.
+      */}
       <section
         id="about"
         className="bg-background px-6 py-24 sm:px-10 lg:px-[6.5vw]"
       >
-        <p className="text-xs font-semibold tracking-[0.2em] text-accent uppercase">
-          {home.about.eyebrow}
-        </p>
-        <h2 className="mt-4 max-w-3xl font-display text-3xl leading-tight font-light text-steel-900 sm:text-4xl">
-          {home.about.title}
-        </h2>
-        <p className="mt-6 max-w-2xl text-base leading-relaxed text-steel-800">
-          {home.about.body}
-        </p>
+        <div className="mx-auto grid w-full max-w-6xl gap-10 lg:grid-cols-[minmax(0,0.46fr)_minmax(0,1fr)] lg:gap-16">
+          <div>
+            <p className="text-[11px] font-semibold tracking-[0.24em] text-accent uppercase">
+              [ {home.about.eyebrow} ]
+            </p>
+            {/* Tighter than `type-display`'s own tracking: at this size the
+                default spacing pushes a two-word title onto two lines. */}
+            <h2 className="type-display mt-5 text-[clamp(2.6rem,7vw,4.4rem)] leading-[1] tracking-[0.01em] text-steel-900">
+              {home.about.title}
+            </h2>
+          </div>
+
+          <div>
+            <p className="max-w-2xl font-display text-base leading-snug font-semibold text-steel-900 sm:text-lg">
+              {home.about.lead}
+            </p>
+
+            <div className="mt-8 text-sm leading-relaxed text-steel-800 sm:columns-2 sm:gap-10 lg:mt-10">
+              {home.about.body
+                .split(/\n\s*\n/)
+                .map((paragraph) => paragraph.trim())
+                .filter(Boolean)
+                .map((paragraph) => (
+                  <p
+                    key={paragraph.slice(0, 32)}
+                    className="mb-5 break-inside-avoid last:mb-0"
+                  >
+                    {paragraph}
+                  </p>
+                ))}
+            </div>
+          </div>
+        </div>
       </section>
 
       <AboutProcess

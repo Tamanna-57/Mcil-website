@@ -38,7 +38,11 @@ export type SiteContent = {
     };
     about: {
       eyebrow: string;
+      /** Set large down the left of the band — a name, not a sentence. */
       title: string;
+      /** The one bold line above the columns. */
+      lead: string;
+      /** Paragraphs, separated by a blank line, flowed into two columns. */
       body: string;
     };
     /** The customer band under the process walkthrough. */

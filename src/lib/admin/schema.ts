@@ -173,8 +173,13 @@ export const sections: SectionSchema[] = [
         label: "About band",
         fields: [
           { type: "text", key: "eyebrow", label: "Eyebrow" },
-          { type: "textarea", key: "title", label: "Headline" },
-          { type: "textarea", key: "body", label: "Paragraph" },
+          { type: "text", key: "title", label: "Title (set large, left)" },
+          { type: "textarea", key: "lead", label: "Lead line (bold)" },
+          {
+            type: "textarea",
+            key: "body",
+            label: "Paragraphs — leave a blank line between them",
+          },
         ],
       },
       {
@@ -765,7 +770,12 @@ export const sections: SectionSchema[] = [
                 label: "Prefix",
                 placeholder: "₹ ",
               },
-              { type: "text", key: "suffix", label: "Suffix", placeholder: " Cr" },
+              {
+                type: "text",
+                key: "suffix",
+                label: "Suffix",
+                placeholder: " Cr",
+              },
               {
                 type: "boolean",
                 key: "suffixSmall",
