@@ -128,7 +128,7 @@ export default function LatestNews({
       ref={sectionRef}
       id="news"
       aria-label={heading.label}
-      className="news-band px-6 py-20 sm:px-10 lg:px-[6.5vw] lg:py-28"
+      className="news-band px-6 py-20 sm:px-10 lg:px-[6.5vw] lg:py-24"
     >
       <div className="mx-auto w-full max-w-6xl">
         <h2
