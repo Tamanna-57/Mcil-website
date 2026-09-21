@@ -203,23 +203,6 @@ export default function SiteHeader() {
               onNavigate={closeNow}
             />
           ))}
-
-          <button
-            type="button"
-            aria-label="Search"
-            onFocus={closeNow}
-            className="cursor-pointer text-[color:var(--nav-ink-soft)] transition-colors hover:text-[color:var(--nav-ink)]"
-          >
-            <SearchIcon />
-          </button>
-
-          <button
-            type="button"
-            onFocus={closeNow}
-            className="cursor-pointer border border-[color:var(--nav-line)] px-5 py-1.5 text-[11px] tracking-[0.12em] text-[color:var(--nav-ink)] uppercase transition-colors hover:bg-[color:var(--nav-hover-ground)] hover:text-[color:var(--nav-hover-ink)]"
-          >
-            English
-          </button>
         </nav>
 
         <button
@@ -505,23 +488,6 @@ function SubLink({
     <Link href={link.href} className={className} onClick={onNavigate}>
       {link.label}
     </Link>
-  );
-}
-
-function SearchIcon() {
-  return (
-    <svg
-      width="18"
-      height="18"
-      viewBox="0 0 18 18"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.6"
-      aria-hidden
-    >
-      <circle cx="7.75" cy="7.75" r="5.75" />
-      <path d="M12 12l4 4" strokeLinecap="round" />
-    </svg>
   );
 }
 

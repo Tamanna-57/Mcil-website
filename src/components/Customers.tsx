@@ -64,7 +64,10 @@ export default function Customers({
     <section
       ref={sectionRef}
       id="customers"
-      className="customer-band px-6 py-20 sm:px-10 lg:px-[6.5vw] lg:py-24"
+      /* The header menu links straight at this section, so it reserves the
+         fixed bar's height — landing on it otherwise puts the heading behind
+         the bar. */
+      className="customer-band scroll-mt-[var(--header-h)] px-6 py-20 sm:px-10 lg:px-[6.5vw] lg:py-24"
     >
       <div className="mx-auto w-full max-w-6xl">
         <header className="mx-auto max-w-3xl text-center">

@@ -110,6 +110,21 @@ export const navItems: NavItem[] = [
     },
   },
   {
+    id: "customers",
+    label: "Customers",
+    href: "/#customers",
+    panel: {
+      title: "Our Customers",
+      body: "Auto component makers, white goods and electrical manufacturers, and the power transmission industry — the companies MCIL rolls for, named on the landing page.",
+      caption: "Logos are the property of their respective owners",
+      links: [
+        { label: "The Companies We Roll For", href: "/#customers" },
+        { label: "The MCIL Advantage", href: "/#advantage" },
+        { label: "What We Make", href: "/products" },
+      ],
+    },
+  },
+  {
     id: "sustainability",
     label: "Sustainability",
     href: "/sustainability",
