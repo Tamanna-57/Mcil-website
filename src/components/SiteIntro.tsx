@@ -3,6 +3,7 @@
 import {
   useCallback,
   useEffect,
+  useId,
   useRef,
   useState,
   useSyncExternalStore,
@@ -32,47 +33,87 @@ const DISSOLVE_MS = 940; /* the cut-short exit, unchanged */
 let hasPlayedThisLoad = false;
 
 /*
- * The mark's own pixels. The stage scales every piece by one unit (--u), so
- * the quarters land in exactly the arrangement the artwork has and what
- * assembles IS the logo, not a rebuild of it.
+ * The mark's own pixels. The stage scales everything by one unit (--u), so a
+ * coordinate written here is the coordinate the artwork has, and what forms on
+ * screen IS the logo rather than a rebuild of it.
  *
  * Re-measure if public/images/mcil-mark.png is ever replaced.
  */
 const MARK = { w: 390, h: 320 } as const;
 
-type Piece = {
+type Ring = {
   id: string;
-  /** The edge it travels in from. */
-  side: "top" | "right" | "bottom" | "left";
-  /** Where it sits in the finished mark, in the artwork's own pixels. */
-  x: number;
-  y: number;
-  w: number;
-  h: number;
+  /** The edge its stroke rides in from. */
+  side: "top" | "left" | "right";
+  /** The ring's centre and the radius the sweep is drawn at, in mark pixels. */
+  cx: number;
+  cy: number;
+  r: number;
+  /** Wide enough to cover the whole band of the ring it uncovers. */
+  width: number;
+  /**
+   * Degrees the sweep's start is turned to, from three o'clock clockwise: the
+   * point on the ring where its stroke arrives, so the arc carries on from
+   * exactly where the line stopped.
+   */
+  from: number;
 };
 
 /*
- * The monogram's own four shapes, one per side of the screen.
+ * The three rings, measured off the artwork's own alpha.
  *
- * Not a grid: cutting the mark into rectangles gave four torn frames sliding
- * about, which is what a crop looks like and not what a logo assembling looks
- * like. The mark is genuinely made of four separate shapes — the arc over the
- * top, the two rings under it, and the wedge between them — and they come
- * apart cleanly, because nothing in the artwork touches anything else. Each
- * one is its own file, so what travels is a whole smooth shape with its own
- * curves, and what lands is the artwork itself, pixel for pixel.
+ * Each centre and radius was read from where the opaque pixels actually run
+ * (rows and columns sampled across the file, then solved for the circle that
+ * fits them), not eyeballed: the sweep has to sit on the band it is
+ * uncovering, or it wipes past the stroke instead of drawing it.
  *
- * Each enters from the side it belongs on, so the mark closes inward rather
- * than being posted in from off-stage.
- *
- * Re-run tools/split-mark.py if the artwork is ever replaced.
+ * `width` is generous on purpose. A mask only ever reveals, so a stroke wider
+ * than the band costs nothing — it uncovers transparent artwork either side —
+ * while one a little too narrow leaves a hairline of the ring behind.
  */
-const PIECES: Piece[] = [
-  { id: "top", side: "top", x: 78, y: 0, w: 193, h: 219 },
-  { id: "left", side: "left", x: 0, y: 113, w: 121, h: 204 },
-  { id: "right", side: "right", x: 207, y: 105, w: 183, h: 212 },
-  { id: "tri", side: "bottom", x: 170, y: 240, w: 52, h: 80 },
+const RINGS: Ring[] = [
+  { id: "top", side: "top", cx: 193, cy: 116, r: 98, width: 52, from: -90 },
+  { id: "left", side: "left", cx: 96, cy: 218, r: 80, width: 48, from: 180 },
+  { id: "right", side: "right", cx: 294, cy: 218, r: 79, width: 48, from: 0 },
 ];
+
+/**
+ * Where each stroke rides in along, and where it stops.
+ *
+ * Each is a long bar, as long again as the mark's own radius, so what crosses
+ * the screen reads as a line travelling rather than a dash appearing. Each one
+ * stops with its leading end *on the band of its ring* — not at the ring's
+ * centre, which would bury it inside the shape — so the sweep that takes over
+ * carries on from the end of the line rather than somewhere near it.
+ */
+const RUNNERS = [
+  /* Down the vertical rail onto the crown of the big ring. */
+  { id: "top", axis: "v", x: 176, y: -120, w: 34, h: 140 },
+  /* In along the horizontal rail onto the outer edge of each lower ring. */
+  { id: "left", axis: "h", x: -110, y: 201, w: 140, h: 34 },
+  { id: "right", axis: "h", x: 356, y: 201, w: 140, h: 34 },
+  /* And up onto the wedge, the one piece that is not a ring. */
+  { id: "wedge", axis: "v", x: 179, y: 236, w: 34, h: 124 },
+] as const;
+
+/**
+ * The hairlines the strokes ride in on.
+ *
+ * They run the width and height of the screen rather than of the mark: what
+ * they are for is the moment before anything has arrived, where the eye is
+ * given the paths first and the lines then travel down them. Each is placed on
+ * a landing point — the two rings share a centre line at y=218, the top ring
+ * and the wedge share one at x≈193 — so a line and the stroke that rides it
+ * are the same line.
+ */
+const RAILS = [
+  { id: "h-rings", axis: "h", at: 218 },
+  { id: "h-top", axis: "h", at: 116 },
+  { id: "v-mark", axis: "v", at: 193 },
+] as const;
+
+/** One turn of a circle of radius r, for the dash the sweep is drawn with. */
+const circumference = (r: number) => 2 * Math.PI * r;
 
 /* Whether to skip the sequence entirely. Read through useSyncExternalStore
    rather than an effect: the server has no session to read, so it renders the
@@ -87,22 +128,72 @@ function shouldSkip() {
 
 const neverSkipOnServer = () => false;
 
-/** One shape of the mark, drawn from its own file. */
-function LogoPiece({ piece, className }: { piece: Piece; className: string }) {
+/**
+ * The mark, uncovered by a stroke travelling round each ring.
+ *
+ * The artwork is the artwork — one `<image>`, the same file the header uses.
+ * What moves is a mask over it: three circles, each stroked wide enough to
+ * cover its ring's band, each drawn on with `stroke-dashoffset`. Where the
+ * stroke has been, the logo shows; where it has not, there is nothing yet. So
+ * the line does not become the logo by turning into it, it uncovers it, and
+ * what is left at the end is the file itself rather than an approximation of
+ * it drawn in arcs.
+ *
+ * The wedge between the rings has no arc of its own — it is a triangle, not a
+ * turn — so it takes a rectangle of mask that opens once its own stroke has
+ * arrived under it.
+ */
+function LogoDraw({ maskId }: { maskId: string }) {
   return (
-    <span
-      className={className}
-      style={
-        {
-          "--x": piece.x,
-          "--y": piece.y,
-          "--w": piece.w,
-          "--h": piece.h,
-          "--img": `url("/images/mark-${piece.id}.png")`,
-        } as React.CSSProperties
-      }
-      data-side={piece.side}
-    />
+    <svg
+      className="intro-draw"
+      viewBox={`0 0 ${MARK.w} ${MARK.h}`}
+      aria-hidden
+    >
+      <defs>
+        <mask
+          id={maskId}
+          maskUnits="userSpaceOnUse"
+          x="0"
+          y="0"
+          width={MARK.w}
+          height={MARK.h}
+        >
+          {RINGS.map((ring) => (
+            <circle
+              key={ring.id}
+              className="intro-arc"
+              data-ring={ring.id}
+              cx={ring.cx}
+              cy={ring.cy}
+              r={ring.r}
+              strokeWidth={ring.width}
+              /* The turn is an attribute rather than a CSS transform: the
+                 sweep animates stroke-dashoffset, and a transform in the
+                 cascade here would be one more thing to keep out of its way. */
+              transform={`rotate(${ring.from} ${ring.cx} ${ring.cy})`}
+              style={
+                { "--dash": circumference(ring.r).toFixed(1) } as React.CSSProperties
+              }
+            />
+          ))}
+          <rect
+            className="intro-wedge-mask"
+            x="164"
+            y="232"
+            width="66"
+            height="92"
+          />
+        </mask>
+      </defs>
+
+      <image
+        href="/images/mcil-mark.png"
+        width={MARK.w}
+        height={MARK.h}
+        mask={`url(#${maskId})`}
+      />
+    </svg>
   );
 }
 
@@ -137,6 +228,9 @@ export default function SiteIntro() {
     "run",
   );
   const lockupRef = useRef<HTMLDivElement | null>(null);
+  /* The mask is referenced by id, and an id has to be the same string on the
+     server as on the client or the reference dangles through hydration. */
+  const maskId = useId();
   const timers = useRef<number[]>([]);
   const started = useRef(false);
 
@@ -276,15 +370,45 @@ export default function SiteIntro() {
           } as React.CSSProperties
         }
       >
-        {/* The shapes turn as one. Their own travel is on each piece; the
-            turn is on this wrapper, so the mark revolves about its centre
-            while the pieces are still closing rather than each spinning
-            separately. It rests at no rotation, which is what lets the dock
-            measure the lockup afterwards without allowing for a tilt. */}
+        {/* The rails and the strokes that ride them are outside the turn:
+            they travel straight, as they do in the reference, and it is the
+            mark they have just met in the middle that revolves. Inside the
+            turn there is only the artwork and the sweeps uncovering it. */}
+        {RAILS.map((rail) => (
+          <span
+            key={rail.id}
+            className="intro-rail"
+            data-axis={rail.axis}
+            data-rail={rail.id}
+            style={{ "--at": rail.at } as React.CSSProperties}
+            aria-hidden
+          />
+        ))}
+
+        {RUNNERS.map((runner) => (
+          <span
+            key={runner.id}
+            className="intro-runner"
+            data-runner={runner.id}
+            data-axis={runner.axis}
+            style={
+              {
+                "--x": runner.x,
+                "--y": runner.y,
+                "--w": runner.w,
+                "--h": runner.h,
+              } as React.CSSProperties
+            }
+            aria-hidden
+          />
+        ))}
+
+        {/* One turn of the whole mark, starting the moment the strokes land
+            and ending square — which is both what the reference does and what
+            lets the dock measure the lockup afterwards without allowing for a
+            tilt. */}
         <span className="intro-mark" aria-hidden>
-          {PIECES.map((piece) => (
-            <LogoPiece key={piece.id} piece={piece} className="intro-piece" />
-          ))}
+          <LogoDraw maskId={maskId} />
         </span>
         {/* Real type, as in the header — the name is not part of the mark's
             artwork, so it is set rather than cropped. */}

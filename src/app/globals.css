@@ -1027,14 +1027,14 @@ body {
 .intro-lockup {
   --u: clamp(0.16px, 0.027vw, 0.4px);
   /*
-   * How far each shape starts outside its resting place.
+   * How far down its rail each stroke starts.
    *
-   * Short on purpose. Thrown in from across the screen the four shapes read
-   * as a logo that has come apart — four things moving separately, which is
-   * exactly what a mark assembling should not look like. Starting just
-   * outside the mark keeps them reading as one thing gathering.
+   * Long on purpose, and the opposite of what the pieces wanted. A piece of
+   * the logo thrown in from across the screen reads as a logo that has come
+   * apart; a plain stroke doing it reads as a line travelling, which is the
+   * whole point of the thing it is about to draw.
    */
-  --fly: clamp(64px, 11vmin, 132px);
+  --run: clamp(220px, 46vmin, 560px);
   --intro-settle: cubic-bezier(0.16, 0.84, 0.24, 1);
   /*
    * The turn gets its own curve.
@@ -1082,47 +1082,312 @@ body {
 /*
  * The turn.
  *
- * The reference this follows does not simply slide its parts into place: the
- * assembly revolves about its own centre as it closes, and that turn is most
- * of why it reads as one mark forming rather than several pieces arriving.
- * It runs long and settles late, so the last of the movement is the whole
- * mark rotating home after the shapes have met.
+ * The reference does not slide its parts into place and it does not cut its
+ * logo up: straight strokes travel in along rails, and as they reach the
+ * middle the whole thing revolves, the mark appearing out of the turn. The
+ * rotation is most of why it reads as one mark forming, so it is long, it
+ * carries through the middle where the sweeps are drawing, and it eases shut
+ * at nothing — the lockup has to finish square for the dock to measure it.
  */
 .intro-mark {
   position: absolute;
   inset: 0;
   transform-origin: 50% 50%;
-  animation: intro-revolve 1560ms var(--intro-turn) both;
+  /* Starts as the strokes land, so the turn is what they do next rather than
+     something that happened to them on the way in. */
+  animation: intro-revolve 1060ms var(--intro-turn) 780ms both;
   will-change: transform;
 }
 
+/*
+ * A whole turn, not a tilt.
+ *
+ * Ending anywhere but square would leave the mark crooked for the dock to
+ * measure, and a part-turn back and forth reads as a wobble. One revolution
+ * ends where it started, so the mark can revolve as hard as the reference
+ * does and still finish exactly upright. It runs against the scale, which
+ * pulls in as it turns, so the mark gathers rather than merely spins.
+ */
 @keyframes intro-revolve {
   0% {
-    transform: rotate(-26deg) scale(1.1);
+    transform: rotate(0deg) scale(1.12);
   }
   100% {
-    transform: rotate(0deg) scale(1);
+    transform: rotate(-360deg) scale(1);
   }
 }
 
 /*
- * Each shape is its own file, laid at its own place in the mark.
+ * The rails: hairlines across the whole screen, not across the mark.
  *
- * Four small transparent PNGs rather than one sheet windowed four ways: a
- * window is a rectangle, and a rectangle travelling across the screen reads as
- * a torn-off crop however smooth the curve inside it. A shape with its own
- * alpha carries its own edges, so what moves is the curve.
+ * What they are for is the beat before anything has arrived — the paths are
+ * drawn first and the strokes then travel down them, which is what makes the
+ * strokes read as running on a line rather than flying at a target. Each one
+ * is laid on a landing point (the two lower rings share y=218; the top ring
+ * and the wedge share x=193), so a rail and the stroke that rides it are the
+ * same line. They open from the middle outwards and are gone by the time the
+ * mark is drawing.
  */
-.intro-piece {
+.intro-rail {
+  position: absolute;
+  background: color-mix(in srgb, var(--brand-pale) 60%, transparent);
+  opacity: 0;
+  will-change: transform, opacity;
+}
+
+.intro-rail[data-axis="h"] {
+  left: -60vw;
+  right: -60vw;
+  top: calc(var(--at) * var(--u));
+  height: 1px;
+  transform: scaleX(0);
+  animation: intro-rail-h 1340ms cubic-bezier(0.22, 0.9, 0.24, 1) both;
+}
+
+.intro-rail[data-axis="v"] {
+  top: -60vh;
+  bottom: -60vh;
+  left: calc(var(--at) * var(--u));
+  width: 1px;
+  transform: scaleY(0);
+  animation: intro-rail-v 1340ms cubic-bezier(0.22, 0.9, 0.24, 1) both;
+}
+
+.intro-rail[data-rail="h-top"] {
+  animation-delay: 90ms;
+  opacity: 0.6;
+}
+
+@keyframes intro-rail-h {
+  0% {
+    opacity: 0;
+    transform: scaleX(0);
+  }
+  18% {
+    opacity: 0.5;
+  }
+  42% {
+    opacity: 0.5;
+    transform: scaleX(1);
+  }
+  100% {
+    opacity: 0;
+    transform: scaleX(1);
+  }
+}
+
+@keyframes intro-rail-v {
+  0% {
+    opacity: 0;
+    transform: scaleY(0);
+  }
+  18% {
+    opacity: 0.5;
+  }
+  42% {
+    opacity: 0.5;
+    transform: scaleY(1);
+  }
+  100% {
+    opacity: 0;
+    transform: scaleY(1);
+  }
+}
+
+/*
+ * The strokes.
+ *
+ * Plain bars with round ends — nothing logo-shaped, because a piece of the
+ * logo travelling is a logo that has been cut up, which is the thing this
+ * replaces. Each one runs down its rail, stops on the ring it belongs to, and
+ * hands over: it fades in the same beat its sweep starts from the point it
+ * stopped at, so what carries on round the ring is read as the same stroke
+ * bending into the turn.
+ */
+.intro-runner {
   position: absolute;
   left: calc(var(--x) * var(--u));
   top: calc(var(--y) * var(--u));
   width: calc(var(--w) * var(--u));
   height: calc(var(--h) * var(--u));
-  background-image: var(--img);
-  background-repeat: no-repeat;
-  background-size: 100% 100%;
+  border-radius: 999px;
+  background: #fff;
   will-change: transform, opacity;
+}
+
+.intro-runner[data-runner="top"] {
+  animation: intro-run-top 1000ms var(--intro-settle) 140ms both;
+}
+
+.intro-runner[data-runner="left"] {
+  animation: intro-run-left 1000ms var(--intro-settle) 200ms both;
+}
+
+.intro-runner[data-runner="right"] {
+  animation: intro-run-right 1000ms var(--intro-settle) 200ms both;
+}
+
+.intro-runner[data-runner="wedge"] {
+  animation: intro-run-wedge 900ms var(--intro-settle) 320ms both;
+}
+
+/*
+ * Each stroke travels from off its own edge of the screen — --run is a long
+ * way, so what arrives has been running rather than appearing — decelerates
+ * onto its landing point, and is gone by the end of the beat, by which time
+ * its sweep has taken over.
+ */
+@keyframes intro-run-top {
+  0% {
+    opacity: 0;
+    transform: translate3d(0, calc(var(--run) * -1), 0) scaleY(1.6);
+  }
+  14% {
+    opacity: 1;
+  }
+  58% {
+    transform: translate3d(0, 0, 0) scaleY(1);
+  }
+  76% {
+    opacity: 1;
+    transform: translate3d(0, 0, 0) scaleY(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translate3d(0, 0, 0) scaleY(1);
+  }
+}
+
+@keyframes intro-run-left {
+  0% {
+    opacity: 0;
+    transform: translate3d(calc(var(--run) * -1), 0, 0) scaleX(1.6);
+  }
+  14% {
+    opacity: 1;
+  }
+  58% {
+    transform: translate3d(0, 0, 0) scaleX(1);
+  }
+  76% {
+    opacity: 1;
+    transform: translate3d(0, 0, 0) scaleX(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translate3d(0, 0, 0) scaleX(1);
+  }
+}
+
+@keyframes intro-run-right {
+  0% {
+    opacity: 0;
+    transform: translate3d(var(--run), 0, 0) scaleX(1.6);
+  }
+  14% {
+    opacity: 1;
+  }
+  58% {
+    transform: translate3d(0, 0, 0) scaleX(1);
+  }
+  76% {
+    opacity: 1;
+    transform: translate3d(0, 0, 0) scaleX(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translate3d(0, 0, 0) scaleX(1);
+  }
+}
+
+@keyframes intro-run-wedge {
+  0% {
+    opacity: 0;
+    transform: translate3d(0, var(--run), 0) scaleY(1.5);
+  }
+  16% {
+    opacity: 1;
+  }
+  58% {
+    transform: translate3d(0, 0, 0) scaleY(1);
+  }
+  76% {
+    opacity: 1;
+    transform: translate3d(0, 0, 0) scaleY(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translate3d(0, 0, 0) scaleY(1);
+  }
+}
+
+/*
+ * The sweeps.
+ *
+ * Each ring is uncovered by its own stroke going round it: the mask circle is
+ * dashed one full turn long and its offset walks to nothing, so the opening of
+ * the dash travels the ring like a hand round a dial. `--dash` is that turn's
+ * length, handed down from the measured radius rather than written twice.
+ *
+ * The three start where their straight strokes stopped (the rotate() on each
+ * circle) and run the same way round, so the mark closes in one direction
+ * rather than three arguing. The wedge has no turn to make, so it opens on the
+ * spot once its own stroke is under it.
+ */
+.intro-arc {
+  fill: none;
+  stroke: #fff;
+  stroke-linecap: round;
+  stroke-dasharray: var(--dash);
+  stroke-dashoffset: var(--dash);
+}
+
+.intro-arc[data-ring="top"] {
+  animation: intro-sweep 900ms cubic-bezier(0.3, 0.72, 0.2, 1) 780ms both;
+}
+
+.intro-arc[data-ring="left"] {
+  animation: intro-sweep 880ms cubic-bezier(0.3, 0.72, 0.2, 1) 830ms both;
+}
+
+.intro-arc[data-ring="right"] {
+  animation: intro-sweep 880ms cubic-bezier(0.3, 0.72, 0.2, 1) 830ms both;
+}
+
+@keyframes intro-sweep {
+  0% {
+    stroke-dashoffset: var(--dash);
+  }
+  100% {
+    stroke-dashoffset: 0;
+  }
+}
+
+.intro-wedge-mask {
+  fill: #fff;
+  opacity: 0;
+  transform-box: fill-box;
+  transform-origin: 50% 100%;
+  animation: intro-wedge-open 400ms cubic-bezier(0.22, 0.9, 0.24, 1) 1000ms both;
+}
+
+@keyframes intro-wedge-open {
+  0% {
+    opacity: 0;
+    transform: scaleY(0.2);
+  }
+  100% {
+    opacity: 1;
+    transform: scaleY(1);
+  }
+}
+
+.intro-draw {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
 }
 
 /*
@@ -1156,96 +1421,6 @@ body {
   letter-spacing: 0.22em;
   text-transform: uppercase;
   color: color-mix(in srgb, #fff 88%, transparent);
-}
-
-/*
- * Each shape comes in along its own edge and settles.
- *
- * They are staggered rather than simultaneous: the arc over the top lands
- * first and the two rings close under it, so the mark builds in the order it
- * reads. The wedge comes last, which is what makes it look set into the gap
- * rather than revealed with everything else.
- *
- * Each rule carries the whole shorthand, name included. A nameless
- * `animation: 1150ms ... both` on the shared class, with the name set per
- * side, is minified to `animation: none` — the duration and delay go with it,
- * and nothing moves at all.
- */
-.intro-piece[data-side="top"] {
-  animation: intro-in-top 980ms var(--intro-settle) 120ms both;
-}
-
-.intro-piece[data-side="left"] {
-  animation: intro-in-left 980ms var(--intro-settle) 200ms both;
-}
-
-.intro-piece[data-side="right"] {
-  animation: intro-in-right 980ms var(--intro-settle) 200ms both;
-}
-
-.intro-piece[data-side="bottom"] {
-  animation: intro-in-bottom 860ms var(--intro-settle) 380ms both;
-}
-
-/*
- * Travel, then settle: most of the distance is gone early and the last of it
- * eases shut, so each shape arrives rather than stops. The tail is long enough
- * to read as the piece seating itself into the mark.
- */
-@keyframes intro-in-top {
-  0% {
-    opacity: 0;
-    transform: translate3d(0, calc(var(--fly) * -1), 0);
-  }
-  26% {
-    opacity: 1;
-  }
-  100% {
-    opacity: 1;
-    transform: translate3d(0, 0, 0) scale(1);
-  }
-}
-
-@keyframes intro-in-left {
-  0% {
-    opacity: 0;
-    transform: translate3d(calc(var(--fly) * -1), 0, 0);
-  }
-  26% {
-    opacity: 1;
-  }
-  100% {
-    opacity: 1;
-    transform: translate3d(0, 0, 0) scale(1);
-  }
-}
-
-@keyframes intro-in-right {
-  0% {
-    opacity: 0;
-    transform: translate3d(var(--fly), 0, 0);
-  }
-  26% {
-    opacity: 1;
-  }
-  100% {
-    opacity: 1;
-    transform: translate3d(0, 0, 0) scale(1);
-  }
-}
-
-@keyframes intro-in-bottom {
-  0% {
-    opacity: 0;
-    transform: translate3d(0, calc(var(--fly) * 0.55), 0);
-  }
-  30% {
-    opacity: 1;
-  }
-  100% {
-    opacity: 1;
-    transform: translate3d(0, 0, 0);
-  }
 }
 
 /* The line underneath arrives only once the word has settled. */
