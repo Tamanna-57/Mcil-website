@@ -280,14 +280,17 @@ function WordmarkBlock({
 }
 
 /**
- * Four plates hung from one top line at the reference's widths and heights,
- * the third lapping over the right half of the second. Percentages are of the
- * row, whose own ratio comes from the reference (1203 x 345).
+ * Three plates hung from one top line at the reference's widths and heights.
+ * Percentages are of the row, whose own ratio comes from the reference
+ * (1203 x 345).
+ *
+ * Nothing laps over anything: the centre plate is the one that wipes, and a
+ * plate showing through beside it would put a third photograph in a block
+ * that is meant to hold two.
  */
 const GALLERY_GEOMETRY = [
   { left: "0%", width: "23%", height: "61.7%" },
   { left: "25.9%", width: "40%", height: "100%" },
-  { left: "39.7%", width: "26.1%", height: "98%" },
   { left: "68.4%", width: "31.6%", height: "95.7%" },
 ] as const;
 
@@ -303,8 +306,8 @@ function GalleryRow({ product }: { product: Product }) {
           <Plate
             key={plate.alt}
             plate={plate}
-            className={i === 1 ? "aspect-[4/5]" : "aspect-[4/3]"}
-            sizes="45vw"
+            className={i === 2 ? "col-span-2 aspect-[16/9]" : "aspect-[4/5]"}
+            sizes={i === 2 ? "92vw" : "45vw"}
             delay={200 + i * 90}
           />
         ))}
@@ -325,9 +328,6 @@ function GalleryRow({ product }: { product: Product }) {
                 className="h-full"
                 sizes="35vw"
                 delay={200 + i * 110}
-                /* The next plate laps over this one's right two-thirds, so
-                   its placeholder has to sit in the strip left showing. */
-                overlapped={i === 1}
               />
             </div>
           );
@@ -353,7 +353,6 @@ function Plate({
   sizes,
   pop = false,
   delay = 260,
-  overlapped = false,
 }: {
   plate?: ProductPlate;
   /** Carries the plate's sizing — a ratio in flow, or h-full in a fixed box. */
@@ -362,8 +361,6 @@ function Plate({
   /** The reference's inset photograph arrives with a little overshoot. */
   pop?: boolean;
   delay?: number;
-  /** Another plate covers most of this one; keep the frame in what shows. */
-  overlapped?: boolean;
 }) {
   /* A third of the plate has to be past the trigger line before it lands, so
      it is still blank when the band's heading is read. */
@@ -393,7 +390,7 @@ function Plate({
           className="object-cover"
         />
       ) : (
-        <Placeholder plate={plate} compact={overlapped} />
+        <Placeholder plate={plate} />
       )}
 
       {compare && (
@@ -456,24 +453,16 @@ function Plate({
 }
 
 /**
- * What goes in the slot, said plainly, inside a hairline frame. Where the
- * plate is mostly covered, the frame pulls back into the visible strip and the
- * caption goes to screen readers only — there is no width to set it in.
+ * What goes in the slot, said plainly, inside a hairline frame.
  */
-function Placeholder({
-  plate,
-  compact = false,
-}: {
-  plate: ProductPlate;
-  compact?: boolean;
-}) {
+function Placeholder({ plate }: { plate: ProductPlate }) {
   const onDark = plate.tone === "navy" || plate.tone === "accent";
 
   return (
     <div
       className={`absolute inset-2 flex flex-col items-center justify-center gap-3 rounded-lg border border-dashed p-4 text-center sm:inset-3 ${
         onDark ? "border-white/35" : "border-steel-900/25"
-      } ${compact ? "mr-[68%] p-2" : ""}`}
+      }`}
     >
       <svg
         viewBox="0 0 24 24"
@@ -490,13 +479,9 @@ function Placeholder({
         <path d="m4 16.5 4.5-4 3.5 3 3-2.5 5 4" />
       </svg>
       <p
-        className={
-          compact
-            ? "sr-only"
-            : `text-[10px] leading-snug tracking-[0.03em] sm:text-[11px] ${
-                onDark ? "text-white/75" : "text-steel-800/80"
-              }`
-        }
+        className={`text-[10px] leading-snug tracking-[0.03em] sm:text-[11px] ${
+          onDark ? "text-white/75" : "text-steel-800/80"
+        }`}
       >
         {plate.alt}
       </p>
