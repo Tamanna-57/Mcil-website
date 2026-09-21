@@ -1899,3 +1899,80 @@ body {
 .news-rail::-webkit-scrollbar {
   display: none;
 }
+
+/* ------------------------------------------------------------------ */
+/* Sustainability                                                      */
+/* ------------------------------------------------------------------ */
+
+/*
+ * The two bands the page's middle sits on.
+ *
+ * The page's own ground is very nearly white, and a section of white cards on
+ * white reads as nothing at all. These are washes of the site's own three —
+ * the pale blue, the brand light and the amber — laid across that white at
+ * strengths you can actually see, each corner a different one so the band has
+ * a direction rather than an even tint.
+ */
+.sustain-foundations {
+  background:
+    radial-gradient(
+      120% 78% at 6% 0%,
+      color-mix(in srgb, var(--brand-pale) 68%, transparent) 0%,
+      transparent 60%
+    ),
+    radial-gradient(
+      85% 65% at 100% 55%,
+      color-mix(in srgb, var(--accent) 26%, transparent) 0%,
+      transparent 62%
+    ),
+    var(--background);
+}
+
+.sustain-band {
+  background:
+    radial-gradient(
+      62% 45% at 88% 4%,
+      color-mix(in srgb, var(--accent) 30%, transparent) 0%,
+      transparent 64%
+    ),
+    radial-gradient(
+      70% 55% at 2% 42%,
+      color-mix(in srgb, var(--brand-pale) 78%, transparent) 0%,
+      transparent 62%
+    ),
+    radial-gradient(
+      58% 46% at 66% 100%,
+      color-mix(in srgb, var(--brand-light) 50%, transparent) 0%,
+      transparent 60%
+    ),
+    var(--background);
+}
+
+/*
+ * An opened foundation card's copy arrives just behind the photograph rather
+ * than with it, so the card reads as one movement instead of two.
+ */
+.found-copy {
+  animation: found-copy 620ms 240ms cubic-bezier(0.4, 0.05, 0.2, 1) both;
+}
+
+.found-copy-late {
+  animation-delay: 400ms;
+}
+
+@keyframes found-copy {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .found-copy {
+    animation: none;
+  }
+}

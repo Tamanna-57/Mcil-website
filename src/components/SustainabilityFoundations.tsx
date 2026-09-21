@@ -93,7 +93,7 @@ export default function SustainabilityFoundations({
     <section
       ref={sectionRef}
       id="foundations"
-      className="news-band scroll-mt-28 px-6 py-20 sm:px-10 lg:px-[6.5vw] lg:py-28"
+      className="sustain-foundations scroll-mt-28 px-6 py-20 sm:px-10 lg:px-[6.5vw] lg:py-28"
     >
       <div className="mx-auto w-full max-w-6xl">
         <div className="flex items-end justify-between gap-6">
@@ -172,7 +172,7 @@ function Card({
 }) {
   return (
     <article
-      className={`hl-reveal group relative flex h-[26rem] flex-col overflow-hidden rounded-2xl transition-colors duration-500 ${
+      className={`hl-reveal group relative flex h-[26rem] flex-col overflow-hidden rounded-2xl transition-colors duration-[820ms] ease-[cubic-bezier(0.4,0.05,0.2,1)] ${
         open ? "news-ink" : "bg-steel-900"
       }`}
       data-visible={visible}
@@ -188,7 +188,7 @@ function Card({
       {/* The photograph fills the card until it opens, then gives up the
           bottom half to the copy. */}
       <div
-        className={`relative shrink-0 overflow-hidden transition-[height] duration-500 ease-out ${
+        className={`relative shrink-0 overflow-hidden transition-[height,margin,border-radius] duration-[820ms] ease-[cubic-bezier(0.4,0.05,0.2,1)] ${
           open ? "m-3 h-40 rounded-xl" : "h-full"
         }`}
       >
@@ -223,12 +223,12 @@ function Card({
 
         {open ? (
           <>
-            <p className="mt-3 text-[13px] leading-relaxed text-white/75">
+            <p className="found-copy mt-3 text-[13px] leading-relaxed text-white/75">
               {card.body}
             </p>
             <Link
               href={card.href}
-              className="mt-auto inline-flex w-fit items-center gap-1.5 pt-4 text-[10px] font-semibold tracking-[0.2em] text-accent uppercase hover:underline"
+              className="found-copy found-copy-late mt-auto inline-flex w-fit items-center gap-1.5 pt-4 text-[10px] font-semibold tracking-[0.2em] text-accent uppercase hover:underline"
             >
               {card.linkLabel}
               <svg
@@ -257,7 +257,7 @@ function Card({
         aria-expanded={open}
         aria-label={open ? `Close ${card.title}` : `Open ${card.title}`}
         onClick={() => (open ? onClose() : onOpen())}
-        className={`absolute right-4 bottom-5 grid h-8 w-8 shrink-0 cursor-pointer place-items-center rounded-full bg-accent text-steel-900 transition-transform duration-500 ${
+        className={`absolute right-4 bottom-5 grid h-8 w-8 shrink-0 cursor-pointer place-items-center rounded-full bg-accent text-steel-900 transition-transform duration-[620ms] ease-[cubic-bezier(0.4,0.05,0.2,1)] ${
           open ? "rotate-45" : ""
         }`}
       >
