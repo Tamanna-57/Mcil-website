@@ -184,7 +184,12 @@ export const sections: SectionSchema[] = [
         fields: [
           { type: "text", key: "eyebrow", label: "Eyebrow" },
           { type: "textarea", key: "title", label: "Headline" },
-          { type: "textarea", key: "standfirst", label: "Standfirst" },
+          {
+            type: "textarea",
+            key: "standfirst",
+            label: "Standfirst",
+            help: "Optional line under the heading. Empty, as it ships, and the heading stands alone.",
+          },
           {
             type: "textarea",
             key: "footnote",

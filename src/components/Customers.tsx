@@ -64,26 +64,25 @@ export default function Customers({
     <section
       ref={sectionRef}
       id="customers"
-      className="bg-background px-6 py-20 sm:px-10 lg:px-[6.5vw] lg:py-24"
+      className="customer-band px-6 py-20 sm:px-10 lg:px-[6.5vw] lg:py-24"
     >
       <div className="mx-auto w-full max-w-6xl">
-        <div className="customer-plate relative overflow-hidden rounded-3xl px-6 py-14 sm:px-10 sm:py-16">
-          <Corners />
-
-          <header className="relative mx-auto max-w-3xl text-center">
-            <p
-              className="hl-reveal text-[11px] font-semibold tracking-[0.24em] text-accent uppercase"
-              data-visible={visible}
-            >
-              [ {eyebrow} ]
-            </p>
-            <h2
-              className="hl-reveal type-display mt-4 text-[clamp(1.35rem,3.2vw,2.1rem)] leading-[1.18] text-steel-900 uppercase"
-              data-visible={visible}
-              style={{ animationDelay: "80ms" }}
-            >
-              {title}
-            </h2>
+        <header className="mx-auto max-w-3xl text-center">
+          <p
+            className="hl-reveal text-[11px] font-semibold tracking-[0.24em] text-accent uppercase"
+            data-visible={visible}
+          >
+            [ {eyebrow} ]
+          </p>
+          <h2
+            className="hl-reveal type-display mt-4 text-[clamp(1.35rem,3.2vw,2.1rem)] leading-[1.18] text-steel-900 uppercase"
+            data-visible={visible}
+            style={{ animationDelay: "80ms" }}
+          >
+            {title}
+          </h2>
+          {/* Optional, and empty as it ships: the heading says it. */}
+          {standfirst ? (
             <p
               className="hl-reveal mt-5 text-sm leading-relaxed text-steel-800 sm:text-base"
               data-visible={visible}
@@ -91,34 +90,34 @@ export default function Customers({
             >
               {standfirst}
             </p>
-          </header>
+          ) : null}
+        </header>
 
-          {/* Four across at desktop width: eleven names then fall 4-4-3, so
+        {/* Four across at desktop width: eleven names then fall 4-4-3, so
               the short row still sits centred under two full ones rather than
               leaving a single name stranded. */}
-          <ul className="relative mt-12 flex flex-wrap justify-center gap-x-6 gap-y-10 sm:mt-14 sm:gap-x-10">
-            {items.map((customer, i) => (
-              <li
-                key={customer.id}
-                className="hl-reveal flex w-[calc(50%-0.75rem)] justify-center sm:w-[calc(33.333%-1.667rem)] lg:w-[calc(25%-1.875rem)]"
-                data-visible={visible}
-                style={{ animationDelay: `${240 + i * 60}ms` }}
-              >
-                <Mark customer={customer} />
-              </li>
-            ))}
-          </ul>
-
-          {footnote ? (
-            <p
-              className="hl-reveal relative mt-12 text-center text-[11px] leading-relaxed text-steel-800/55"
+        <ul className="mt-12 flex flex-wrap justify-center gap-x-6 gap-y-10 sm:mt-14 sm:gap-x-10">
+          {items.map((customer, i) => (
+            <li
+              key={customer.id}
+              className="hl-reveal flex w-[calc(50%-0.75rem)] justify-center sm:w-[calc(33.333%-1.667rem)] lg:w-[calc(25%-1.875rem)]"
               data-visible={visible}
-              style={{ animationDelay: `${240 + items.length * 60}ms` }}
+              style={{ animationDelay: `${240 + i * 60}ms` }}
             >
-              {footnote}
-            </p>
-          ) : null}
-        </div>
+              <Mark customer={customer} />
+            </li>
+          ))}
+        </ul>
+
+        {footnote ? (
+          <p
+            className="hl-reveal mt-12 text-center text-[11px] leading-relaxed text-steel-800/55"
+            data-visible={visible}
+            style={{ animationDelay: `${240 + items.length * 60}ms` }}
+          >
+            {footnote}
+          </p>
+        ) : null}
       </div>
     </section>
   );
@@ -192,35 +191,5 @@ function Mark({ customer }: { customer: Customer }) {
         ) : null}
       </span>
     </span>
-  );
-}
-
-/** The four corner crosses that make the plate read as a measured sheet. */
-function Corners() {
-  const positions = [
-    "top-4 left-4",
-    "top-4 right-4",
-    "bottom-4 left-4",
-    "bottom-4 right-4",
-  ];
-
-  return (
-    <>
-      {positions.map((position) => (
-        <span
-          key={position}
-          aria-hidden
-          className={`absolute ${position} text-steel-900/20`}
-        >
-          <svg width="11" height="11" viewBox="0 0 11 11" fill="none">
-            <path
-              d="M5.5 0v11M0 5.5h11"
-              stroke="currentColor"
-              strokeWidth="1"
-            />
-          </svg>
-        </span>
-      ))}
-    </>
   );
 }

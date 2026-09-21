@@ -40,8 +40,9 @@ export type Customer = {
 export const customersHeading = {
   eyebrow: "Our Customers",
   title: "The companies we roll for",
-  standfirst:
-    "Auto components, white goods and electrical equipment makers who take our cold rolled strip to schedule, coil after coil.",
+  /* Left empty: the heading carries the section on its own. Type one into the
+     admin panel and it appears under the heading. */
+  standfirst: "",
   footnote:
     "Logos are the property of their respective owners and are shown here to identify MCIL's customers.",
 };
@@ -53,8 +54,9 @@ export const customers: Customer[] = [
     mark: "TALBROS",
     font: "body",
     /* talbros.com carries the lockup white, for its own dark header. The
-       letterforms are set to the page's ink here so it can sit on the plate;
-       the orange counter in the O is the artwork's own colour, untouched. */
+       letterforms are set to the page's ink here so it reads on a light
+       ground, and the white disc behind the O is dropped so the band shows
+       through it; the orange O itself is the artwork's own colour. */
     logo: "/images/customers/talbros.svg",
     logoAlt: "Talbros Automotive Components",
   },
@@ -91,7 +93,10 @@ export const customers: Customer[] = [
     mark: "SAN",
     suffix: "AUTO",
     font: "body",
-    logo: "/images/customers/san-automotive.png",
+    /* The .webp their site serves, not the .png beside it: the two differ in
+       the ghosted S behind the wordmark, which is white in the PNG and
+       vanishes into a pale patch on this band. */
+    logo: "/images/customers/san-automotive.webp",
     logoAlt: "SAN Automotive",
     scale: 1.05,
   },
@@ -101,7 +106,7 @@ export const customers: Customer[] = [
     mark: "JAINA",
     suffix: "MOBILE",
     font: "display",
-    logo: "/images/customers/jaina.webp",
+    logo: "/images/customers/jaina.png",
     logoAlt: "Jaina India",
     scale: 0.95,
   },
