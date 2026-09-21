@@ -112,7 +112,7 @@ export default function AboutTeam({
     <section
       ref={sectionRef}
       id="team"
-      className="bg-background px-6 pb-20 sm:px-10 lg:px-[6.5vw] lg:pb-28"
+      className="bg-background px-6 pb-20 sm:px-10 lg:px-[6.5vw] lg:pb-24"
     >
       <div className="mx-auto w-full max-w-6xl">
         <header className="max-w-2xl">

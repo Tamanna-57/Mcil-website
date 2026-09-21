@@ -41,10 +41,7 @@ export default function AboutProcess({
       const p = scrolled / travel;
       setProgress(p);
       setStep((current) => {
-        const next = Math.min(
-          steps.length - 1,
-          Math.floor(p * steps.length),
-        );
+        const next = Math.min(steps.length - 1, Math.floor(p * steps.length));
         return next === current ? current : next;
       });
     };
@@ -64,13 +61,16 @@ export default function AboutProcess({
   }, [steps.length]);
 
   /* Clicking a tab scrolls to the slice of track that owns that step. */
-  const goToStep = useCallback((i: number) => {
-    const el = trackRef.current;
-    if (!el) return;
-    const travel = el.offsetHeight - window.innerHeight;
-    const target = el.offsetTop + (travel * (i + 0.5)) / steps.length;
-    window.scrollTo({ top: target, behavior: "smooth" });
-  }, [steps.length]);
+  const goToStep = useCallback(
+    (i: number) => {
+      const el = trackRef.current;
+      if (!el) return;
+      const travel = el.offsetHeight - window.innerHeight;
+      const target = el.offsetTop + (travel * (i + 0.5)) / steps.length;
+      window.scrollTo({ top: target, behavior: "smooth" });
+    },
+    [steps.length],
+  );
 
   const active = steps[step] ?? steps[0];
   if (!active) return null;
@@ -81,7 +81,15 @@ export default function AboutProcess({
         ref={trackRef}
         style={{ height: `${steps.length * SCROLL_PER_STEP}vh` }}
       >
-        <div className="ap-pin sticky top-0 flex h-[100svh] items-center px-4 sm:px-8 lg:px-[5vw]">
+        {/*
+          The panel is centred in a screen-high box while it is pinned, so
+          whatever it does not fill reads as a gap between this section and the
+          one above it. The floor on `.ap-panel` below is measured in viewport
+          height for that reason: the content fills most of the screen at any
+          size, and what is left over stays a margin rather than growing into a
+          hole between the sections.
+        */}
+        <div className="ap-pin sticky top-0 flex h-[100svh] items-center px-4 py-10 sm:px-8 lg:px-[5vw]">
           <div className="mx-auto w-full max-w-6xl">
             <header className="text-center">
               <p className="text-[11px] font-semibold tracking-[0.24em] text-accent uppercase">
@@ -121,7 +129,7 @@ export default function AboutProcess({
               </div>
             </div>
 
-            <div className="ap-panel mt-6 grid items-center gap-8 rounded-3xl bg-surface p-5 ring-1 ring-steel-900/10 sm:p-7 lg:grid-cols-[minmax(0,0.78fr)_minmax(0,1fr)] lg:gap-12 lg:p-9">
+            <div className="ap-panel mt-6 grid items-center gap-8 rounded-3xl bg-surface p-5 ring-1 ring-steel-900/10 sm:p-7 lg:min-h-[62svh] lg:grid-cols-[minmax(0,0.78fr)_minmax(0,1fr)] lg:items-stretch lg:gap-12 lg:p-9">
               <Copy step={active} index={step} />
               <Stage steps={steps} current={step} />
             </div>
@@ -143,7 +151,7 @@ export default function AboutProcess({
 function Copy({ step, index }: { step: ProcessStep; index: number }) {
   return (
     /* Keyed so the copy replays its entrance on every step change. */
-    <div key={step.id} className="order-2 lg:order-1">
+    <div key={step.id} className="order-2 lg:order-1 lg:self-center">
       <p className="ap-in text-[11px] font-semibold tracking-[0.2em] text-brand-deep uppercase">
         Stage {String(index + 1).padStart(2, "0")}
       </p>
@@ -187,7 +195,9 @@ function Copy({ step, index }: { step: ProcessStep; index: number }) {
  */
 function Stage({ steps, current }: { steps: ProcessStep[]; current: number }) {
   return (
-    <div className="ap-figure relative order-1 aspect-[16/10] overflow-hidden rounded-2xl bg-steel-900/5 lg:order-2">
+    /* The photograph fills whatever height the panel has on a wide screen,
+       rather than holding its own ratio and leaving the card half empty. */
+    <div className="ap-figure relative order-1 aspect-[16/10] overflow-hidden rounded-2xl bg-steel-900/5 lg:order-2 lg:aspect-auto lg:h-full lg:min-h-[20rem]">
       {steps.map((s, i) => {
         const offset = i - current;
         return (
@@ -210,10 +220,11 @@ function Stage({ steps, current }: { steps: ProcessStep[]; current: number }) {
               fill
               sizes="(min-width: 1024px) 58vw, 92vw"
               priority={i === 0}
-              /* Anchored to the top: the step number and title are burned into
-                 the top-left of each photograph, so a centred crop cuts them
-                 off as soon as the frame is wider than the 3:2 source. */
-              className="object-cover object-top"
+              /* Anchored to the top left: the step number and title are burned
+                 into that corner of each photograph, so a centred crop cuts
+                 them off — sideways once the frame is wider than the 3:2
+                 source, and lengthways once the panel makes it taller. */
+              className="object-cover object-left-top"
             />
           </div>
         );

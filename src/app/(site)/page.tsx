@@ -44,16 +44,17 @@ export default async function Home() {
       */}
       <section
         id="about"
-        className="bg-background px-6 py-24 sm:px-10 lg:px-[6.5vw]"
+        className="bg-background px-6 pt-24 pb-16 sm:px-10 lg:px-[6.5vw] lg:pt-28 lg:pb-14"
       >
         <div className="mx-auto grid w-full max-w-6xl gap-10 lg:grid-cols-[minmax(0,0.46fr)_minmax(0,1fr)] lg:gap-16">
           <div>
             <p className="text-[11px] font-semibold tracking-[0.24em] text-accent uppercase">
               [ {home.about.eyebrow} ]
             </p>
-            {/* Tighter than `type-display`'s own tracking: at this size the
-                default spacing pushes a two-word title onto two lines. */}
-            <h2 className="type-display mt-5 text-[clamp(2.6rem,7vw,4.4rem)] leading-[1] tracking-[0.01em] text-steel-900">
+            {/* One line at every width: tracked tighter than `type-display`
+                sets it, and held from wrapping — the clamp keeps it inside the
+                column rather than the wrap doing it. */}
+            <h2 className="type-display mt-5 text-[clamp(2.4rem,6vw,4.2rem)] leading-[1] tracking-[0.01em] whitespace-nowrap text-steel-900">
               {home.about.title}
             </h2>
           </div>

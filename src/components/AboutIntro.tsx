@@ -2,10 +2,7 @@
 
 import Image from "next/image";
 import { useState } from "react";
-import {
-  advantage,
-  type AdvantagePoint,
-} from "@/lib/about-advantage";
+import { advantage, type AdvantagePoint } from "@/lib/about-advantage";
 
 export default function AboutIntro({
   eyebrow = advantage.eyebrow,
@@ -32,7 +29,7 @@ export default function AboutIntro({
   return (
     <section
       id="advantage"
-      className="bg-background px-6 py-20 sm:px-10 lg:px-[6.5vw] lg:py-28"
+      className="bg-background px-6 py-20 sm:px-10 lg:px-[6.5vw] lg:py-24"
     >
       <div className="mx-auto grid w-full max-w-6xl items-center gap-12 lg:grid-cols-[minmax(0,1fr)_minmax(0,0.8fr)] lg:gap-16">
         <div>
