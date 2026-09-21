@@ -759,28 +759,14 @@ body {
 /* ------------------------------------------------------------------ */
 
 /*
- * The plate the customer names sit on: a measured sheet rather than a card.
- *
- * Two sets of hairlines on a white ground, ruled at a round 140px so the grid
- * stays the same size whatever the plate is scaled to, with the ground itself
- * fading out towards the bottom so the ruling does not run into the section
- * below it. The lines are deliberately at the edge of visible — they are the
- * paper, not a table.
+ * The band takes the warm wash the team grid's odd card out uses, a little
+ * weaker: a full-width section holds far more of a tint than one card does,
+ * and at the card's strength it competes with the photography either side of
+ * it. It is the page's only warm ground, which is what separates the customers
+ * from the sections above and below without a rule or a box around them.
  */
-.customer-plate {
-  background-color: var(--surface);
-  background-image:
-    repeating-linear-gradient(
-      to right,
-      color-mix(in srgb, var(--steel-900) 4%, transparent) 0 1px,
-      transparent 1px 150px
-    ),
-    repeating-linear-gradient(
-      to bottom,
-      color-mix(in srgb, var(--steel-900) 4%, transparent) 0 1px,
-      transparent 1px 150px
-    );
-  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--steel-900) 8%, transparent);
+.customer-band {
+  background: color-mix(in srgb, var(--accent) 12%, var(--surface));
 }
 
 /* The logos keep their own colours — a customer's mark is their colour, and
