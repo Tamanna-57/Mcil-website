@@ -78,38 +78,27 @@ const RINGS: Ring[] = [
 ];
 
 /**
- * Where each stroke rides in along, and where it stops.
+ * Where each stroke comes in from, and where it stops.
  *
  * Each is a long bar, as long again as the mark's own radius, so what crosses
  * the screen reads as a line travelling rather than a dash appearing. Each one
  * stops with its leading end *on the band of its ring* — not at the ring's
  * centre, which would bury it inside the shape — so the sweep that takes over
  * carries on from the end of the line rather than somewhere near it.
+ *
+ * They used to run down drawn guide lines, a hairline cross laid over the
+ * screen ahead of them. Four lines crossing behind the mark is a lot of
+ * furniture for a two-second opening, and it read as a target rather than as
+ * paths: the strokes carry the movement on their own.
  */
 const RUNNERS = [
-  /* Down the vertical rail onto the crown of the big ring. */
+  /* Straight down onto the crown of the big ring. */
   { id: "top", axis: "v", x: 176, y: -120, w: 34, h: 140 },
-  /* In along the horizontal rail onto the outer edge of each lower ring. */
+  /* In from either side onto the outer edge of each lower ring. */
   { id: "left", axis: "h", x: -110, y: 201, w: 140, h: 34 },
   { id: "right", axis: "h", x: 356, y: 201, w: 140, h: 34 },
   /* And up onto the wedge, the one piece that is not a ring. */
   { id: "wedge", axis: "v", x: 179, y: 236, w: 34, h: 124 },
-] as const;
-
-/**
- * The hairlines the strokes ride in on.
- *
- * They run the width and height of the screen rather than of the mark: what
- * they are for is the moment before anything has arrived, where the eye is
- * given the paths first and the lines then travel down them. Each is placed on
- * a landing point — the two rings share a centre line at y=218, the top ring
- * and the wedge share one at x≈193 — so a line and the stroke that rides it
- * are the same line.
- */
-const RAILS = [
-  { id: "h-rings", axis: "h", at: 218 },
-  { id: "h-top", axis: "h", at: 116 },
-  { id: "v-mark", axis: "v", at: 193 },
 ] as const;
 
 /** One turn of a circle of radius r, for the dash the sweep is drawn with. */
@@ -370,21 +359,10 @@ export default function SiteIntro() {
           } as React.CSSProperties
         }
       >
-        {/* The rails and the strokes that ride them are outside the turn:
-            they travel straight, as they do in the reference, and it is the
-            mark they have just met in the middle that revolves. Inside the
-            turn there is only the artwork and the sweeps uncovering it. */}
-        {RAILS.map((rail) => (
-          <span
-            key={rail.id}
-            className="intro-rail"
-            data-axis={rail.axis}
-            data-rail={rail.id}
-            style={{ "--at": rail.at } as React.CSSProperties}
-            aria-hidden
-          />
-        ))}
-
+        {/* The strokes are outside the turn: they travel straight, as they
+            do in the reference, and it is the mark they have just met in the
+            middle that revolves. Inside the turn there is only the artwork
+            and the sweeps uncovering it. */}
         {RUNNERS.map((runner) => (
           <span
             key={runner.id}

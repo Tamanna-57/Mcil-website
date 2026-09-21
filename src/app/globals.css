@@ -1027,7 +1027,7 @@ body {
 .intro-lockup {
   --u: clamp(0.16px, 0.027vw, 0.4px);
   /*
-   * How far down its rail each stroke starts.
+   * How far out each stroke starts.
    *
    * Long on purpose, and the opposite of what the pieces wanted. A piece of
    * the logo thrown in from across the screen reads as a logo that has come
@@ -1083,8 +1083,8 @@ body {
  * The turn.
  *
  * The reference does not slide its parts into place and it does not cut its
- * logo up: straight strokes travel in along rails, and as they reach the
- * middle the whole thing revolves, the mark appearing out of the turn. The
+ * logo up: straight strokes travel in from the four sides, and as they reach
+ * the middle the whole thing revolves, the mark appearing out of the turn. The
  * rotation is most of why it reads as one mark forming, so it is long, it
  * carries through the middle where the sweeps are drawing, and it eases shut
  * at nothing — the lockup has to finish square for the dock to measure it.
@@ -1118,89 +1118,12 @@ body {
 }
 
 /*
- * The rails: hairlines across the whole screen, not across the mark.
- *
- * What they are for is the beat before anything has arrived — the paths are
- * drawn first and the strokes then travel down them, which is what makes the
- * strokes read as running on a line rather than flying at a target. Each one
- * is laid on a landing point (the two lower rings share y=218; the top ring
- * and the wedge share x=193), so a rail and the stroke that rides it are the
- * same line. They open from the middle outwards and are gone by the time the
- * mark is drawing.
- */
-.intro-rail {
-  position: absolute;
-  background: color-mix(in srgb, var(--brand-pale) 60%, transparent);
-  opacity: 0;
-  will-change: transform, opacity;
-}
-
-.intro-rail[data-axis="h"] {
-  left: -60vw;
-  right: -60vw;
-  top: calc(var(--at) * var(--u));
-  height: 1px;
-  transform: scaleX(0);
-  animation: intro-rail-h 1340ms cubic-bezier(0.22, 0.9, 0.24, 1) both;
-}
-
-.intro-rail[data-axis="v"] {
-  top: -60vh;
-  bottom: -60vh;
-  left: calc(var(--at) * var(--u));
-  width: 1px;
-  transform: scaleY(0);
-  animation: intro-rail-v 1340ms cubic-bezier(0.22, 0.9, 0.24, 1) both;
-}
-
-.intro-rail[data-rail="h-top"] {
-  animation-delay: 90ms;
-  opacity: 0.6;
-}
-
-@keyframes intro-rail-h {
-  0% {
-    opacity: 0;
-    transform: scaleX(0);
-  }
-  18% {
-    opacity: 0.5;
-  }
-  42% {
-    opacity: 0.5;
-    transform: scaleX(1);
-  }
-  100% {
-    opacity: 0;
-    transform: scaleX(1);
-  }
-}
-
-@keyframes intro-rail-v {
-  0% {
-    opacity: 0;
-    transform: scaleY(0);
-  }
-  18% {
-    opacity: 0.5;
-  }
-  42% {
-    opacity: 0.5;
-    transform: scaleY(1);
-  }
-  100% {
-    opacity: 0;
-    transform: scaleY(1);
-  }
-}
-
-/*
  * The strokes.
  *
  * Plain bars with round ends — nothing logo-shaped, because a piece of the
  * logo travelling is a logo that has been cut up, which is the thing this
- * replaces. Each one runs down its rail, stops on the ring it belongs to, and
- * hands over: it fades in the same beat its sweep starts from the point it
+ * replaces. Each one runs in from its own side, stops on the ring it belongs
+ * to, and hands over: it fades in the same beat its sweep starts from the point it
  * stopped at, so what carries on round the ring is read as the same stroke
  * bending into the turn.
  */
