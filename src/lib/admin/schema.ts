@@ -362,7 +362,6 @@ export const sections: SectionSchema[] = [
               bio: "",
               image: "",
               tone: "plain",
-              feature: false,
             },
             fields: [
               { type: "text", key: "name", label: "Name" },
@@ -380,12 +379,6 @@ export const sections: SectionSchema[] = [
                 key: "tone",
                 label: "Card colour",
                 options: toneOptions,
-              },
-              {
-                type: "boolean",
-                key: "feature",
-                label: "Double-width card",
-                help: "The grid is four columns wide and fills exactly when the widths add up — check both rows after changing this.",
               },
             ],
           },
