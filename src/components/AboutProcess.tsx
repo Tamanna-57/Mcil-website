@@ -2,11 +2,17 @@
 
 import Image from "next/image";
 import { useCallback, useEffect, useRef, useState } from "react";
-import {
-  processSteps,
-  SCROLL_PER_STEP,
-  type ProcessStep,
-} from "@/lib/about-process";
+import { processSteps, type ProcessStep } from "@/lib/about-process";
+
+/**
+ * How long the section ignores further wheel events after taking one, ms.
+ *
+ * A trackpad fires wheel events continuously, so without this a single swipe
+ * would run through every stage at once. At this length one flick advances one
+ * stage and a determined scroll still reaches the end of the stages — and the
+ * page — inside a second.
+ */
+const STEP_COOLDOWN = 320;
 
 export default function AboutProcess({
   eyebrow = "Process",
@@ -17,131 +23,130 @@ export default function AboutProcess({
   title?: string;
   steps?: ProcessStep[];
 }) {
-  const trackRef = useRef<HTMLDivElement | null>(null);
+  const sectionRef = useRef<HTMLElement | null>(null);
   const [step, setStep] = useState(0);
-  const [progress, setProgress] = useState(0);
 
-  /* The panel is pinned while the tall track scrolls past it; how far through
-     that track we are decides which step is showing. */
-  useEffect(() => {
-    let frame = 0;
-
-    const measure = () => {
-      frame = 0;
-      const el = trackRef.current;
-      if (!el) return;
-
-      const travel = el.offsetHeight - window.innerHeight;
-      if (travel <= 0) return;
-
-      const scrolled = Math.min(
-        Math.max(-el.getBoundingClientRect().top, 0),
-        travel,
-      );
-      const p = scrolled / travel;
-      setProgress(p);
-      setStep((current) => {
-        const next = Math.min(steps.length - 1, Math.floor(p * steps.length));
-        return next === current ? current : next;
-      });
-    };
-
-    const onScroll = () => {
-      if (!frame) frame = requestAnimationFrame(measure);
-    };
-
-    measure();
-    window.addEventListener("scroll", onScroll, { passive: true });
-    window.addEventListener("resize", onScroll);
-    return () => {
-      if (frame) cancelAnimationFrame(frame);
-      window.removeEventListener("scroll", onScroll);
-      window.removeEventListener("resize", onScroll);
-    };
-  }, [steps.length]);
-
-  /* Clicking a tab scrolls to the slice of track that owns that step. */
   const goToStep = useCallback(
-    (i: number) => {
-      const el = trackRef.current;
-      if (!el) return;
-      const travel = el.offsetHeight - window.innerHeight;
-      const target = el.offsetTop + (travel * (i + 0.5)) / steps.length;
-      window.scrollTo({ top: target, behavior: "smooth" });
-    },
+    (i: number) => setStep(Math.min(Math.max(i, 0), steps.length - 1)),
     [steps.length],
   );
+
+  /*
+   * The stages used to be driven by a tall scroll track with the panel pinned
+   * to it, which cost four screens of scrolling to get past the section
+   * whether or not you wanted to look at the stages.
+   *
+   * Now the section is an ordinary block, and the wheel only drives the stages
+   * while the pointer is over it AND there is a stage left to go to in that
+   * direction. At the last stage — or the first, scrolling up — the event is
+   * left alone and the page scrolls as it normally would, so the section can
+   * never hold the page for more than the stages it has.
+   *
+   * Only for a mouse or trackpad: a touchscreen has no pointer to be "over"
+   * the section, so there the stages are changed by their own buttons.
+   */
+  /* The wheel handler has to decide whether to take the event before React
+     re-renders, so it reads the current stage from a ref rather than closing
+     over the state. */
+  const stepRef = useRef(step);
+  useEffect(() => {
+    stepRef.current = step;
+  }, [step]);
+
+  useEffect(() => {
+    const el = sectionRef.current;
+    if (!el) return;
+    if (!window.matchMedia("(hover: hover) and (pointer: fine)").matches) {
+      return;
+    }
+
+    let takenAt = 0;
+
+    const onWheel = (event: WheelEvent) => {
+      /* Sideways scrolling and the smallest of nudges are not stage changes. */
+      if (Math.abs(event.deltaY) < 4) return;
+      if (Math.abs(event.deltaX) > Math.abs(event.deltaY)) return;
+
+      const next = stepRef.current + (event.deltaY > 0 ? 1 : -1);
+      if (next < 0 || next > steps.length - 1) return;
+
+      /* The section only takes the wheel while it is the thing being looked
+         at; half off the top of the screen it is on its way out. */
+      const box = el.getBoundingClientRect();
+      const viewport = window.innerHeight;
+      if (box.top > viewport * 0.3 || box.bottom < viewport * 0.7) return;
+
+      event.preventDefault();
+
+      const now = performance.now();
+      if (now - takenAt < STEP_COOLDOWN) return;
+      takenAt = now;
+      setStep(next);
+    };
+
+    el.addEventListener("wheel", onWheel, { passive: false });
+    return () => el.removeEventListener("wheel", onWheel);
+  }, [steps.length]);
 
   const active = steps[step] ?? steps[0];
   if (!active) return null;
 
   return (
-    <section id="process" className="bg-background">
-      <div
-        ref={trackRef}
-        style={{ height: `${steps.length * SCROLL_PER_STEP}vh` }}
-      >
-        {/*
-          The panel is centred in a screen-high box while it is pinned, so
-          whatever it does not fill reads as a gap between this section and the
-          one above it. The floor on `.ap-panel` below is measured in viewport
-          height for that reason: the content fills most of the screen at any
-          size, and what is left over stays a margin rather than growing into a
-          hole between the sections.
-        */}
-        <div className="ap-pin sticky top-0 flex h-[100svh] items-center px-4 py-6 sm:px-8 lg:px-[5vw]">
-          <div className="mx-auto w-full max-w-6xl">
-            <header className="text-center">
-              <p className="text-[11px] font-semibold tracking-[0.24em] text-accent uppercase">
-                [ {eyebrow} ]
-              </p>
-              <h2 className="ap-title type-display mt-3 text-[clamp(1.5rem,4vw,2.6rem)] leading-[1.15] text-steel-900 uppercase">
-                {title}
-              </h2>
-            </header>
+    <section
+      ref={sectionRef}
+      id="process"
+      className="scroll-mt-[var(--header-h)] bg-background px-4 py-20 sm:px-8 lg:px-[5vw] lg:py-24"
+    >
+      <div className="mx-auto w-full max-w-6xl">
+        <header className="text-center">
+          <p className="text-[11px] font-semibold tracking-[0.24em] text-accent uppercase">
+            [ {eyebrow} ]
+          </p>
+          <h2 className="ap-title type-display mt-3 text-[clamp(1.5rem,4vw,2.6rem)] leading-[1.15] text-steel-900 uppercase">
+            {title}
+          </h2>
+        </header>
 
-            {/* Pill bar, echoing the reference's dashboard nav. */}
-            <div className="mt-8 flex justify-center">
-              <div
-                role="tablist"
-                aria-label="Production stage"
-                className="flex max-w-full gap-1 overflow-x-auto rounded-full bg-surface p-1.5 ring-1 ring-steel-900/10"
+        {/* Pill bar, echoing the reference's dashboard nav. */}
+        <div className="mt-8 flex justify-center">
+          <div
+            role="tablist"
+            aria-label="Production stage"
+            className="flex max-w-full gap-1 overflow-x-auto rounded-full bg-surface p-1.5 ring-1 ring-steel-900/10"
+          >
+            {steps.map((s, i) => (
+              <button
+                key={s.id}
+                type="button"
+                role="tab"
+                aria-selected={i === step}
+                onClick={() => goToStep(i)}
+                className={`shrink-0 cursor-pointer rounded-full px-4 py-2 text-xs font-semibold whitespace-nowrap transition-colors sm:px-5 sm:text-sm ${
+                  i === step
+                    ? "bg-steel-900 text-white"
+                    : "text-steel-800 hover:text-steel-900"
+                }`}
               >
-                {steps.map((s, i) => (
-                  <button
-                    key={s.id}
-                    type="button"
-                    role="tab"
-                    aria-selected={i === step}
-                    onClick={() => goToStep(i)}
-                    className={`shrink-0 cursor-pointer rounded-full px-4 py-2 text-xs font-semibold whitespace-nowrap transition-colors sm:px-5 sm:text-sm ${
-                      i === step
-                        ? "bg-steel-900 text-white"
-                        : "text-steel-800 hover:text-steel-900"
-                    }`}
-                  >
-                    <span className="mr-2 opacity-60 tabular-nums">
-                      {String(i + 1).padStart(2, "0")}
-                    </span>
-                    {s.tab}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            <div className="ap-panel mt-6 grid items-center gap-8 rounded-3xl bg-surface p-5 ring-1 ring-steel-900/10 sm:p-7 lg:min-h-[66svh] lg:grid-cols-[minmax(0,0.78fr)_minmax(0,1fr)] lg:items-stretch lg:gap-12 lg:p-9">
-              <Copy step={active} index={step} />
-              <Stage steps={steps} current={step} />
-            </div>
-
-            {/* Continuous rail, so the pinned panel still reads as scrolling. */}
-            <div className="mx-auto mt-6 h-px w-full max-w-md bg-steel-900/12">
-              <div
-                className="h-full bg-brand transition-[width] duration-150 ease-linear"
-                style={{ width: `${Math.round(progress * 100)}%` }}
-              />
-            </div>
+                <span className="mr-2 opacity-60 tabular-nums">
+                  {String(i + 1).padStart(2, "0")}
+                </span>
+                {s.tab}
+              </button>
+            ))}
           </div>
+        </div>
+
+        <div className="ap-panel mt-6 grid items-center gap-8 rounded-3xl bg-surface p-5 ring-1 ring-steel-900/10 sm:p-7 lg:min-h-[30rem] lg:grid-cols-[minmax(0,0.78fr)_minmax(0,1fr)] lg:items-stretch lg:gap-12 lg:p-9">
+          <Copy step={active} index={step} />
+          <Stage steps={steps} current={step} />
+        </div>
+
+        {/* How far through the stages we are. */}
+        <div className="mx-auto mt-6 h-px w-full max-w-md bg-steel-900/12">
+          <div
+            className="h-full bg-brand transition-[width] duration-300 ease-out"
+            style={{ width: `${((step + 1) / steps.length) * 100}%` }}
+          />
         </div>
       </div>
     </section>
