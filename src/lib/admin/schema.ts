@@ -88,14 +88,6 @@ const ctaFields: Field[] = [
   { type: "text", key: "href", label: "Link" },
 ];
 
-const toneOptions = [
-  { value: "deep", label: "Deep navy" },
-  { value: "blue", label: "Brand blue" },
-  { value: "pale", label: "Pale blue" },
-  { value: "sand", label: "Sand" },
-  { value: "plain", label: "Plain" },
-];
-
 const plateFields: Field[] = [
   {
     type: "image",
@@ -360,8 +352,8 @@ export const sections: SectionSchema[] = [
               role: "",
               chip: "",
               bio: "",
+              qualification: "",
               image: "",
-              tone: "plain",
             },
             fields: [
               { type: "text", key: "name", label: "Name" },
@@ -372,14 +364,19 @@ export const sections: SectionSchema[] = [
                 label: "Chip",
                 help: 'The small pill at the foot of the card, e.g. "Promoter · Executive".',
               },
-              { type: "textarea", key: "bio", label: "Bio" },
-              { type: "image", key: "image", label: "Portrait" },
               {
-                type: "select",
-                key: "tone",
-                label: "Card colour",
-                options: toneOptions,
+                type: "textarea",
+                key: "bio",
+                label: "Profile",
+                help: "Shown in the panel beside the portraits. Leave a blank line between paragraphs and each one is set as its own.",
               },
+              {
+                type: "text",
+                key: "qualification",
+                label: "Qualification",
+                help: 'Degrees and memberships, e.g. "B.Com (Hons.), FCA". Set apart at the foot of the panel.',
+              },
+              { type: "image", key: "image", label: "Portrait" },
             ],
           },
           { type: "textarea", key: "footnote", label: "Footnote" },

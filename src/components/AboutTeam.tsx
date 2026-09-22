@@ -2,132 +2,77 @@
 
 import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
-import {
-  team,
-  teamHeading,
-  type TeamMember,
-  type Tone,
-} from "@/lib/about-team";
+import { team, teamHeading, type TeamMember } from "@/lib/about-team";
 
 /**
- * Card colourways. Each is a flat tint from the site palette with the text
- * colours that sit legibly on it — the reference's coloured quadrants, in
- * MCIL's own blues rather than its brights.
- */
-const TONES: Record<
-  Tone,
-  {
-    card: string;
-    name: string;
-    role: string;
-    bio: string;
-    chip: string;
-    ring: string;
-  }
-> = {
-  deep: {
-    card: "bg-steel-900",
-    name: "text-white",
-    role: "text-brand-pale",
-    bio: "text-white/75",
-    chip: "bg-white/12 text-white/85",
-    ring: "ring-white/20",
-  },
-  blue: {
-    card: "bg-brand-light",
-    name: "text-steel-900",
-    role: "text-brand-deep",
-    bio: "text-steel-800",
-    chip: "bg-white/60 text-steel-800",
-    ring: "ring-white/70",
-  },
-  pale: {
-    card: "bg-brand-pale",
-    name: "text-steel-900",
-    role: "text-brand-deep",
-    bio: "text-steel-800",
-    chip: "bg-white/70 text-steel-800",
-    ring: "ring-white/80",
-  },
-  sand: {
-    /* A wash of the accent rather than the accent itself, which is too low in
-       contrast to carry text. */
-    card: "team-card-sand",
-    name: "text-steel-900",
-    role: "text-steel-800",
-    bio: "text-steel-800",
-    chip: "bg-white/70 text-steel-800",
-    ring: "ring-white/80",
-  },
-  plain: {
-    card: "bg-surface ring-1 ring-steel-900/10",
-    name: "text-steel-900",
-    role: "text-brand-deep",
-    bio: "text-steel-800",
-    chip: "bg-background text-steel-800",
-    ring: "ring-steel-900/10",
-  },
-};
-
-/**
- * Which column a card starts in, so a last row that does not fill up sits
- * centred under the rows above rather than hanging off the left edge.
+ * Which column each portrait takes once the wall is laid out in columns.
  *
- * Every card spans two units of a grid twice as wide as the row is long, which
- * is what makes the centring come out even: a row of three under a row of four
- * leaves two units spare, one to each side, so it starts one unit in. The same
- * arithmetic covers any number of people the panel is given — a trailing row of
- * one under a row of two, and so on.
+ * The reference does not pack its photographs: they hang on a plain grid with
+ * cells deliberately left empty, so the wall reads as placed rather than as a
+ * block. Naming a column and leaving the row to find itself does that — a
+ * portrait whose column is at or behind the one before it drops to the next
+ * row, and the cells skipped on the way stay empty. The sequence repeats, so a
+ * board that gains or loses a seat scatters the same way.
  *
- * Both classes are written out in full because the stylesheet is built by
- * reading these files; a class assembled from pieces at runtime would not be
- * there to apply.
- */
-const COL_START = {
-  sm: ["sm:col-start-1", "sm:col-start-2", "sm:col-start-3", "sm:col-start-4"],
-  lg: [
-    "lg:col-start-1",
-    "lg:col-start-2",
-    "lg:col-start-3",
-    "lg:col-start-4",
-    "lg:col-start-5",
-    "lg:col-start-6",
-    "lg:col-start-7",
-    "lg:col-start-8",
-  ],
-} as const;
-
-/**
- * The offset for one card at one breakpoint, or "" if it needs none — every
- * card but the one that opens a short final row.
- */
-function trailingLead(
-  index: number,
-  count: number,
-  perRow: number,
-  at: keyof typeof COL_START,
-) {
-  const over = count % perRow;
-  if (over === 0 || index !== count - over) return "";
-  return COL_START[at][perRow - over] ?? "";
-}
-
-/**
- * The placement classes for one card.
+ * The holes it leaves are spread rather than clustered — no row loses two
+ * neighbouring cells — because two empty cells side by side stop reading as
+ * rhythm and start reading as a gap someone forgot to fill.
  *
- * Breakpoints carry upward, so a card offset at `sm` would still be offset at
- * `lg`, where it may sit mid-row. Where that happens the offset is explicitly
- * dropped again.
+ * There are two, because the wall is not always the same number of columns
+ * wide: at `lg` the panel beside it leaves room for three, and at `xl` for
+ * four. Below `lg` there are too few columns for cells to be spared at all.
  */
-function placement(index: number, count: number) {
-  const sm = trailingLead(index, count, 2, "sm");
-  const lg = trailingLead(index, count, 4, "lg");
-  return [sm, lg || (sm ? "lg:col-start-auto" : "")].filter(Boolean).join(" ");
+const SCATTER_4 = [1, 3, 4, 2, 4, 1, 3] as const;
+const SCATTER_3 = [1, 3, 1, 2, 2, 3, 1] as const;
+
+/* Written out in full because the stylesheet is built by reading these files;
+   a class assembled from pieces at runtime would not be there to apply. Each
+   breakpoint restates its own, since a column named at `md` would otherwise
+   carry up into `lg`, where the wall is a column narrower. */
+const COL_START_MD = [
+  "",
+  "md:col-start-1",
+  "md:col-start-2",
+  "md:col-start-3",
+  "md:col-start-4",
+] as const;
+const COL_START_LG = [
+  "",
+  "lg:col-start-1",
+  "lg:col-start-2",
+  "lg:col-start-3",
+] as const;
+const COL_START_XL = [
+  "",
+  "xl:col-start-1",
+  "xl:col-start-2",
+  "xl:col-start-3",
+  "xl:col-start-4",
+] as const;
+
+/** Every column this portrait starts in, one per width the wall changes at. */
+function scatter(i: number) {
+  const four = SCATTER_4[i % SCATTER_4.length];
+  const three = SCATTER_3[i % SCATTER_3.length];
+  return `${COL_START_MD[four]} ${COL_START_LG[three]} ${COL_START_XL[four]}`;
 }
 
 const DEFAULT_FOOTNOTE =
   "Board of Directors and Key Managerial Personnel as listed in the FY2025-26 annual report.";
 
+/**
+ * The team section: a rail, a wall of portraits, and one panel that reads.
+ *
+ * The section label is set down the left edge rather than over the top, the
+ * seven portraits hang in a grid with each name and seat under its own
+ * photograph, and the panel on the right carries whichever person the pointer
+ * is on — their seat, and what they bring to it.
+ *
+ * Hover is not the only way in. The portraits are buttons, so the panel also
+ * follows the keyboard and answers a tap, which is what carries the section on
+ * a phone, where there is no pointer to hover with and the panel sits under the
+ * grid instead of beside it.
+ */
 export default function AboutTeam({
   heading = teamHeading,
   members = team,
@@ -140,8 +85,8 @@ export default function AboutTeam({
   const sectionRef = useRef<HTMLElement | null>(null);
   const [visible, setVisible] = useState(false);
 
-  /* Cards are held back until the section arrives, so they rise in together
-     rather than having already happened by the time you scroll to them. */
+  /* Held back until the section arrives, so the wall builds as you reach it
+     rather than having already happened by the time you scroll to it. */
   useEffect(() => {
     const el = sectionRef.current;
     if (!el) return;
@@ -164,31 +109,52 @@ export default function AboutTeam({
     return () => observer.disconnect();
   }, []);
 
+  /* The panel is never empty: it opens on the first person and stays on the
+     last one the pointer left, rather than blanking when it moves away. An id
+     that no longer exists — a person deleted in the admin panel while the id
+     was held — falls back to the first, so the panel cannot end up on nobody. */
+  const [readingId, setReadingId] = useState<string | null>(null);
+  const reading = members.find((m) => m.id === readingId) ?? members[0];
+
+  /* Where there is no pointer the panel is under the wall rather than beside
+     it, so a tap on the top row would otherwise change something the reader
+     cannot see. Only a tap does this: a hover already has the panel in view,
+     and moving the page under a pointer that is only passing across the wall
+     would be the wrong thing entirely. */
+  const panelRef = useRef<HTMLElement | null>(null);
+
+  function follow() {
+    if (typeof window === "undefined" || !window.matchMedia) return;
+    if (!window.matchMedia("(hover: none)").matches) return;
+    panelRef.current?.scrollIntoView({ block: "nearest", behavior: "smooth" });
+  }
+
+  if (members.length === 0) return null;
+
   return (
     <section
       ref={sectionRef}
       id="team"
-      className="bg-background px-6 pb-20 sm:px-10 lg:px-[6.5vw] lg:pb-24"
+      className="team-band scroll-mt-[var(--header-h)] px-6 py-20 sm:px-10 lg:px-[6.5vw] lg:py-24"
     >
       <div className="mx-auto w-full max-w-6xl">
         <header className="max-w-2xl">
+          {/* The rail down the left is the section's title at desktop width,
+              so the heading is carried for structure rather than set: a
+              section with no heading at all is a hole in the page's outline,
+              and a screen reader has no rail to read. There is no rail on a
+              phone, so the label goes back over the top there. */}
+          <h2 className="sr-only">{heading.title}</h2>
           <p
-            className="hl-reveal text-[11px] font-semibold tracking-[0.24em] text-accent uppercase"
+            className="hl-reveal text-[11px] font-semibold tracking-[0.24em] text-accent uppercase lg:hidden"
             data-visible={visible}
           >
             [ {heading.eyebrow} ]
           </p>
-          <h2
-            className="hl-reveal type-display mt-4 text-[clamp(1.6rem,4.2vw,2.8rem)] leading-[1.15] text-steel-900 uppercase"
-            data-visible={visible}
-            style={{ animationDelay: "80ms" }}
-          >
-            {heading.title}
-          </h2>
-          {/* Deliberately a step down from the section standfirsts elsewhere:
-              it is a note on who runs the company, not a second headline. */}
+          {/* Deliberately quiet: it is a note on who runs the company, not a
+              headline standing in for the one just removed. */}
           <p
-            className="hl-reveal mt-4 text-[13px] leading-relaxed text-steel-800/85 sm:text-sm"
+            className="hl-reveal mt-4 text-[13px] leading-relaxed text-steel-800/85 sm:mt-0 sm:text-sm"
             data-visible={visible}
             style={{ animationDelay: "160ms" }}
           >
@@ -196,24 +162,42 @@ export default function AboutTeam({
           </p>
         </header>
 
-        {/* Every card the same size, one across on a phone, two at `sm` and
-            four at `lg`. The grid is counted in half-cards so that a row that
-            does not fill can be centred under the ones above it — see
-            `placement`. */}
-        <div className="mt-12 grid grid-cols-2 gap-4 sm:grid-cols-4 lg:mt-14 lg:grid-cols-8">
-          {members.map((member, i) => (
-            <Card
-              key={member.id}
-              member={member}
-              index={i}
-              place={placement(i, members.length)}
-              visible={visible}
-            />
-          ))}
+        {/* Rail, wall, panel. The rail is only as wide as the type set down it
+            and the panel is held to a readable measure, so the wall takes
+            whatever is left. */}
+        <div className="mt-12 lg:mt-16 lg:grid lg:grid-cols-[3.5rem_minmax(0,1fr)_minmax(19rem,26rem)] lg:items-start lg:gap-8 xl:gap-10">
+          <Rail label={heading.eyebrow} visible={visible} />
+
+          {/* Four across from `md`, rather than three held wider: the
+              portraits are small files, and a column much past 200px asks
+              them for detail they do not have. Below `md` there are too few
+              columns for cells to be spared, so the scatter is dropped and
+              the portraits simply run. */}
+          <ul className="grid grid-cols-2 gap-x-5 gap-y-9 sm:grid-cols-3 sm:gap-x-6 md:grid-cols-4 md:gap-x-7 md:gap-y-10 lg:grid-cols-3 xl:grid-cols-4">
+            {members.map((member, i) => (
+              <li key={member.id} className={scatter(i)}>
+                <Portrait
+                  member={member}
+                  index={i}
+                  visible={visible}
+                  reading={member.id === reading.id}
+                  onRead={() => setReadingId(member.id)}
+                  onTap={follow}
+                />
+              </li>
+            ))}
+          </ul>
+
+          <Panel
+            ref={panelRef}
+            member={reading}
+            visible={visible}
+            count={members.length}
+          />
         </div>
 
         <p
-          className="hl-reveal mt-8 text-xs text-steel-800/70"
+          className="hl-reveal mt-12 text-xs text-steel-800/70"
           data-visible={visible}
           style={{ animationDelay: "900ms" }}
         >
@@ -224,55 +208,151 @@ export default function AboutTeam({
   );
 }
 
-function Card({
+/**
+ * The section label, set down the left edge.
+ *
+ * `vertical-rl` turns the line on its side reading downward; the half turn puts
+ * it back the other way, so it climbs the rail from the bottom — which is the
+ * way a spine is read, and the way the eye arrives at the grid beside it. The
+ * hairline under it carries the column down to the foot of the wall.
+ */
+function Rail({ label, visible }: { label: string; visible: boolean }) {
+  return (
+    <div
+      className="hl-reveal hidden lg:sticky lg:top-[calc(var(--header-h)+2.5rem)] lg:flex lg:h-[20rem] lg:flex-col lg:items-center lg:gap-6"
+      data-visible={visible}
+      aria-hidden
+    >
+      <span className="type-display rotate-180 text-[clamp(1.3rem,2.1vw,1.85rem)] whitespace-nowrap text-steel-900 uppercase [writing-mode:vertical-rl]">
+        {label}
+      </span>
+      <span className="w-px flex-1 bg-steel-900/20" />
+    </div>
+  );
+}
+
+/**
+ * One portrait, with the person's name and seat set under it.
+ *
+ * It is a button because it does something — it moves the panel — and because
+ * a button is reachable without a pointer: the panel follows the keyboard
+ * through the wall, and a tap does what a hover does. `pointerenter` rather
+ * than `mouseenter` so a stylus behaves like a mouse.
+ */
+function Portrait({
   member,
   index,
-  place,
   visible,
+  reading,
+  onRead,
+  onTap,
 }: {
   member: TeamMember;
   index: number;
-  /** Where the card sits in the grid, from `placement`. */
-  place: string;
   visible: boolean;
+  /** This is the one the panel is showing. */
+  reading: boolean;
+  onRead: () => void;
+  /** Run after a tap, once the panel holds this person. */
+  onTap: () => void;
 }) {
-  const tone = TONES[member.tone] ?? TONES.plain;
-
   return (
-    <article
-      className={`hl-reveal col-span-2 flex flex-col rounded-2xl p-6 sm:p-7 ${tone.card} ${place}`}
+    <button
+      type="button"
+      onPointerEnter={onRead}
+      onFocus={onRead}
+      onClick={() => {
+        onRead();
+        onTap();
+      }}
+      aria-pressed={reading}
+      /* The ceiling sits on the whole cell, not on the photograph alone, so
+         the name and seat under it run to the same edge the photograph does
+         rather than out past it. */
+      className="hl-reveal group block w-full max-w-[8.75rem] cursor-pointer text-left"
       data-visible={visible}
-      style={{ animationDelay: `${240 + index * 90}ms` }}
+      style={{ animationDelay: `${240 + index * 70}ms` }}
     >
+      {/* Square-cornered and on black, as the reference has them, and held
+          under a ceiling so the photographs stay the small plates of the
+          reference rather than growing with the column they sit in. */}
       <span
-        className={`relative block h-20 w-20 shrink-0 overflow-hidden rounded-full ring-2 ${tone.ring} sm:h-[5.5rem] sm:w-[5.5rem]`}
+        className={`team-plate relative block aspect-[3/4] overflow-hidden outline-offset-2 transition duration-300 group-focus-visible:outline-2 group-focus-visible:outline-accent ${
+          reading ? "" : "opacity-65"
+        }`}
       >
         <Image
           src={member.image}
           alt={`Portrait of ${member.name}`}
           fill
-          sizes="88px"
-          className="object-cover"
+          sizes="(min-width: 768px) 9rem, (min-width: 640px) 30vw, 44vw"
+          className={`object-cover transition duration-500 ${
+            reading ? "scale-[1.03]" : "group-hover:scale-[1.03]"
+          }`}
+        />
+        {/* The one being read is marked on the photograph itself, so the tie
+            between a portrait and the panel is visible without the pointer
+            having to be the thing that says so. */}
+        <span
+          className={`pointer-events-none absolute inset-x-0 bottom-0 h-[3px] bg-accent transition-transform duration-300 ${
+            reading ? "scale-x-100" : "scale-x-0"
+          }`}
         />
       </span>
 
-      <h3
-        className={`mt-5 font-display text-lg leading-snug font-semibold ${tone.name}`}
+      {/* Set in black on the band, like the plate beside them, rather than in
+          the page's navy and blue: the only colour on this section is the
+          photographs and the rule under the one being read. */}
+      <span
+        className={`mt-3 block font-display text-[14px] leading-snug font-semibold transition-colors ${
+          reading ? "text-black" : "text-black/55"
+        }`}
       >
         {member.name}
-      </h3>
-      <p
-        className={`mt-1 text-[11px] font-semibold tracking-[0.14em] uppercase ${tone.role}`}
+      </span>
+      <span
+        className={`mt-1 block text-[9.5px] leading-[1.45] font-semibold tracking-[0.13em] uppercase transition-colors ${
+          reading ? "text-black/70" : "text-black/40"
+        }`}
       >
         {member.role}
-      </p>
+      </span>
+    </button>
+  );
+}
 
-      <p className={`mt-4 text-sm leading-relaxed ${tone.bio}`}>{member.bio}</p>
-
-      <div className="mt-auto pt-6">
-        <span
-          className={`inline-flex w-fit items-center gap-1.5 rounded-full px-3 py-1.5 text-[11px] font-semibold tracking-[0.06em] ${tone.chip}`}
-        >
+/**
+ * The reading panel.
+ *
+ * It holds a floor so it does not resize under the pointer as you cross from a
+ * long biography to a short one, and it is announced politely: a keyboard
+ * reaches the wall by tabbing, and what the panel changed to is the whole point
+ * of having moved.
+ */
+function Panel({
+  ref,
+  member,
+  visible,
+  count,
+}: {
+  ref: React.Ref<HTMLElement>;
+  member: TeamMember;
+  visible: boolean;
+  /** Only used to time the panel's own arrival behind the last portrait. */
+  count: number;
+}) {
+  return (
+    <aside
+      ref={ref}
+      className="team-plate hl-reveal mt-12 flex flex-col p-8 sm:p-9 lg:sticky lg:top-[calc(var(--header-h)+2.5rem)] lg:mt-0 lg:min-h-[28rem]"
+      data-visible={visible}
+      style={{ animationDelay: `${240 + count * 70}ms` }}
+      aria-live="polite"
+    >
+      {/* Keyed on the person, so the panel's contents arrive rather than
+          swapping in place when the pointer moves along the wall. */}
+      <div key={member.id} className="team-swap flex h-full flex-col">
+        <span className="inline-flex w-fit items-center gap-1.5 rounded-full bg-white/12 px-3 py-1.5 text-[11px] font-semibold tracking-[0.06em] text-white/85">
           <svg
             width="11"
             height="11"
@@ -297,7 +377,40 @@ function Card({
           </svg>
           {member.chip}
         </span>
+
+        <h3 className="mt-6 font-display text-xl leading-snug font-semibold text-white">
+          {member.name}
+        </h3>
+        <p className="mt-1.5 text-[11px] font-semibold tracking-[0.14em] text-brand-pale uppercase">
+          {member.role}
+        </p>
+
+        {/* The profile as the Board writes it, a paragraph to a break. */}
+        <div className="mt-5 space-y-3.5 text-sm leading-relaxed text-white/75">
+          {member.bio
+            .split(/\n\s*\n/)
+            .map((para) => para.trim())
+            .filter(Boolean)
+            .map((para, i) => (
+              <p key={i}>{para}</p>
+            ))}
+        </div>
+
+        {/* Set apart at the foot rather than run into the profile: it is the
+            one line on the panel that is a fact rather than a description,
+            and it is what the section is read for after the name. */}
+        {member.qualification ? (
+          <div className="mt-auto pt-7">
+            <span className="block h-px w-full bg-white/15" aria-hidden />
+            <p className="mt-4 text-[10px] font-semibold tracking-[0.18em] text-white/50 uppercase">
+              Qualification
+            </p>
+            <p className="mt-1.5 text-[13px] leading-snug text-white/80">
+              {member.qualification}
+            </p>
+          </div>
+        ) : null}
       </div>
-    </article>
+    </aside>
   );
 }

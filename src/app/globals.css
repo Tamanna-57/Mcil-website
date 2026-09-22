@@ -21,6 +21,12 @@
   --foreground: #1a192f;
 
   --steel-900: #1a192f;
+  /* The team section stands on its own band — a warm greige rather than the
+     page's cool near-white — and reads from a plate that is all but black, so
+     the seven photographs and the profile beside them are the only things on
+     it carrying colour. */
+  --team-band: #e2dbd3;
+  --team-plate: #131210;
   --steel-800: #454455;
   --steel-100: #cadbf5;
 
@@ -713,9 +719,6 @@ body {
 /* One warm card among the blues, so the grid is not a single hue. The accent
    itself is too light to carry text, so the card takes a wash of it and keeps
    the palette's dark ink. */
-.team-card-sand {
-  background: color-mix(in srgb, var(--accent) 17%, var(--surface));
-}
 
 /* ------------------------------------------------------------------ */
 /* Customers band                                                      */
@@ -1665,6 +1668,43 @@ body {
   .rp-tab::after,
   .rp-download-arrow {
     transition: none !important;
+  }
+}
+
+/* ------------------------------------------------------------------ */
+/* Team wall                                                           */
+/* ------------------------------------------------------------------ */
+
+.team-band {
+  background: var(--team-band);
+}
+
+.team-plate {
+  background: var(--team-plate);
+}
+
+/* The reading panel's contents are keyed on the person, so React replaces
+   them outright when the pointer moves along the wall. This gives that
+   replacement a moment of its own instead of letting the new biography
+   appear fully formed where the old one was. */
+@keyframes team-swap {
+  from {
+    opacity: 0;
+    transform: translateY(7px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.team-swap {
+  animation: team-swap 340ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .team-swap {
+    animation: none;
   }
 }
 
