@@ -5,7 +5,7 @@ import { useEffect, useRef, useState } from "react";
 import { team, teamHeading, type TeamMember } from "@/lib/about-team";
 
 /**
- * Which column each portrait takes once the wall is four across.
+ * Which column each portrait takes once the wall is laid out in columns.
  *
  * The reference does not pack its photographs: they hang on a plain grid with
  * cells deliberately left empty, so the wall reads as placed rather than as a
@@ -17,18 +17,45 @@ import { team, teamHeading, type TeamMember } from "@/lib/about-team";
  * The holes it leaves are spread rather than clustered — no row loses two
  * neighbouring cells — because two empty cells side by side stop reading as
  * rhythm and start reading as a gap someone forgot to fill.
+ *
+ * There are two, because the wall is not always the same number of columns
+ * wide: at `lg` the panel beside it leaves room for three, and at `xl` for
+ * four. Below `lg` there are too few columns for cells to be spared at all.
  */
-const SCATTER = [1, 3, 4, 2, 4, 1, 3] as const;
+const SCATTER_4 = [1, 3, 4, 2, 4, 1, 3] as const;
+const SCATTER_3 = [1, 3, 1, 2, 2, 3, 1] as const;
 
 /* Written out in full because the stylesheet is built by reading these files;
-   a class assembled from pieces at runtime would not be there to apply. */
-const COL_START = [
+   a class assembled from pieces at runtime would not be there to apply. Each
+   breakpoint restates its own, since a column named at `md` would otherwise
+   carry up into `lg`, where the wall is a column narrower. */
+const COL_START_MD = [
   "",
   "md:col-start-1",
   "md:col-start-2",
   "md:col-start-3",
   "md:col-start-4",
 ] as const;
+const COL_START_LG = [
+  "",
+  "lg:col-start-1",
+  "lg:col-start-2",
+  "lg:col-start-3",
+] as const;
+const COL_START_XL = [
+  "",
+  "xl:col-start-1",
+  "xl:col-start-2",
+  "xl:col-start-3",
+  "xl:col-start-4",
+] as const;
+
+/** Every column this portrait starts in, one per width the wall changes at. */
+function scatter(i: number) {
+  const four = SCATTER_4[i % SCATTER_4.length];
+  const three = SCATTER_3[i % SCATTER_3.length];
+  return `${COL_START_MD[four]} ${COL_START_LG[three]} ${COL_START_XL[four]}`;
+}
 
 const DEFAULT_FOOTNOTE =
   "Board of Directors and Key Managerial Personnel as listed in the FY2025-26 annual report.";
@@ -138,7 +165,7 @@ export default function AboutTeam({
         {/* Rail, wall, panel. The rail is only as wide as the type set down it
             and the panel is held to a readable measure, so the wall takes
             whatever is left. */}
-        <div className="mt-12 lg:mt-16 lg:grid lg:grid-cols-[2.5rem_minmax(0,1fr)_20rem] lg:items-start lg:gap-8 xl:grid-cols-[2.5rem_minmax(0,1fr)_22rem] xl:gap-10">
+        <div className="mt-12 lg:mt-16 lg:grid lg:grid-cols-[3.5rem_minmax(0,1fr)_minmax(19rem,26rem)] lg:items-start lg:gap-8 xl:gap-10">
           <Rail label={heading.eyebrow} visible={visible} />
 
           {/* Four across from `md`, rather than three held wider: the
@@ -146,12 +173,9 @@ export default function AboutTeam({
               them for detail they do not have. Below `md` there are too few
               columns for cells to be spared, so the scatter is dropped and
               the portraits simply run. */}
-          <ul className="grid grid-cols-2 gap-x-5 gap-y-9 sm:grid-cols-3 sm:gap-x-6 md:grid-cols-4 md:gap-x-7 md:gap-y-10">
+          <ul className="grid grid-cols-2 gap-x-5 gap-y-9 sm:grid-cols-3 sm:gap-x-6 md:grid-cols-4 md:gap-x-7 md:gap-y-10 lg:grid-cols-3 xl:grid-cols-4">
             {members.map((member, i) => (
-              <li
-                key={member.id}
-                className={COL_START[SCATTER[i % SCATTER.length]]}
-              >
+              <li key={member.id} className={scatter(i)}>
                 <Portrait
                   member={member}
                   index={i}
@@ -195,14 +219,14 @@ export default function AboutTeam({
 function Rail({ label, visible }: { label: string; visible: boolean }) {
   return (
     <div
-      className="hl-reveal hidden lg:flex lg:sticky lg:top-[calc(var(--header-h)+2.5rem)] lg:h-[18rem] lg:flex-col lg:items-center lg:gap-4"
+      className="hl-reveal hidden lg:sticky lg:top-[calc(var(--header-h)+2.5rem)] lg:flex lg:h-[20rem] lg:flex-col lg:items-center lg:gap-6"
       data-visible={visible}
       aria-hidden
     >
-      <span className="text-[11px] font-semibold tracking-[0.34em] text-accent uppercase [writing-mode:vertical-rl] rotate-180">
+      <span className="type-display rotate-180 text-[clamp(1.3rem,2.1vw,1.85rem)] whitespace-nowrap text-steel-900 uppercase [writing-mode:vertical-rl]">
         {label}
       </span>
-      <span className="w-px flex-1 bg-steel-900/15" />
+      <span className="w-px flex-1 bg-steel-900/20" />
     </div>
   );
 }
@@ -242,12 +266,18 @@ function Portrait({
         onTap();
       }}
       aria-pressed={reading}
-      className="hl-reveal group block w-full cursor-pointer text-left"
+      /* The ceiling sits on the whole cell, not on the photograph alone, so
+         the name and seat under it run to the same edge the photograph does
+         rather than out past it. */
+      className="hl-reveal group block w-full max-w-[8.75rem] cursor-pointer text-left"
       data-visible={visible}
       style={{ animationDelay: `${240 + index * 70}ms` }}
     >
+      {/* Square-cornered and on black, as the reference has them, and held
+          under a ceiling so the photographs stay the small plates of the
+          reference rather than growing with the column they sit in. */}
       <span
-        className={`relative block aspect-[3/4] overflow-hidden rounded-lg bg-steel-900 outline-offset-2 transition duration-300 group-focus-visible:outline-2 group-focus-visible:outline-accent ${
+        className={`team-plate relative block aspect-[3/4] overflow-hidden outline-offset-2 transition duration-300 group-focus-visible:outline-2 group-focus-visible:outline-accent ${
           reading ? "" : "opacity-65"
         }`}
       >
@@ -255,7 +285,7 @@ function Portrait({
           src={member.image}
           alt={`Portrait of ${member.name}`}
           fill
-          sizes="(min-width: 1024px) 17vw, (min-width: 768px) 23vw, (min-width: 640px) 30vw, 44vw"
+          sizes="(min-width: 768px) 9rem, (min-width: 640px) 30vw, 44vw"
           className={`object-cover transition duration-500 ${
             reading ? "scale-[1.03]" : "group-hover:scale-[1.03]"
           }`}
@@ -270,16 +300,19 @@ function Portrait({
         />
       </span>
 
+      {/* Set in black on the band, like the plate beside them, rather than in
+          the page's navy and blue: the only colour on this section is the
+          photographs and the rule under the one being read. */}
       <span
-        className={`mt-3 block font-display text-[13px] leading-snug font-semibold transition-colors ${
-          reading ? "text-steel-900" : "text-steel-900/70"
+        className={`mt-3 block font-display text-[14px] leading-snug font-semibold transition-colors ${
+          reading ? "text-black" : "text-black/55"
         }`}
       >
         {member.name}
       </span>
       <span
         className={`mt-1 block text-[9.5px] leading-[1.45] font-semibold tracking-[0.13em] uppercase transition-colors ${
-          reading ? "text-brand-deep" : "text-steel-800/55"
+          reading ? "text-black/70" : "text-black/40"
         }`}
       >
         {member.role}
@@ -311,7 +344,7 @@ function Panel({
   return (
     <aside
       ref={ref}
-      className="team-plate hl-reveal mt-12 flex flex-col rounded-2xl p-7 lg:sticky lg:top-[calc(var(--header-h)+2.5rem)] lg:mt-0 lg:min-h-[28rem]"
+      className="team-plate hl-reveal mt-12 flex flex-col p-8 sm:p-9 lg:sticky lg:top-[calc(var(--header-h)+2.5rem)] lg:mt-0 lg:min-h-[28rem]"
       data-visible={visible}
       style={{ animationDelay: `${240 + count * 70}ms` }}
       aria-live="polite"
