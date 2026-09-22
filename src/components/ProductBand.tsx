@@ -259,7 +259,7 @@ function WordmarkBlock({
         is anchored left so the word grows in from its own edge.
       */}
       <span
-        className="pb-wordmark block origin-left scale-x-[0.94] text-[clamp(2.2rem,6.4vw,7rem)] leading-[0.9] font-extrabold tracking-[-0.055em] whitespace-nowrap text-accent lg:absolute lg:top-[11%] lg:left-[4.1%]"
+        className="pb-wordmark block origin-left scale-x-[0.94] text-[clamp(1.95rem,5.6vw,6.2rem)] leading-[0.9] font-extrabold tracking-[-0.055em] whitespace-nowrap text-accent lg:absolute lg:top-[11%] lg:left-[4.1%]"
         aria-hidden
       >
         {product.wordmark}

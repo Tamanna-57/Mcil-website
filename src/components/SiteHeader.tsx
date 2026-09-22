@@ -169,7 +169,7 @@ export default function SiteHeader() {
         if (e.key === "Escape") closeNow();
       }}
     >
-      <div className="flex items-center justify-between gap-6 px-6 py-3.5 sm:px-10 lg:px-[3vw]">
+      <div className="flex items-center justify-between gap-6 px-6 py-2.5 sm:px-10 lg:px-[3vw]">
         {/* The monogram with the company name under it. The mark is a
             background image and the name is decorative beside the link's own
             accessible name, so both are hidden from the reading order and the

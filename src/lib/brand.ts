@@ -25,8 +25,13 @@
  * top padding and every sticky section is measured from that token, and a
  * bar taller than it slides over the top of the page. See `.site-logo` and
  * `.site-wordmark` there.
+ *
+ * Kept deliberately small. The bar is fixed, so its height is taken off every
+ * screen of every page for the whole of the visit — the mark only has to be
+ * large enough to be read as the mark, and anything past that is a strip of
+ * navy the site never gets back.
  */
-export const LOGO_HEIGHT = 58;
+export const LOGO_HEIGHT = 42;
 
 /** Set small under the mark, and the link's accessible name. */
 export const LOGO_NAME = "Metal Coatings (India) Limited";
