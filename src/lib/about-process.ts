@@ -69,6 +69,3 @@ export const processSteps: ProcessStep[] = [
     alt: "Finished cold rolled coils lined up for despatch",
   },
 ];
-
-/** Viewport heights of scroll allotted to each step while the panel is pinned. */
-export const SCROLL_PER_STEP = 85;
