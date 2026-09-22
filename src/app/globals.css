@@ -675,6 +675,75 @@ body {
 /* About — scroll-driven process                                       */
 /* ------------------------------------------------------------------ */
 
+/*
+ * The stages run off the page's own scroll, with the panel stuck to the
+ * viewport while they last: scrolling over the section changes the stage and
+ * nothing on screen moves, and the page carries on once the last stage has
+ * been reached.
+ *
+ * The track is the panel's own height plus a share of it again for every
+ * stage after the first — that share is `STEP_TRAVEL` in AboutProcess.tsx,
+ * which hands the finished multiplier down as `--ap-span`, so the length of
+ * the track follows however many stages the admin panel saves.
+ *
+ * Pinning starts here, at `lg`. Narrower than that the section is an ordinary
+ * block that the pills page through: a screen that scrolls without moving is
+ * hard enough to read as deliberate on a desktop, and on a phone — where the
+ * address bar is already sliding about — it reads as a page that has hung.
+ */
+@media (min-width: 1024px) and (min-height: 600px) {
+  .ap-track {
+    /* The panel stands in the space the fixed header leaves. */
+    --ap-pin-h: calc(100dvh - var(--header-h));
+
+    /*
+     * The rhythm inside the pin, which has only that height to work with and
+     * cannot spill into the section below it. Both are the comfortable fixed
+     * measure until the screen is too short to afford it, and follow the
+     * height from there — so a laptop with a bookmarks bar gets a tighter
+     * panel rather than one running off the bottom of its own pin.
+     */
+    --ap-gap: min(1.5rem, 2.6vh);
+    --ap-pad: min(2.25rem, 3.8vh);
+
+    height: calc(var(--ap-pin-h) * var(--ap-span, 1));
+  }
+
+  .ap-pin {
+    position: sticky;
+    top: var(--header-h);
+    height: var(--ap-pin-h);
+  }
+
+  /*
+   * Everything below only makes sense against a pin of a known height, and
+   * `lg:` alone would apply it to a window that is wide but too short to be
+   * pinned at all. So it is set here, where the same query decides both, and
+   * the section keeps its ordinary block layout wherever pinning is off.
+   */
+  .ap-inner {
+    height: 100%;
+    justify-content: center;
+    padding-block: var(--ap-gap);
+  }
+
+  /* The panel takes what the pinned screen has left, within reason: a short
+     laptop gets a shorter photograph rather than a panel running off the
+     bottom of its pin, and a tall monitor does not get a vast one. */
+  .ap-panel {
+    flex: 1 1 0%;
+    min-height: 15rem;
+    max-height: 32rem;
+  }
+
+  /* However long the body text an editor saves runs, the copy stays inside
+     the panel rather than pushing it through the bottom of the pin. */
+  .ap-copy {
+    max-height: 100%;
+    overflow-y: auto;
+  }
+}
+
 /* Photographs travel horizontally between steps: the outgoing plate carries on
    to the left while the incoming one arrives from the right, so a step change
    reads as one continuous movement rather than a crossfade in place. */
