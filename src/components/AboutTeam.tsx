@@ -2,82 +2,33 @@
 
 import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
-import {
-  team,
-  teamHeading,
-  type TeamMember,
-  type Tone,
-} from "@/lib/about-team";
+import { team, teamHeading, type TeamMember } from "@/lib/about-team";
 
 /**
- * Colourways for the reading panel. Each is a flat tint from the site palette
- * with the text colours that sit legibly on it; the panel takes whichever
- * belongs to the person being read, so moving along the row moves through the
- * palette rather than holding one plate for all seven.
+ * Which column each portrait takes once the wall is four across.
+ *
+ * The reference does not pack its photographs: they hang on a plain grid with
+ * cells deliberately left empty, so the wall reads as placed rather than as a
+ * block. Naming a column and leaving the row to find itself does that — a
+ * portrait whose column is at or behind the one before it drops to the next
+ * row, and the cells skipped on the way stay empty. The sequence repeats, so a
+ * board that gains or loses a seat scatters the same way.
+ *
+ * The holes it leaves are spread rather than clustered — no row loses two
+ * neighbouring cells — because two empty cells side by side stop reading as
+ * rhythm and start reading as a gap someone forgot to fill.
  */
-const TONES: Record<
-  Tone,
-  {
-    card: string;
-    name: string;
-    role: string;
-    bio: string;
-    chip: string;
-    /** The hairline above the qualification, and the label set on it. */
-    rule: string;
-    label: string;
-  }
-> = {
-  deep: {
-    card: "bg-steel-900",
-    name: "text-white",
-    role: "text-brand-pale",
-    bio: "text-white/75",
-    chip: "bg-white/12 text-white/85",
-    rule: "bg-white/15",
-    label: "text-white/50",
-  },
-  blue: {
-    card: "bg-brand-light",
-    name: "text-steel-900",
-    role: "text-brand-deep",
-    bio: "text-steel-800",
-    chip: "bg-white/60 text-steel-800",
-    rule: "bg-steel-900/12",
-    label: "text-steel-800/60",
-  },
-  pale: {
-    card: "bg-brand-pale",
-    name: "text-steel-900",
-    role: "text-brand-deep",
-    bio: "text-steel-800",
-    chip: "bg-white/70 text-steel-800",
-    rule: "bg-steel-900/12",
-    label: "text-steel-800/60",
-  },
-  sand: {
-    /* A wash of the accent rather than the accent itself, which is too low in
-       contrast to carry text. */
-    card: "team-card-sand",
-    name: "text-steel-900",
-    role: "text-steel-800",
-    bio: "text-steel-800",
-    chip: "bg-white/70 text-steel-800",
-    rule: "bg-steel-900/12",
-    label: "text-steel-800/60",
-  },
-  plain: {
-    /* The only tone that is not a tint, so it leans on its edge to read as a
-       plate at all: the section behind it is barely darker than the panel. */
-    card: "bg-surface ring-1 ring-steel-900/15",
-    name: "text-steel-900",
-    role: "text-brand-deep",
-    bio: "text-steel-800",
-    chip: "bg-background text-steel-800",
-    rule: "bg-steel-900/12",
-    label: "text-steel-800/60",
-  },
-};
+const SCATTER = [1, 3, 4, 2, 4, 1, 3] as const;
+
+/* Written out in full because the stylesheet is built by reading these files;
+   a class assembled from pieces at runtime would not be there to apply. */
+const COL_START = [
+  "",
+  "md:col-start-1",
+  "md:col-start-2",
+  "md:col-start-3",
+  "md:col-start-4",
+] as const;
 
 const DEFAULT_FOOTNOTE =
   "Board of Directors and Key Managerial Personnel as listed in the FY2025-26 annual report.";
@@ -157,29 +108,26 @@ export default function AboutTeam({
     <section
       ref={sectionRef}
       id="team"
-      className="scroll-mt-[var(--header-h)] bg-background px-6 pb-20 sm:px-10 lg:px-[6.5vw] lg:pb-24"
+      className="team-band scroll-mt-[var(--header-h)] px-6 py-20 sm:px-10 lg:px-[6.5vw] lg:py-24"
     >
       <div className="mx-auto w-full max-w-6xl">
         <header className="max-w-2xl">
-          {/* The label belongs on the rail at desktop width; there is no rail
-              on a phone, so it goes back over the top. */}
+          {/* The rail down the left is the section's title at desktop width,
+              so the heading is carried for structure rather than set: a
+              section with no heading at all is a hole in the page's outline,
+              and a screen reader has no rail to read. There is no rail on a
+              phone, so the label goes back over the top there. */}
+          <h2 className="sr-only">{heading.title}</h2>
           <p
             className="hl-reveal text-[11px] font-semibold tracking-[0.24em] text-accent uppercase lg:hidden"
             data-visible={visible}
           >
             [ {heading.eyebrow} ]
           </p>
-          <h2
-            className="hl-reveal type-display mt-4 text-[clamp(1.6rem,4.2vw,2.8rem)] leading-[1.15] text-steel-900 uppercase lg:mt-0"
-            data-visible={visible}
-            style={{ animationDelay: "80ms" }}
-          >
-            {heading.title}
-          </h2>
-          {/* Deliberately a step down from the section standfirsts elsewhere:
-              it is a note on who runs the company, not a second headline. */}
+          {/* Deliberately quiet: it is a note on who runs the company, not a
+              headline standing in for the one just removed. */}
           <p
-            className="hl-reveal mt-4 text-[13px] leading-relaxed text-steel-800/85 sm:text-sm"
+            className="hl-reveal mt-4 text-[13px] leading-relaxed text-steel-800/85 sm:mt-0 sm:text-sm"
             data-visible={visible}
             style={{ animationDelay: "160ms" }}
           >
@@ -195,10 +143,15 @@ export default function AboutTeam({
 
           {/* Four across from `md`, rather than three held wider: the
               portraits are small files, and a column much past 200px asks
-              them for detail they do not have. */}
-          <ul className="grid grid-cols-2 gap-x-4 gap-y-7 sm:grid-cols-3 sm:gap-x-5 md:grid-cols-4">
+              them for detail they do not have. Below `md` there are too few
+              columns for cells to be spared, so the scatter is dropped and
+              the portraits simply run. */}
+          <ul className="grid grid-cols-2 gap-x-5 gap-y-9 sm:grid-cols-3 sm:gap-x-6 md:grid-cols-4 md:gap-x-7 md:gap-y-10">
             {members.map((member, i) => (
-              <li key={member.id}>
+              <li
+                key={member.id}
+                className={COL_START[SCATTER[i % SCATTER.length]]}
+              >
                 <Portrait
                   member={member}
                   index={i}
@@ -355,12 +308,10 @@ function Panel({
   /** Only used to time the panel's own arrival behind the last portrait. */
   count: number;
 }) {
-  const tone = TONES[member.tone] ?? TONES.plain;
-
   return (
     <aside
       ref={ref}
-      className={`hl-reveal mt-10 flex flex-col rounded-2xl p-7 transition-colors duration-500 lg:sticky lg:top-[calc(var(--header-h)+2.5rem)] lg:mt-0 lg:min-h-[26rem] ${tone.card}`}
+      className="team-plate hl-reveal mt-12 flex flex-col rounded-2xl p-7 lg:sticky lg:top-[calc(var(--header-h)+2.5rem)] lg:mt-0 lg:min-h-[28rem]"
       data-visible={visible}
       style={{ animationDelay: `${240 + count * 70}ms` }}
       aria-live="polite"
@@ -368,9 +319,7 @@ function Panel({
       {/* Keyed on the person, so the panel's contents arrive rather than
           swapping in place when the pointer moves along the wall. */}
       <div key={member.id} className="team-swap flex h-full flex-col">
-        <span
-          className={`inline-flex w-fit items-center gap-1.5 rounded-full px-3 py-1.5 text-[11px] font-semibold tracking-[0.06em] ${tone.chip}`}
-        >
+        <span className="inline-flex w-fit items-center gap-1.5 rounded-full bg-white/12 px-3 py-1.5 text-[11px] font-semibold tracking-[0.06em] text-white/85">
           <svg
             width="11"
             height="11"
@@ -396,19 +345,15 @@ function Panel({
           {member.chip}
         </span>
 
-        <h3
-          className={`mt-6 font-display text-xl leading-snug font-semibold ${tone.name}`}
-        >
+        <h3 className="mt-6 font-display text-xl leading-snug font-semibold text-white">
           {member.name}
         </h3>
-        <p
-          className={`mt-1.5 text-[11px] font-semibold tracking-[0.14em] uppercase ${tone.role}`}
-        >
+        <p className="mt-1.5 text-[11px] font-semibold tracking-[0.14em] text-brand-pale uppercase">
           {member.role}
         </p>
 
         {/* The profile as the Board writes it, a paragraph to a break. */}
-        <div className={`mt-5 space-y-3.5 text-sm leading-relaxed ${tone.bio}`}>
+        <div className="mt-5 space-y-3.5 text-sm leading-relaxed text-white/75">
           {member.bio
             .split(/\n\s*\n/)
             .map((para) => para.trim())
@@ -423,13 +368,11 @@ function Panel({
             and it is what the section is read for after the name. */}
         {member.qualification ? (
           <div className="mt-auto pt-7">
-            <span className={`block h-px w-full ${tone.rule}`} aria-hidden />
-            <p
-              className={`mt-4 text-[10px] font-semibold tracking-[0.18em] uppercase ${tone.label}`}
-            >
+            <span className="block h-px w-full bg-white/15" aria-hidden />
+            <p className="mt-4 text-[10px] font-semibold tracking-[0.18em] text-white/50 uppercase">
               Qualification
             </p>
-            <p className={`mt-1.5 text-[13px] leading-snug ${tone.bio}`}>
+            <p className="mt-1.5 text-[13px] leading-snug text-white/80">
               {member.qualification}
             </p>
           </div>

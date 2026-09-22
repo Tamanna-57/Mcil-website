@@ -88,14 +88,6 @@ const ctaFields: Field[] = [
   { type: "text", key: "href", label: "Link" },
 ];
 
-const toneOptions = [
-  { value: "deep", label: "Deep navy" },
-  { value: "blue", label: "Brand blue" },
-  { value: "pale", label: "Pale blue" },
-  { value: "sand", label: "Sand" },
-  { value: "plain", label: "Plain" },
-];
-
 const plateFields: Field[] = [
   {
     type: "image",
@@ -362,7 +354,6 @@ export const sections: SectionSchema[] = [
               bio: "",
               qualification: "",
               image: "",
-              tone: "plain",
             },
             fields: [
               { type: "text", key: "name", label: "Name" },
@@ -386,12 +377,6 @@ export const sections: SectionSchema[] = [
                 help: 'Degrees and memberships, e.g. "B.Com (Hons.), FCA". Set apart at the foot of the panel.',
               },
               { type: "image", key: "image", label: "Portrait" },
-              {
-                type: "select",
-                key: "tone",
-                label: "Panel colour",
-                options: toneOptions,
-              },
             ],
           },
           { type: "textarea", key: "footnote", label: "Footnote" },
