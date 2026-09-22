@@ -1669,6 +1669,35 @@ body {
 }
 
 /* ------------------------------------------------------------------ */
+/* Team wall                                                           */
+/* ------------------------------------------------------------------ */
+
+/* The reading panel's contents are keyed on the person, so React replaces
+   them outright when the pointer moves along the wall. This gives that
+   replacement a moment of its own instead of letting the new biography
+   appear fully formed where the old one was. */
+@keyframes team-swap {
+  from {
+    opacity: 0;
+    transform: translateY(7px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.team-swap {
+  animation: team-swap 340ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .team-swap {
+    animation: none;
+  }
+}
+
+/* ------------------------------------------------------------------ */
 /* Product bands                                                       */
 /* ------------------------------------------------------------------ */
 
