@@ -17,7 +17,16 @@ import {
  */
 const TONES: Record<
   Tone,
-  { card: string; name: string; role: string; bio: string; chip: string }
+  {
+    card: string;
+    name: string;
+    role: string;
+    bio: string;
+    chip: string;
+    /** The hairline above the qualification, and the label set on it. */
+    rule: string;
+    label: string;
+  }
 > = {
   deep: {
     card: "bg-steel-900",
@@ -25,6 +34,8 @@ const TONES: Record<
     role: "text-brand-pale",
     bio: "text-white/75",
     chip: "bg-white/12 text-white/85",
+    rule: "bg-white/15",
+    label: "text-white/50",
   },
   blue: {
     card: "bg-brand-light",
@@ -32,6 +43,8 @@ const TONES: Record<
     role: "text-brand-deep",
     bio: "text-steel-800",
     chip: "bg-white/60 text-steel-800",
+    rule: "bg-steel-900/12",
+    label: "text-steel-800/60",
   },
   pale: {
     card: "bg-brand-pale",
@@ -39,6 +52,8 @@ const TONES: Record<
     role: "text-brand-deep",
     bio: "text-steel-800",
     chip: "bg-white/70 text-steel-800",
+    rule: "bg-steel-900/12",
+    label: "text-steel-800/60",
   },
   sand: {
     /* A wash of the accent rather than the accent itself, which is too low in
@@ -48,13 +63,19 @@ const TONES: Record<
     role: "text-steel-800",
     bio: "text-steel-800",
     chip: "bg-white/70 text-steel-800",
+    rule: "bg-steel-900/12",
+    label: "text-steel-800/60",
   },
   plain: {
-    card: "bg-surface ring-1 ring-steel-900/10",
+    /* The only tone that is not a tint, so it leans on its edge to read as a
+       plate at all: the section behind it is barely darker than the panel. */
+    card: "bg-surface ring-1 ring-steel-900/15",
     name: "text-steel-900",
     role: "text-brand-deep",
     bio: "text-steel-800",
     chip: "bg-background text-steel-800",
+    rule: "bg-steel-900/12",
+    label: "text-steel-800/60",
   },
 };
 
@@ -386,9 +407,33 @@ function Panel({
           {member.role}
         </p>
 
-        <p className={`mt-5 text-sm leading-relaxed ${tone.bio}`}>
-          {member.bio}
-        </p>
+        {/* The profile as the Board writes it, a paragraph to a break. */}
+        <div className={`mt-5 space-y-3.5 text-sm leading-relaxed ${tone.bio}`}>
+          {member.bio
+            .split(/\n\s*\n/)
+            .map((para) => para.trim())
+            .filter(Boolean)
+            .map((para, i) => (
+              <p key={i}>{para}</p>
+            ))}
+        </div>
+
+        {/* Set apart at the foot rather than run into the profile: it is the
+            one line on the panel that is a fact rather than a description,
+            and it is what the section is read for after the name. */}
+        {member.qualification ? (
+          <div className="mt-auto pt-7">
+            <span className={`block h-px w-full ${tone.rule}`} aria-hidden />
+            <p
+              className={`mt-4 text-[10px] font-semibold tracking-[0.18em] uppercase ${tone.label}`}
+            >
+              Qualification
+            </p>
+            <p className={`mt-1.5 text-[13px] leading-snug ${tone.bio}`}>
+              {member.qualification}
+            </p>
+          </div>
+        ) : null}
       </div>
     </aside>
   );

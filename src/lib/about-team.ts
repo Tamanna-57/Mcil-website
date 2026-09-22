@@ -1,26 +1,29 @@
 /**
  * Board of Directors and Key Managerial Personnel.
  *
- * REAL PEOPLE. Names, designations and portraits are taken from the "Board of
- * Directors & Key Managerial Personnel" page of MCIL's FY2025-26 annual report
- * (the same report the investor figures come from). The report lists seven —
- * five directors and two KMP — so all seven are shown.
+ * REAL PEOPLE. Names, designations, profiles and qualifications are taken from
+ * the company's own "MCIL BOD Profile" document — the Board's own words about
+ * itself. The report lists seven: five directors and two KMP, all of whom are
+ * shown. Nothing has been added to fill a card out.
  *
- * The bios describe each seat's remit at MCIL. Nothing personal is asserted
- * beyond what the report itself carries: no tenures, qualifications or prior
- * employers have been invented to fill the cards out.
+ * `bio` is the profile as the document sets it, in paragraphs separated by a
+ * blank line; the panel prints one paragraph per break, so the shape of the
+ * writing survives an edit in the admin panel without any markup to learn.
  */
 
-/** Card colourway, drawn from the site palette. */
+/** Which of the panel's colourways a person's profile is read on. */
 export type Tone = "deep" | "blue" | "pale" | "sand" | "plain";
 
 export type TeamMember = {
   id: string;
   name: string;
   role: string;
-  /** Small chip closing the card — the seat's category, not a social handle. */
+  /** Small chip opening the panel — the seat's category, not a social handle. */
   chip: string;
+  /** The profile, one paragraph per blank line. */
   bio: string;
+  /** Degrees and memberships, as the Board states them. */
+  qualification: string;
   image: string;
   tone: Tone;
 };
@@ -36,9 +39,10 @@ export const team: TeamMember[] = [
   {
     id: "ramesh-chander-khandelwal",
     name: "Ramesh Chander Khandelwal",
-    role: "Chairman & Whole Time Director",
+    role: "Chairman & Whole-time Director",
     chip: "Promoter · Executive",
-    bio: "Chairs the Board and guides the company, especially on technology. He is a B.E. Mechanical Engineer from MNIT with over 55 years of industrial experience spanning steel, auto-components and paper industries.",
+    bio: "Mr. Ramesh Chander Khandelwal is the Chairman and Whole-time Director of the Company. Being in the capacity of Chairman, he chairs the Board of Directors and provides strategic guidance to steer the Company's overall growth and governance.\n\nAs Whole-time Director, he closely oversees the manufacturing function and contributes towards key technical aspects of operations. A Mechanical Engineer by qualification, his technical expertise in C.R. manufacturing and galvanising has helped the Company achieve substantial improvement in efficiencies.",
+    qualification: "BE (Mechanical Engineering)",
     image: "/images/team/ramesh-chander-khandelwal.jpg",
     tone: "deep",
   },
@@ -47,7 +51,8 @@ export const team: TeamMember[] = [
     name: "Pramod Khandelwal",
     role: "Managing Director",
     chip: "Promoter · Executive",
-    bio: "Provides leadership to the company and holds executive charge to company operations. He is a rank holding chartered accountant with over 36 years of experience in FMCG, auto-components and steel industries. Prior to promoting the company he held a senior managerial position with Hindustan Unilever Ltd.",
+    bio: "Mr. Pramod Khandelwal is the Managing Director of the Company. A Chartered Accountant by qualification, he has an extensive experience in overseeing the Commercial, Financial and Marketing functions of the Company. As Managing Director, he is responsible for the Company's overall management and strategic direction, steering its day-to-day affairs in line with the Board's vision.\n\nHis rich experience and in-depth knowledge of the auto components and consumer durables markets, coupled with his ability to control and manage all financials, commercial and marketing aspects of the Company have played a pivotal role in the Company's proactive strategic decision-making and its ability to stay ahead of the competition.",
+    qualification: "B.Com (Hons.), FCA",
     image: "/images/team/pramod-khandelwal.jpg",
     tone: "blue",
   },
@@ -56,16 +61,20 @@ export const team: TeamMember[] = [
     name: "Rupali Aggarwal",
     role: "Non-Executive Independent Director",
     chip: "Independent Director",
-    bio: "Brings an outside view to the board and to the committees that sit under it, without an executive role in the company.",
+    bio: "Mrs. Rupali Aggarwal is a Non-Executive Independent Director on the Board of the Company. She is a qualified Company Secretary and Law Graduate with over 15 years of diverse experience across industries such as Agriculture, Real Estate, Automotive, and Sugar Manufacturing.\n\nRenowned for her innovative thinking, she brings to the Board her expertise in corporate advisory, including company law, SEBI regulations, secretarial compliance, and Capital Markets. Her ability to effectively bridge theory and practice adds significant value to the Board's deliberations and strengthens the Company's governance framework.",
+    qualification: "Company Secretary, LLB",
     image: "/images/team/rupali-aggarwal.jpg",
-    tone: "plain",
+    tone: "sand",
   },
   {
     id: "sachin-khurana",
     name: "Sachin Khurana",
     role: "Non-Executive Independent Director",
     chip: "Independent Director",
-    bio: "Independent voice on the board, with oversight of governance and the controls the company reports against each year.",
+    /* "He also bring" in the source document; the agreement is corrected here
+       because this is set as running copy on a public page. */
+    bio: "Mr. Sachin Khurana is a Non-Executive Independent Director on the Board of the Company. As an Independent Director, he provides independent oversight of the Board's functioning, holding management accountable to sound standards of corporate governance, compliance and ethical business conduct.\n\nHe also brings sound command over compliance management services including Company Law, statutory reporting, secretarial audits, labour laws and other statutory requirements — expertise that adds significant strength to the Board's governance oversight.",
+    qualification: "Company Secretary, Masters in Commerce & Law Graduate",
     image: "/images/team/sachin-khurana.jpg",
     tone: "pale",
   },
@@ -74,26 +83,29 @@ export const team: TeamMember[] = [
     name: "Aanchal Gupta",
     role: "Non-Executive Independent Director",
     chip: "Independent Director",
-    bio: "Serves on the board in a non-executive capacity, holding management to the standards the company sets itself.",
+    bio: "Ms. Aanchal Gupta is a Non-Executive Independent Director on the Board of the Company. She is a seasoned professional with over 16 years of experience in finance, cost analysis, corporate governance, and risk management.\n\nAs an Independent Director, she provides objective oversight of the Company's financial and governance practices, holding management accountable to high standards of transparency, risk management and regulatory compliance. She contributed significantly to business growth, financial management, and regulatory compliance.",
+    qualification: "B.Com, CMA, MBA",
     image: "/images/team/aanchal-gupta.jpg",
-    tone: "sand",
+    tone: "blue",
   },
   {
     id: "ram-awtar-sharma",
     name: "Ram Awtar Sharma",
     role: "Chief Financial Officer",
     chip: "Key Managerial Personnel",
-    bio: "Responsible for the company's finances and for the accounts published in the annual report and the quarterly results filed with the exchange.",
+    bio: "Mr. Ram Awtar Sharma is the Chief Financial Officer of the Company. He is a Member of the Institute of Chartered Accountants of India (ICAI), with a varied experience of more than 25 years in finance, accounting and taxation matters.\n\nAs CFO, he is responsible for overseeing compliance across all financial matters of the Company. He is also responsible for the Company's finance and accounts function, including the quarterly financial results published on the Stock Exchanges and accounts published in the Annual Report, besides supporting the Board with financial insights for strategic decision-making.",
+    qualification: "ACA (Associate Chartered Accountant)",
     image: "/images/team/ram-awtar-sharma.jpg",
-    tone: "blue",
+    tone: "deep",
   },
   {
     id: "shimpy-goyal",
     name: "Shimpy Goyal",
     role: "Company Secretary & Compliance Officer",
     chip: "Key Managerial Personnel",
-    bio: "Keeps the company's filings, disclosures and shareholder correspondence in order, and is the point of contact for investor queries.",
+    bio: "Ms. Shimpy Goyal is the Company Secretary and Compliance Officer of the Company. She is a qualified Company Secretary with over 8 years of experience in corporate secretarial functions, regulatory filings, and listing compliance.\n\nHer expertise includes handling end-to-end ROC and SEBI compliances, drafting and vetting corporate documents, managing Board and shareholder meetings, ensuring statutory adherence and liaising with regulatory authorities. She has worked extensively on governance frameworks, disclosure requirements, and compliance management systems, contributing to smooth corporate operations and fostering a strong compliance culture within the organisation.",
+    qualification: "Company Secretary",
     image: "/images/team/shimpy-goyal.jpg",
-    tone: "plain",
+    tone: "pale",
   },
 ];
