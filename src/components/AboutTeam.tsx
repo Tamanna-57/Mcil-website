@@ -69,6 +69,62 @@ const TONES: Record<
   },
 };
 
+/**
+ * Which column a card starts in, so a last row that does not fill up sits
+ * centred under the rows above rather than hanging off the left edge.
+ *
+ * Every card spans two units of a grid twice as wide as the row is long, which
+ * is what makes the centring come out even: a row of three under a row of four
+ * leaves two units spare, one to each side, so it starts one unit in. The same
+ * arithmetic covers any number of people the panel is given — a trailing row of
+ * one under a row of two, and so on.
+ *
+ * Both classes are written out in full because the stylesheet is built by
+ * reading these files; a class assembled from pieces at runtime would not be
+ * there to apply.
+ */
+const COL_START = {
+  sm: ["sm:col-start-1", "sm:col-start-2", "sm:col-start-3", "sm:col-start-4"],
+  lg: [
+    "lg:col-start-1",
+    "lg:col-start-2",
+    "lg:col-start-3",
+    "lg:col-start-4",
+    "lg:col-start-5",
+    "lg:col-start-6",
+    "lg:col-start-7",
+    "lg:col-start-8",
+  ],
+} as const;
+
+/**
+ * The offset for one card at one breakpoint, or "" if it needs none — every
+ * card but the one that opens a short final row.
+ */
+function trailingLead(
+  index: number,
+  count: number,
+  perRow: number,
+  at: keyof typeof COL_START,
+) {
+  const over = count % perRow;
+  if (over === 0 || index !== count - over) return "";
+  return COL_START[at][perRow - over] ?? "";
+}
+
+/**
+ * The placement classes for one card.
+ *
+ * Breakpoints carry upward, so a card offset at `sm` would still be offset at
+ * `lg`, where it may sit mid-row. Where that happens the offset is explicitly
+ * dropped again.
+ */
+function placement(index: number, count: number) {
+  const sm = trailingLead(index, count, 2, "sm");
+  const lg = trailingLead(index, count, 4, "lg");
+  return [sm, lg || (sm ? "lg:col-start-auto" : "")].filter(Boolean).join(" ");
+}
+
 const DEFAULT_FOOTNOTE =
   "Board of Directors and Key Managerial Personnel as listed in the FY2025-26 annual report.";
 
@@ -140,11 +196,19 @@ export default function AboutTeam({
           </p>
         </header>
 
-        {/* Seven cards with the chairman's running double width — eight column
-            units, which fills both rows of the four-column grid exactly. */}
-        <div className="mt-12 grid gap-4 sm:grid-cols-2 lg:mt-14 lg:grid-cols-4">
+        {/* Every card the same size, one across on a phone, two at `sm` and
+            four at `lg`. The grid is counted in half-cards so that a row that
+            does not fill can be centred under the ones above it — see
+            `placement`. */}
+        <div className="mt-12 grid grid-cols-2 gap-4 sm:grid-cols-4 lg:mt-14 lg:grid-cols-8">
           {members.map((member, i) => (
-            <Card key={member.id} member={member} index={i} visible={visible} />
+            <Card
+              key={member.id}
+              member={member}
+              index={i}
+              place={placement(i, members.length)}
+              visible={visible}
+            />
           ))}
         </div>
 
@@ -163,19 +227,20 @@ export default function AboutTeam({
 function Card({
   member,
   index,
+  place,
   visible,
 }: {
   member: TeamMember;
   index: number;
+  /** Where the card sits in the grid, from `placement`. */
+  place: string;
   visible: boolean;
 }) {
   const tone = TONES[member.tone] ?? TONES.plain;
 
   return (
     <article
-      className={`hl-reveal flex flex-col rounded-2xl p-6 sm:p-7 ${tone.card} ${
-        member.feature ? "sm:col-span-2" : ""
-      }`}
+      className={`hl-reveal col-span-2 flex flex-col rounded-2xl p-6 sm:p-7 ${tone.card} ${place}`}
       data-visible={visible}
       style={{ animationDelay: `${240 + index * 90}ms` }}
     >
@@ -192,9 +257,7 @@ function Card({
       </span>
 
       <h3
-        className={`mt-5 font-display text-lg leading-snug font-semibold ${tone.name} ${
-          member.feature ? "sm:text-2xl" : ""
-        }`}
+        className={`mt-5 font-display text-lg leading-snug font-semibold ${tone.name}`}
       >
         {member.name}
       </h3>
@@ -204,13 +267,7 @@ function Card({
         {member.role}
       </p>
 
-      <p
-        className={`mt-4 text-sm leading-relaxed ${tone.bio} ${
-          member.feature ? "max-w-lg" : ""
-        }`}
-      >
-        {member.bio}
-      </p>
+      <p className={`mt-4 text-sm leading-relaxed ${tone.bio}`}>{member.bio}</p>
 
       <div className="mt-auto pt-6">
         <span

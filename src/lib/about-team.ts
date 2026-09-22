@@ -23,8 +23,6 @@ export type TeamMember = {
   bio: string;
   image: string;
   tone: Tone;
-  /** The chairman's card runs two columns wide and leads the grid. */
-  feature?: boolean;
 };
 
 export const teamHeading = {
@@ -43,7 +41,6 @@ export const team: TeamMember[] = [
     bio: "Chairs the Board and guides the company, especially on technology. He is a B.E. Mechanical Engineer from MNIT with over 55 years of industrial experience spanning steel, auto-components and paper industries.",
     image: "/images/team/ramesh-chander-khandelwal.jpg",
     tone: "deep",
-    feature: true,
   },
   {
     id: "pramod-khandelwal",
