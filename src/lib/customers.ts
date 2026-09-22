@@ -1,16 +1,16 @@
 /**
  * The customers band on the landing page.
  *
- * REAL COMPANIES, REAL MARKS. The eleven below are MCIL's named customers.
- * Eight carry the company's own logo, taken from that company's own website
- * and kept in `public/images/customers/`; the three that have no website to
- * take one from fall back to a wordmark set in the site's own type. Supply
- * artwork for one of those (admin panel → Home → Customers → Logo) and the
- * cell prints it instead, with no component change.
+ * REAL COMPANIES, REAL MARKS. The eleven below are MCIL's named customers, and
+ * all eleven now carry the company's own logo, kept in
+ * `public/images/customers/`. A row with no `logo` falls back to a wordmark set
+ * in the site's own type; supply artwork for one (admin panel → Home →
+ * Customers → Logo) and the cell prints it instead, with no component change.
  *
- * Two of the files needed work before they were usable on a white plate, and
- * both are noted on the row itself: Talbros publishes only the reversed
- * lockup, and Makino's is a JPEG on a flat grey ground.
+ * The band is a warm tint rather than white, so artwork that arrives flattened
+ * onto a white ground is lifted off it before it goes in — otherwise the mark
+ * sits in a white box on a cream band. Files that needed that, or any other
+ * work, are noted on their own row.
  *
  * `scale` exists because eleven logos drawn to eleven different proportions do
  * not balance at one height — a tall round badge reads far bigger than a long
@@ -106,27 +106,46 @@ export const customers: Customer[] = [
     mark: "JAINA",
     suffix: "MOBILE",
     font: "display",
-    logo: "/images/customers/jaina.png",
+    logo: "/images/customers/jaina.webp",
     logoAlt: "Jaina India",
-    scale: 0.95,
+    scale: 1,
   },
-  /* Kanin (India) Ltd has no site of its own to take a logo from. */
-  { id: "kanin", name: "Kanin", mark: "KANIN", font: "display" },
-  /* Likewise Laser Shaving (India), whose domain refuses every request. */
+  {
+    id: "kanin",
+    name: "Kanin",
+    mark: "KANIN",
+    font: "display",
+    /* A round badge over a wordmark and two lines of small type, so like
+       Makino it needs most of the cell's height to stay readable. Lifted off
+       the white it was supplied on. */
+    logo: "/images/customers/kanin.png",
+    logoAlt: "Kanin India",
+    scale: 1.7,
+  },
   {
     id: "laser-shaving",
     name: "Laser Shaving",
     mark: "LASER",
     suffix: "SHAVING",
     font: "body",
+    /* A wordmark four times as wide as it is tall: set a little under the
+       common height so it does not run wider than the marks beside it.
+       Lifted off the white it was supplied on. */
+    logo: "/images/customers/laser-shaving.png",
+    logoAlt: "Laser Shaving India",
+    scale: 0.9,
   },
-  /* And Nikko Auto, which has never had one. */
   {
     id: "nikko-auto",
     name: "Nikko Auto",
     mark: "NIKKO",
     suffix: "AUTO",
     font: "display",
+    /* Supplied as a JPEG, which cannot carry transparency, so the white
+       behind it was lifted off. */
+    logo: "/images/customers/nikko-auto.png",
+    logoAlt: "Nikko Auto",
+    scale: 1,
   },
   {
     id: "makino",
