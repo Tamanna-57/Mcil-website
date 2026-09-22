@@ -47,6 +47,14 @@ export const customersHeading = {
     "Logos are the property of their respective owners and are shown here to identify MCIL's customers.",
 };
 
+/*
+ * Order is the row order on the band, and it is not alphabetical or arbitrary:
+ * the band lays out four across, so every fourth entry lands under the one
+ * before it in the same column. Two marks of the same strong colour stacked in
+ * one column read as a block of that colour rather than as two customers,
+ * which is why Havells and Jaina — the two heavy reds — are kept off each
+ * other's column. Reordering these rows is fine; check the columns afterwards.
+ */
 export const customers: Customer[] = [
   {
     id: "talbros",
@@ -101,28 +109,6 @@ export const customers: Customer[] = [
     scale: 1.05,
   },
   {
-    id: "jaina",
-    name: "Jaina",
-    mark: "JAINA",
-    suffix: "MOBILE",
-    font: "display",
-    logo: "/images/customers/jaina.webp",
-    logoAlt: "Jaina India",
-    scale: 1,
-  },
-  {
-    id: "kanin",
-    name: "Kanin",
-    mark: "KANIN",
-    font: "display",
-    /* A round badge over a wordmark and two lines of small type, so like
-       Makino it needs most of the cell's height to stay readable. Lifted off
-       the white it was supplied on. */
-    logo: "/images/customers/kanin.png",
-    logoAlt: "Kanin India",
-    scale: 1.7,
-  },
-  {
     id: "laser-shaving",
     name: "Laser Shaving",
     mark: "LASER",
@@ -136,16 +122,42 @@ export const customers: Customer[] = [
     scale: 0.9,
   },
   {
+    id: "kanin",
+    name: "Kanin",
+    mark: "KANIN",
+    font: "display",
+    /* A round badge over a wordmark and two lines of small type, packed into
+       a mark barely wider than it is tall: it needs more than the cell's own
+       height before the wordmark under the badge is readable, and takes the
+       few pixels it runs over out of the gap to the row below. Lifted off the
+       white it was supplied on. */
+    logo: "/images/customers/kanin.png",
+    logoAlt: "Kanin India",
+    scale: 1.95,
+  },
+  {
+    id: "jaina",
+    name: "Jaina",
+    mark: "JAINA",
+    suffix: "MOBILE",
+    font: "display",
+    logo: "/images/customers/jaina.webp",
+    logoAlt: "Jaina India",
+    scale: 1,
+  },
+  {
     id: "nikko-auto",
     name: "Nikko Auto",
     mark: "NIKKO",
     suffix: "AUTO",
     font: "display",
-    /* Supplied as a JPEG, which cannot carry transparency, so the white
-       behind it was lifted off. */
+    /* Set above the common height: the badge takes the top and bottom of the
+       mark, which leaves the wordmark beside it smaller than a wordmark of the
+       same height on its own. Supplied as a JPEG, which cannot carry
+       transparency, so the white behind it was lifted off. */
     logo: "/images/customers/nikko-auto.png",
     logoAlt: "Nikko Auto",
-    scale: 1,
+    scale: 1.2,
   },
   {
     id: "makino",
