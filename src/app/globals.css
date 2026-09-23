@@ -21,17 +21,13 @@
   --foreground: #1a192f;
 
   --steel-900: #1a192f;
-  /* The team section stands on its own band, and that band is black: the
-     seven portraits are the only light on it, so the wall reads as plates
-     hung in a dark room rather than photographs laid on paper.
-
-     The reading panel beside them is a shade up from the band rather than the
-     same black — on an unbroken ground it would have no edge at all — and
-     carries a hairline besides (see .team-plate below). The portrait frames
-     use the same tone, though it only shows for the moment before a
-     photograph loads over it. */
-  --team-band: #0c0c0b;
-  --team-plate: #191816;
+  /* The team section stands on its own band — a warm greige rather than the
+     page's cool near-white — and everything on it is a plate that is all but
+     black: each portrait with its name and seat, and the profile beside them.
+     The band stays light; the black is the plates', which is what makes them
+     read as plates hung on it. */
+  --team-band: #e2dbd3;
+  --team-plate: #131210;
   --steel-800: #454455;
   --steel-100: #cadbf5;
 
@@ -1713,14 +1709,6 @@ body {
 
 .team-plate {
   background: var(--team-plate);
-}
-
-/* The reading panel only. The portraits cover their plate with a photograph,
-   so an edge there would read as a frame drawn round each one; the panel has
-   nothing but its own tone to separate it from the band, and at this little
-   distance from black that is not enough on its own. */
-.team-panel {
-  border: 1px solid color-mix(in srgb, #fff 9%, transparent);
 }
 
 /* The reading panel's contents are keyed on the person, so React replaces

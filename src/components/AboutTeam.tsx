@@ -14,21 +14,24 @@ import { team, teamHeading, type TeamMember } from "@/lib/about-team";
  * row, and the cells skipped on the way stay empty. The sequence repeats, so a
  * board that gains or loses a seat scatters the same way.
  *
- * The holes it leaves are spread rather than clustered — no row loses two
- * neighbouring cells — because two empty cells side by side stop reading as
- * rhythm and start reading as a gap someone forgot to fill.
+ * The holes it leaves are spread rather than clustered, because two empty
+ * cells side by side start reading as a gap someone forgot to fill — though
+ * on the widest walls, where there are more columns than there are people,
+ * some of that is unavoidable and the reference has it too.
  *
- * There are two, because the wall is not always the same number of columns
- * wide: at `lg` the panel beside it leaves room for three, and at `xl` for
- * four. Below `lg` there are too few columns for cells to be spared at all.
+ * There are three, because the wall is not always the same number of columns
+ * wide: four at `md`, and from `lg` the panel beside it still leaves room for
+ * five, then six. Below `md` there are too few columns for cells to be spared
+ * at all.
  */
+const SCATTER_6 = [1, 3, 6, 2, 4, 1, 5] as const;
+const SCATTER_5 = [1, 3, 5, 2, 4, 1, 3] as const;
 const SCATTER_4 = [1, 3, 4, 2, 4, 1, 3] as const;
-const SCATTER_3 = [1, 3, 1, 2, 2, 3, 1] as const;
 
 /* Written out in full because the stylesheet is built by reading these files;
    a class assembled from pieces at runtime would not be there to apply. Each
    breakpoint restates its own, since a column named at `md` would otherwise
-   carry up into `lg`, where the wall is a column narrower. */
+   carry up into `lg`, where the wall is a column wider. */
 const COL_START_MD = [
   "",
   "md:col-start-1",
@@ -41,6 +44,8 @@ const COL_START_LG = [
   "lg:col-start-1",
   "lg:col-start-2",
   "lg:col-start-3",
+  "lg:col-start-4",
+  "lg:col-start-5",
 ] as const;
 const COL_START_XL = [
   "",
@@ -48,13 +53,16 @@ const COL_START_XL = [
   "xl:col-start-2",
   "xl:col-start-3",
   "xl:col-start-4",
+  "xl:col-start-5",
+  "xl:col-start-6",
 ] as const;
 
 /** Every column this portrait starts in, one per width the wall changes at. */
 function scatter(i: number) {
   const four = SCATTER_4[i % SCATTER_4.length];
-  const three = SCATTER_3[i % SCATTER_3.length];
-  return `${COL_START_MD[four]} ${COL_START_LG[three]} ${COL_START_XL[four]}`;
+  const five = SCATTER_5[i % SCATTER_5.length];
+  const six = SCATTER_6[i % SCATTER_6.length];
+  return `${COL_START_MD[four]} ${COL_START_LG[five]} ${COL_START_XL[six]}`;
 }
 
 const DEFAULT_FOOTNOTE =
@@ -138,9 +146,16 @@ export default function AboutTeam({
     <section
       ref={sectionRef}
       id="team"
-      className="team-band scroll-mt-[var(--header-h)] px-6 py-20 sm:px-10 lg:px-[6.5vw] lg:py-24"
+      className="team-band scroll-mt-[var(--header-h)] px-6 py-20 sm:px-10 lg:px-[3vw] lg:py-24"
     >
-      <div className="mx-auto w-full max-w-6xl">
+      {/* The wall runs the width of the window rather than sitting in the
+          page's usual centred measure. The reference hangs a long row of small
+          plates edge to edge, and that is what gives it its air: held to a
+          centred column the same plates have to grow to fill it, and a few
+          large photographs in the middle of the screen is the opposite
+          composition. The cap is only there so an ultra-wide monitor does not
+          stretch the row past reading distance. */}
+      <div className="mx-auto w-full max-w-[104rem]">
         <header>
           {/* The rail down the left is the section's title at desktop width,
               so the heading is carried for structure rather than set: a
@@ -163,15 +178,17 @@ export default function AboutTeam({
             The top margin clears the eyebrow, which is only set below `lg`;
             from `lg` the rail is the heading and there is nothing above the
             grid to clear, so the section's own padding is the whole of it. */}
-        <div className="mt-10 lg:mt-0 lg:grid lg:grid-cols-[4.5rem_minmax(0,1fr)_minmax(19rem,26rem)] lg:items-start lg:gap-8 xl:gap-10">
+        <div className="mt-10 lg:mt-0 lg:grid lg:grid-cols-[4.5rem_minmax(0,1fr)_minmax(18rem,24rem)] lg:items-start lg:gap-8 xl:gap-10">
           <Rail label={heading.eyebrow} visible={visible} />
 
-          {/* Four across from `md`, rather than three held wider: the
-              portraits are small files, and a column much past 200px asks
-              them for detail they do not have. Below `md` there are too few
-              columns for cells to be spared, so the scatter is dropped and
-              the portraits simply run. */}
-          <ul className="grid grid-cols-2 gap-x-5 gap-y-9 sm:grid-cols-3 sm:gap-x-6 md:grid-cols-4 md:gap-x-7 md:gap-y-10 lg:grid-cols-3 xl:grid-cols-4">
+          {/* Five across from `lg` and six from `xl`, with each plate held
+              under a ceiling well below the cell it sits in. The photographs
+              are small files and a column much past 150px asks them for
+              detail they do not have; more to the point, the spare width is
+              worth more as the air between the plates than as bigger plates.
+              Below `md` there are too few columns for cells to be spared, so
+              the scatter is dropped and the portraits simply run. */}
+          <ul className="grid grid-cols-2 gap-x-4 gap-y-8 sm:grid-cols-3 sm:gap-x-5 md:grid-cols-4 md:gap-y-9 lg:grid-cols-5 lg:gap-y-10 xl:grid-cols-6">
             {members.map((member, i) => (
               <li key={member.id} className={scatter(i)}>
                 <Portrait
@@ -195,7 +212,7 @@ export default function AboutTeam({
         </div>
 
         <p
-          className="hl-reveal mt-12 text-xs text-white/45"
+          className="hl-reveal mt-12 text-xs text-steel-800/70"
           data-visible={visible}
           style={{ animationDelay: "900ms" }}
         >
@@ -221,10 +238,10 @@ function Rail({ label, visible }: { label: string; visible: boolean }) {
       data-visible={visible}
       aria-hidden
     >
-      <span className="type-display rotate-180 text-[clamp(2.1rem,3.4vw,3.1rem)] whitespace-nowrap text-white uppercase [writing-mode:vertical-rl]">
+      <span className="type-display rotate-180 text-[clamp(2.1rem,3.4vw,3.1rem)] whitespace-nowrap text-steel-900 uppercase [writing-mode:vertical-rl]">
         {label}
       </span>
-      <span className="w-px flex-1 bg-white/20" />
+      <span className="w-px flex-1 bg-steel-900/20" />
     </div>
   );
 }
@@ -264,56 +281,61 @@ function Portrait({
         onTap();
       }}
       aria-pressed={reading}
-      /* The ceiling sits on the whole cell, not on the photograph alone, so
-         the name and seat under it run to the same edge the photograph does
-         rather than out past it. */
-      className="hl-reveal group block w-full max-w-[9.5rem] cursor-pointer text-left"
+      /* The ceiling sits on the whole cell rather than on the photograph
+         alone, so what is left over stays as the gap between plates. */
+      className="hl-reveal group block w-full max-w-[10rem] cursor-pointer text-left sm:max-w-[8.5rem]"
       data-visible={visible}
       style={{ animationDelay: `${240 + index * 70}ms` }}
     >
-      {/* Square-cornered and on black, as the reference has them, and held
-          under a ceiling so the photographs stay the small plates of the
-          reference rather than growing with the column they sit in. */}
-      <span
-        className={`team-plate relative block aspect-[3/4] overflow-hidden outline-offset-2 transition duration-300 group-focus-visible:outline-2 group-focus-visible:outline-accent ${
-          reading ? "" : "opacity-65"
-        }`}
-      >
-        <Image
-          src={member.image}
-          alt={`Portrait of ${member.name}`}
-          fill
-          sizes="(min-width: 768px) 9rem, (min-width: 640px) 30vw, 44vw"
-          className={`object-cover transition duration-500 ${
-            reading ? "scale-[1.03]" : "group-hover:scale-[1.03]"
-          }`}
-        />
-        {/* The one being read is marked on the photograph itself, so the tie
-            between a portrait and the panel is visible without the pointer
-            having to be the thing that says so. */}
-        <span
-          className={`pointer-events-none absolute inset-x-0 bottom-0 h-[3px] bg-accent transition-transform duration-300 ${
-            reading ? "scale-x-100" : "scale-x-0"
-          }`}
-        />
-      </span>
+      {/* One black rectangle per person: the photograph, and the name and
+          seat set on the same black underneath it. Square-cornered and on the
+          band's greige, as the reference hangs them. */}
+      <span className="team-plate block overflow-hidden outline-offset-2 group-focus-visible:outline-2 group-focus-visible:outline-accent">
+        <span className="relative block aspect-[3/4] overflow-hidden">
+          {/* The plate itself never dims — all seven stay the same black
+              rectangle on the band, which is the whole of the effect — so the
+              one being read is marked by its photograph coming up out of the
+              black rather than by the rectangle changing colour. Fading the
+              plate instead would grey it against the greige and there would
+              be no black rectangles left to look at. */}
+          <Image
+            src={member.image}
+            alt={`Portrait of ${member.name}`}
+            fill
+            sizes="(min-width: 640px) 8.5rem, 44vw"
+            className={`object-cover transition duration-500 ${
+              reading
+                ? "scale-[1.03] opacity-100"
+                : "opacity-70 group-hover:scale-[1.03] group-hover:opacity-100"
+            }`}
+          />
+          {/* The one being read is marked on the photograph itself, so the tie
+              between a portrait and the panel is visible without the pointer
+              having to be the thing that says so. */}
+          <span
+            className={`pointer-events-none absolute inset-x-0 bottom-0 h-[3px] bg-accent transition-transform duration-300 ${
+              reading ? "scale-x-100" : "scale-x-0"
+            }`}
+          />
+        </span>
 
-      {/* Set in white on the black band rather than in the page's navy and
-          blue: the only colour on this section is the photographs and the
-          rule under the one being read. */}
-      <span
-        className={`mt-3 block font-display text-[14px] leading-snug font-semibold transition-colors ${
-          reading ? "text-white" : "text-white/50"
-        }`}
-      >
-        {member.name}
-      </span>
-      <span
-        className={`mt-1 block text-[9.5px] leading-[1.45] font-semibold tracking-[0.13em] uppercase transition-colors ${
-          reading ? "text-white/65" : "text-white/35"
-        }`}
-      >
-        {member.role}
+        {/* Set in white, on the plate's own black rather than on the band. */}
+        <span className="block px-2.5 pt-2.5 pb-3">
+          <span
+            className={`block font-display text-[11px] leading-tight font-semibold transition-colors ${
+              reading ? "text-white" : "text-white/70"
+            }`}
+          >
+            {member.name}
+          </span>
+          <span
+            className={`mt-1 block text-[8px] leading-[1.5] font-semibold tracking-[0.1em] uppercase transition-colors ${
+              reading ? "text-white/60" : "text-white/40"
+            }`}
+          >
+            {member.role}
+          </span>
+        </span>
       </span>
     </button>
   );
@@ -342,7 +364,7 @@ function Panel({
   return (
     <aside
       ref={ref}
-      className="team-plate team-panel hl-reveal mt-12 flex flex-col p-8 sm:p-9 lg:sticky lg:top-[calc(var(--header-h)+2.5rem)] lg:mt-0 lg:min-h-[28rem]"
+      className="team-plate hl-reveal mt-12 flex flex-col p-8 sm:p-9 lg:sticky lg:top-[calc(var(--header-h)+2.5rem)] lg:mt-0 lg:min-h-[28rem]"
       data-visible={visible}
       style={{ animationDelay: `${240 + count * 70}ms` }}
       aria-live="polite"
