@@ -16,17 +16,26 @@
   --brand-pale: #cadbf5;
   --brand-deep: #4a6fa5;
 
-  --background: #f5f7f9;
+  /*
+   * The page's ground: a warm greige, not a cool near-white.
+   *
+   * This is the site's base colour — every section that does not paint its
+   * own ground sits on it — and the warmth is the point. White reads as
+   * paper the content was printed on; this reads as a surface the content is
+   * placed on, which is what lets a photograph or a black plate look hung
+   * rather than pasted.
+   */
+  --background: #e2dbd3;
   --surface: #ffffff;
   --foreground: #1a192f;
 
   --steel-900: #1a192f;
-  /* The team section stands on its own band — a warm greige rather than the
-     page's cool near-white — and everything on it is a plate that is all but
-     black: each portrait with its name and seat, and the profile beside them.
-     The band stays light; the black is the plates', which is what makes them
-     read as plates hung on it. */
-  --team-band: #e2dbd3;
+  /* The team section is on the page's own ground now rather than a band of
+     its own, so this tracks it. Everything on that section is a plate that
+     is all but black: each portrait with its name and seat, and the profile
+     beside them. The ground stays light; the black is the plates', which is
+     what makes them read as plates hung on it. */
+  --team-band: var(--background);
   --team-plate: #131210;
   --steel-800: #454455;
   --steel-100: #cadbf5;
@@ -756,11 +765,17 @@ body {
  * The band takes the warm wash the team grid's odd card out uses, a little
  * weaker: a full-width section holds far more of a tint than one card does,
  * and at the card's strength it competes with the photography either side of
- * it. It is the page's only warm ground, which is what separates the customers
- * from the sections above and below without a rule or a box around them.
+ * it.
+ *
+ * Mixed into the page's own ground rather than into white. The page used to be
+ * a cool near-white and this was the one warm section on it; now that the
+ * ground is itself warm, taking the wash from white would land the band
+ * *lighter* than the page either side of it, which reads as a seam rather than
+ * as a section. Off the ground it stays what it was meant to be: the same
+ * colour, one step deeper.
  */
 .customer-band {
-  background: color-mix(in srgb, var(--accent) 12%, var(--surface));
+  background: color-mix(in srgb, var(--accent) 12%, var(--background));
 }
 
 /* The logos keep their own colours — a customer's mark is their colour, and
