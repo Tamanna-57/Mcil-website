@@ -2,7 +2,6 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
-  formatReportDate,
   type ReportCategory,
   reportCategories as defaultCategories,
   type ReportDoc,
@@ -12,7 +11,7 @@ import {
 
 /**
  * Document library, modelled on the "Latest Announcements" board in the
- * reference: a tab row across the top, then one card listing title, date and a
+ * reference: a tab row across the top, then one card listing a title and a
  * Download control per row.
  *
  * MCIL files under four categories, each with its own sub-categories, so the
@@ -33,8 +32,7 @@ export default function InvestorReports({
   const [subId, setSubId] = useState(categories[0].subCategories[0].id);
   const [expanded, setExpanded] = useState(false);
 
-  const category =
-    categories.find((c) => c.id === categoryId) ?? categories[0];
+  const category = categories.find((c) => c.id === categoryId) ?? categories[0];
   const sub =
     category.subCategories.find((s) => s.id === subId) ??
     category.subCategories[0];
@@ -247,17 +245,24 @@ export default function InvestorReports({
           data-visible={visible}
           style={{ animationDelay: "420ms" }}
         >
-          Document files are being migrated; titles and dates are shown ahead of
-          the downloads going live.
+          Document files are being migrated; titles are shown ahead of the
+          downloads going live.
         </p>
       </div>
     </section>
   );
 }
 
+/**
+ * One document: the icon, the title, and its Download control.
+ *
+ * The filing date is not set here. It is still on every row — it is what the
+ * list is ordered by, newest first — but the titles carry the year themselves
+ * ("Annual Report 2026", "Audited Financial Results — 31.03.2026"), so
+ * printing the date under each one said the same thing twice and gave every
+ * row a second line to read past.
+ */
 function Row({ doc, index }: { doc: ReportDoc; index: number }) {
-  const date = formatReportDate(doc.date);
-
   return (
     <li
       className="rp-row flex items-center gap-4 border-b border-steel-900/10 py-4 last:border-b-0 sm:gap-5 sm:py-5"
@@ -269,9 +274,6 @@ function Row({ doc, index }: { doc: ReportDoc; index: number }) {
         <p className="text-sm font-semibold text-steel-900 sm:text-[0.95rem]">
           {doc.title}
         </p>
-        <p className="mt-1 text-xs text-steel-800/75 italic sm:text-sm">
-          {date}
-        </p>
       </div>
 
       {doc.href ? (
@@ -282,9 +284,7 @@ function Row({ doc, index }: { doc: ReportDoc; index: number }) {
         >
           Download
           <DownArrow />
-          <span className="sr-only">
-            {doc.title}, dated {date}
-          </span>
+          <span className="sr-only">{doc.title}</span>
         </a>
       ) : (
         <button
