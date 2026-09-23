@@ -5,14 +5,18 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { processSteps, type ProcessStep } from "@/lib/about-process";
 
 /**
- * How long the section ignores further wheel events after taking one, ms.
+ * How much page scroll each stage after the first is worth, as a fraction of
+ * the pinned panel's own height.
  *
- * A trackpad fires wheel events continuously, so without this a single swipe
- * would run through every stage at once. At this length one flick advances one
- * stage and a determined scroll still reaches the end of the stages — and the
- * page — inside a second.
+ * It is the one number that sets how long the section holds the page: at a
+ * half-screen a stage takes a comfortable flick to reach, and four stages cost
+ * about two and a half screens in total. The track's height is derived from it
+ * (see `--ap-span` below), so the CSS cannot drift from what is set here.
  */
-const STEP_COOLDOWN = 320;
+const STEP_TRAVEL = 0.5;
+
+/** Below this many pixels of slack the section is not pinned — see `.ap-pin`. */
+const PINNED_MIN_TRAVEL = 8;
 
 export default function AboutProcess({
   eyebrow = "Process",
@@ -23,130 +27,168 @@ export default function AboutProcess({
   title?: string;
   steps?: ProcessStep[];
 }) {
-  const sectionRef = useRef<HTMLElement | null>(null);
+  const trackRef = useRef<HTMLElement | null>(null);
+  const pinRef = useRef<HTMLDivElement | null>(null);
   const [step, setStep] = useState(0);
 
-  const goToStep = useCallback(
-    (i: number) => setStep(Math.min(Math.max(i, 0), steps.length - 1)),
-    [steps.length],
-  );
-
   /*
-   * The stages used to be driven by a tall scroll track with the panel pinned
-   * to it, which cost four screens of scrolling to get past the section
-   * whether or not you wanted to look at the stages.
+   * The stages are driven by the page's own scroll, with the panel stuck to
+   * the viewport for as long as they last: scrolling over the section changes
+   * the stage and nothing on screen moves, and the page carries on only once
+   * the last stage has been reached.
    *
-   * Now the section is an ordinary block, and the wheel only drives the stages
-   * while the pointer is over it AND there is a stage left to go to in that
-   * direction. At the last stage — or the first, scrolling up — the event is
-   * left alone and the page scrolls as it normally would, so the section can
-   * never hold the page for more than the stages it has.
+   * This used to be done by taking the wheel event and calling
+   * `preventDefault()` on it, which only ever half worked — the wheel is one
+   * of several ways to scroll, and every event on either side of the section's
+   * own range went to the page, so a stage change and a jump down the page
+   * came out of the same flick. Sticky positioning gets the same effect out of
+   * the browser's own scrolling, so the keyboard, the scrollbar and a touch
+   * drag all drive the stages too, and nothing has to fight the page.
    *
-   * Only for a mouse or trackpad: a touchscreen has no pointer to be "over"
-   * the section, so there the stages are changed by their own buttons.
+   * Pinning starts at `lg` (see globals.css). Narrower than that the section
+   * is an ordinary block and the pills below page through the stages, so a
+   * phone is never handed a screen that scrolls without moving.
    */
-  /* The wheel handler has to decide whether to take the event before React
-     re-renders, so it reads the current stage from a ref rather than closing
-     over the state. */
-  const stepRef = useRef(step);
-  useEffect(() => {
-    stepRef.current = step;
-  }, [step]);
+
+  /** Slack between the track and the pinned panel; 0 when it is not pinned. */
+  const travelOf = useCallback(() => {
+    const track = trackRef.current;
+    const pin = pinRef.current;
+    if (!track || !pin) return 0;
+    const travel = track.offsetHeight - pin.offsetHeight;
+    return travel > PINNED_MIN_TRAVEL ? travel : 0;
+  }, []);
 
   useEffect(() => {
-    const el = sectionRef.current;
-    if (!el) return;
-    if (!window.matchMedia("(hover: hover) and (pointer: fine)").matches) {
-      return;
-    }
+    let frame = 0;
 
-    let takenAt = 0;
+    const read = () => {
+      frame = 0;
+      const track = trackRef.current;
+      const pin = pinRef.current;
+      const travel = travelOf();
+      if (!track || !pin || !travel) return;
 
-    const onWheel = (event: WheelEvent) => {
-      /* Sideways scrolling and the smallest of nudges are not stage changes. */
-      if (Math.abs(event.deltaY) < 4) return;
-      if (Math.abs(event.deltaX) > Math.abs(event.deltaY)) return;
+      /* How far the panel has slid down inside its track: nothing before it
+         pins, the whole of the slack once it has carried the panel to the
+         bottom. Measured rather than worked back from the scroll position, so
+         the sticky offset is stated once, in the stylesheet. */
+      const slid =
+        pin.getBoundingClientRect().top - track.getBoundingClientRect().top;
 
-      const next = stepRef.current + (event.deltaY > 0 ? 1 : -1);
-      if (next < 0 || next > steps.length - 1) return;
-
-      /* The section only takes the wheel while it is the thing being looked
-         at; half off the top of the screen it is on its way out. */
-      const box = el.getBoundingClientRect();
-      const viewport = window.innerHeight;
-      if (box.top > viewport * 0.3 || box.bottom < viewport * 0.7) return;
-
-      event.preventDefault();
-
-      const now = performance.now();
-      if (now - takenAt < STEP_COOLDOWN) return;
-      takenAt = now;
-      setStep(next);
+      /* One band of the travel per stage. Held just short of 1 so the last
+         band belongs to the last stage rather than to one past it. */
+      const progress = Math.min(Math.max(slid / travel, 0), 0.999999);
+      setStep(Math.floor(progress * steps.length));
     };
 
-    el.addEventListener("wheel", onWheel, { passive: false });
-    return () => el.removeEventListener("wheel", onWheel);
-  }, [steps.length]);
+    const onScroll = () => {
+      if (!frame) frame = requestAnimationFrame(read);
+    };
+
+    read();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    window.addEventListener("resize", onScroll);
+    return () => {
+      if (frame) cancelAnimationFrame(frame);
+      window.removeEventListener("scroll", onScroll);
+      window.removeEventListener("resize", onScroll);
+    };
+  }, [steps.length, travelOf]);
+
+  /* A pill is a position on the page while the section is pinned, so it
+     scrolls there and lets the handler above set the stage on the way. */
+  const goToStep = useCallback(
+    (i: number) => {
+      const target = Math.min(Math.max(i, 0), steps.length - 1);
+      const track = trackRef.current;
+      const pin = pinRef.current;
+      const travel = travelOf();
+      if (!track || !pin || !travel) {
+        setStep(target);
+        return;
+      }
+
+      const stickyTop = Number.parseFloat(getComputedStyle(pin).top) || 0;
+      const trackTop = track.getBoundingClientRect().top + window.scrollY;
+      const middleOfBand = travel * ((target + 0.5) / steps.length);
+      window.scrollTo({
+        top: trackTop - stickyTop + middleOfBand,
+        behavior: "smooth",
+      });
+    },
+    [steps.length, travelOf],
+  );
 
   const active = steps[step] ?? steps[0];
   if (!active) return null;
 
   return (
     <section
-      ref={sectionRef}
+      ref={trackRef}
       id="process"
-      className="scroll-mt-[var(--header-h)] bg-background px-4 py-20 sm:px-8 lg:px-[5vw] lg:py-24"
+      style={
+        {
+          "--ap-span": 1 + (steps.length - 1) * STEP_TRAVEL,
+        } as React.CSSProperties
+      }
+      className="ap-track scroll-mt-[var(--header-h)] bg-background"
     >
-      <div className="mx-auto w-full max-w-6xl">
-        <header className="text-center">
-          <p className="text-[11px] font-semibold tracking-[0.24em] text-accent uppercase">
-            [ {eyebrow} ]
-          </p>
-          <h2 className="ap-title type-display mt-3 text-[clamp(1.5rem,4vw,2.6rem)] leading-[1.15] text-steel-900 uppercase">
-            {title}
-          </h2>
-        </header>
+      <div ref={pinRef} className="ap-pin px-4 sm:px-8 lg:px-[5vw]">
+        <div className="ap-inner mx-auto flex w-full max-w-6xl flex-col py-20">
+          <header className="text-center">
+            <p className="text-[11px] font-semibold tracking-[0.24em] text-accent uppercase">
+              [ {eyebrow} ]
+            </p>
+            <h2 className="ap-title type-display mt-3 text-[clamp(1.5rem,4vw,2.6rem)] leading-[1.15] text-steel-900 uppercase">
+              {title}
+            </h2>
+          </header>
 
-        {/* Pill bar, echoing the reference's dashboard nav. */}
-        <div className="mt-8 flex justify-center">
-          <div
-            role="tablist"
-            aria-label="Production stage"
-            className="flex max-w-full gap-1 overflow-x-auto rounded-full bg-surface p-1.5 ring-1 ring-steel-900/10"
-          >
-            {steps.map((s, i) => (
-              <button
-                key={s.id}
-                type="button"
-                role="tab"
-                aria-selected={i === step}
-                onClick={() => goToStep(i)}
-                className={`shrink-0 cursor-pointer rounded-full px-4 py-2 text-xs font-semibold whitespace-nowrap transition-colors sm:px-5 sm:text-sm ${
-                  i === step
-                    ? "bg-steel-900 text-white"
-                    : "text-steel-800 hover:text-steel-900"
-                }`}
-              >
-                <span className="mr-2 opacity-60 tabular-nums">
-                  {String(i + 1).padStart(2, "0")}
-                </span>
-                {s.tab}
-              </button>
-            ))}
+          {/* Pill bar, echoing the reference's dashboard nav. */}
+          <div className="mt-8 flex shrink-0 justify-center lg:mt-[var(--ap-gap,1.5rem)]">
+            <div
+              role="tablist"
+              aria-label="Production stage"
+              className="flex max-w-full gap-1 overflow-x-auto rounded-full bg-surface p-1.5 ring-1 ring-steel-900/10"
+            >
+              {steps.map((s, i) => (
+                <button
+                  key={s.id}
+                  type="button"
+                  role="tab"
+                  aria-selected={i === step}
+                  onClick={() => goToStep(i)}
+                  className={`shrink-0 cursor-pointer rounded-full px-4 py-2 text-xs font-semibold whitespace-nowrap transition-colors sm:px-5 sm:text-sm ${
+                    i === step
+                      ? "bg-steel-900 text-white"
+                      : "text-steel-800 hover:text-steel-900"
+                  }`}
+                >
+                  <span className="mr-2 opacity-60 tabular-nums">
+                    {String(i + 1).padStart(2, "0")}
+                  </span>
+                  {s.tab}
+                </button>
+              ))}
+            </div>
           </div>
-        </div>
 
-        <div className="ap-panel mt-6 grid items-center gap-8 rounded-3xl bg-surface p-5 ring-1 ring-steel-900/10 sm:p-7 lg:min-h-[30rem] lg:grid-cols-[minmax(0,0.78fr)_minmax(0,1fr)] lg:items-stretch lg:gap-12 lg:p-9">
-          <Copy step={active} index={step} />
-          <Stage steps={steps} current={step} />
-        </div>
+          {/* The panel takes whatever height the pinned screen has left, so a
+              short laptop gets a shorter photograph rather than a section that
+              runs off the bottom of its own pin. */}
+          <div className="ap-panel mt-6 grid items-center gap-8 rounded-3xl bg-surface p-5 ring-1 ring-steel-900/10 sm:p-7 lg:mt-[var(--ap-gap,1.5rem)] lg:grid-cols-[minmax(0,0.78fr)_minmax(0,1fr)] lg:items-stretch lg:gap-12 lg:p-[var(--ap-pad,2.25rem)]">
+            <Copy step={active} index={step} />
+            <Stage steps={steps} current={step} />
+          </div>
 
-        {/* How far through the stages we are. */}
-        <div className="mx-auto mt-6 h-px w-full max-w-md bg-steel-900/12">
-          <div
-            className="h-full bg-brand transition-[width] duration-300 ease-out"
-            style={{ width: `${((step + 1) / steps.length) * 100}%` }}
-          />
+          {/* How far through the stages we are. */}
+          <div className="mx-auto mt-6 h-px w-full max-w-md shrink-0 bg-steel-900/12 lg:mt-[var(--ap-gap,1.5rem)]">
+            <div
+              className="h-full bg-brand transition-[width] duration-300 ease-out"
+              style={{ width: `${((step + 1) / steps.length) * 100}%` }}
+            />
+          </div>
         </div>
       </div>
     </section>
@@ -156,7 +198,7 @@ export default function AboutProcess({
 function Copy({ step, index }: { step: ProcessStep; index: number }) {
   return (
     /* Keyed so the copy replays its entrance on every step change. */
-    <div key={step.id} className="order-2 lg:order-1 lg:self-center">
+    <div key={step.id} className="ap-copy order-2 lg:order-1 lg:self-center">
       <p className="ap-in text-[11px] font-semibold tracking-[0.2em] text-brand-deep uppercase">
         Stage {String(index + 1).padStart(2, "0")}
       </p>
@@ -202,7 +244,7 @@ function Stage({ steps, current }: { steps: ProcessStep[]; current: number }) {
   return (
     /* The photograph fills whatever height the panel has on a wide screen,
        rather than holding its own ratio and leaving the card half empty. */
-    <div className="ap-figure relative order-1 aspect-[16/10] w-full min-w-0 overflow-hidden rounded-2xl bg-steel-900/5 lg:order-2 lg:aspect-auto lg:h-full lg:min-h-[20rem]">
+    <div className="ap-figure relative order-1 aspect-[16/10] w-full min-w-0 overflow-hidden rounded-2xl bg-steel-900/5 lg:order-2 lg:aspect-auto lg:h-full lg:min-h-0">
       {steps.map((s, i) => {
         const offset = i - current;
         return (
