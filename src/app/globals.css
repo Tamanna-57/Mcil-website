@@ -1932,17 +1932,13 @@ body {
 }
 
 /* ------------------------------------------------------------------ */
-/* Latest News                                                         */
+/* Foundation cards                                                    */
 /* ------------------------------------------------------------------ */
 
 /*
- * Card grounds for the news section: the same three plate tones the product
- * bands use — navy ink, the amber accent, pale blue — so the section is
- * painted from the site's own set rather than a palette of its own.
- *
- * Each is a shallow gradient rather than a flat fill. At card size a flat dark
- * fill goes dead against the photograph beside it, and the shift across the
- * card is what keeps the two halves reading as one piece.
+ * The ground an open foundation card turns to: navy ink as a shallow
+ * gradient rather than a flat fill, which at card size would go dead against
+ * the photograph beside it.
  */
 .news-ink {
   background: linear-gradient(
@@ -1950,41 +1946,6 @@ body {
     color-mix(in srgb, var(--brand-deep) 14%, var(--steel-900)) 0%,
     var(--steel-900) 100%
   );
-}
-
-.news-amber {
-  background: linear-gradient(
-    150deg,
-    color-mix(in srgb, var(--accent) 92%, #fff) 0%,
-    color-mix(in srgb, var(--accent) 86%, var(--accent-ink)) 100%
-  );
-}
-
-.news-pale {
-  background: linear-gradient(
-    150deg,
-    color-mix(in srgb, var(--brand-pale) 80%, #fff) 0%,
-    var(--brand-light) 100%
-  );
-}
-
-/*
- * The section's own ground: the pale blue and the amber washed across the page
- * white, so the band under the cards is drawn from the same three.
- */
-.news-band {
-  background:
-    radial-gradient(
-      110% 70% at 12% 0%,
-      color-mix(in srgb, var(--brand-pale) 46%, transparent) 0%,
-      transparent 60%
-    ),
-    radial-gradient(
-      90% 60% at 95% 100%,
-      color-mix(in srgb, var(--accent) 18%, transparent) 0%,
-      transparent 62%
-    ),
-    var(--background);
 }
 
 /*
@@ -1999,7 +1960,6 @@ body {
 .news-rail::-webkit-scrollbar {
   display: none;
 }
-
 /* ------------------------------------------------------------------ */
 /* Sustainability                                                      */
 /* ------------------------------------------------------------------ */

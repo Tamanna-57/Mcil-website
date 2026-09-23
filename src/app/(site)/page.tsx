@@ -3,7 +3,6 @@ import AboutProcess from "@/components/AboutProcess";
 import AboutTeam from "@/components/AboutTeam";
 import Customers from "@/components/Customers";
 import Hero from "@/components/Hero";
-import LatestNews from "@/components/LatestNews";
 import SiteIntro from "@/components/SiteIntro";
 import { getContent } from "@/lib/content/store";
 
@@ -113,7 +112,6 @@ export default async function Home() {
         footnote={about.team.footnote}
       />
 
-      <LatestNews />
     </main>
   );
 }

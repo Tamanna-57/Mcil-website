@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   type ReportCategory,
   reportCategories as defaultCategories,
@@ -21,21 +21,31 @@ import {
  */
 export default function InvestorReports({
   heading = defaultHeading,
-  categories = defaultCategories,
+  categories: allCategories = defaultCategories,
 }: {
   heading?: { eyebrow: string; title: string; standfirst: string };
   categories?: ReportCategory[];
 }) {
+  /* Categories and sub-categories are added and deleted from the admin panel,
+     so any of them can arrive empty. A category with no sub-categories has
+     nothing to show and is left out of the tab row until it gets one. */
+  const categories = useMemo(
+    () => allCategories.filter((c) => (c.subCategories ?? []).length > 0),
+    [allCategories],
+  );
+
   const sectionRef = useRef<HTMLElement | null>(null);
   const [visible, setVisible] = useState(false);
-  const [categoryId, setCategoryId] = useState(categories[0].id);
-  const [subId, setSubId] = useState(categories[0].subCategories[0].id);
+  const [categoryId, setCategoryId] = useState(categories[0]?.id ?? "");
+  const [subId, setSubId] = useState(
+    categories[0]?.subCategories[0]?.id ?? "",
+  );
   const [expanded, setExpanded] = useState(false);
 
   const category = categories.find((c) => c.id === categoryId) ?? categories[0];
   const sub =
-    category.subCategories.find((s) => s.id === subId) ??
-    category.subCategories[0];
+    category?.subCategories.find((s) => s.id === subId) ??
+    category?.subCategories[0];
 
   /* The whole band rises in once, when it first reaches the viewport. */
   useEffect(() => {
@@ -86,8 +96,12 @@ export default function InvestorReports({
 
   /* Newest first, whatever order the rows were written in. The React compiler
      memoizes this; a manual useMemo on `sub` is what it cannot preserve. */
-  const docs = [...sub.docs].sort((a, b) => b.date.localeCompare(a.date));
+  const docs = [...(sub?.docs ?? [])].sort((a, b) =>
+    (b.date ?? "").localeCompare(a.date ?? ""),
+  );
   const shown = expanded ? docs : docs.slice(0, REPORTS_PAGE_SIZE);
+
+  if (!category || !sub) return null;
 
   return (
     <section
@@ -223,9 +237,15 @@ export default function InvestorReports({
               animation replays on every change of tab or chip. */}
           <ul key={`${category.id}-${sub.id}-${expanded}`} className="mt-1">
             {shown.map((doc, i) => (
-              <Row key={doc.title} doc={doc} index={i} />
+              <Row key={`${i}-${doc.title}`} doc={doc} index={i} />
             ))}
           </ul>
+
+          {docs.length === 0 && (
+            <p className="py-8 text-center text-sm text-steel-800/70">
+              No documents have been filed here yet.
+            </p>
+          )}
 
           {docs.length > REPORTS_PAGE_SIZE && (
             <div className="mt-6 flex justify-center">

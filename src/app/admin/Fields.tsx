@@ -291,6 +291,16 @@ function rowTitle(
   return text.trim() || `Item ${index + 1}`;
 }
 
+/** "3 documents", when the list asks for a count beside each row's title. */
+function rowCount(field: Extract<Field, { type: "list" }>, row: unknown) {
+  if (!field.countKey || !isObject(row)) return null;
+  const items = row[field.countKey];
+  const n = Array.isArray(items) ? items.length : 0;
+  const noun = field.countLabel ?? "item";
+  const plural = noun.endsWith("y") ? `${noun.slice(0, -1)}ies` : `${noun}s`;
+  return `${n} ${n === 1 ? noun : plural}`;
+}
+
 function ListField({
   field,
   value,
@@ -370,6 +380,11 @@ function ListField({
                     <span className="truncate text-sm font-medium text-steel-900">
                       {rowTitle(field, row, index)}
                     </span>
+                    {field.countKey ? (
+                      <span className="shrink-0 rounded-full bg-steel-900/6 px-2 py-0.5 text-[11px] text-steel-800/70">
+                        {rowCount(field, row)}
+                      </span>
+                    ) : null}
                   </button>
 
                   <button
