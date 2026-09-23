@@ -78,7 +78,10 @@ export default function AboutTeam({
   members = team,
   footnote = DEFAULT_FOOTNOTE,
 }: {
-  heading?: { eyebrow: string; title: string; standfirst: string };
+  /* `standfirst` is still on the content type — every section's heading
+     carries the same trio — but this section no longer sets it: the rail
+     names the section and the wall speaks for itself. */
+  heading?: { eyebrow: string; title: string };
   members?: TeamMember[];
   footnote?: string;
 }) {
@@ -138,7 +141,7 @@ export default function AboutTeam({
       className="team-band scroll-mt-[var(--header-h)] px-6 py-20 sm:px-10 lg:px-[6.5vw] lg:py-24"
     >
       <div className="mx-auto w-full max-w-6xl">
-        <header className="max-w-2xl">
+        <header>
           {/* The rail down the left is the section's title at desktop width,
               so the heading is carried for structure rather than set: a
               section with no heading at all is a hole in the page's outline,
@@ -151,21 +154,16 @@ export default function AboutTeam({
           >
             [ {heading.eyebrow} ]
           </p>
-          {/* Deliberately quiet: it is a note on who runs the company, not a
-              headline standing in for the one just removed. */}
-          <p
-            className="hl-reveal mt-4 text-[13px] leading-relaxed text-steel-800/85 sm:mt-0 sm:text-sm"
-            data-visible={visible}
-            style={{ animationDelay: "160ms" }}
-          >
-            {heading.standfirst}
-          </p>
         </header>
 
         {/* Rail, wall, panel. The rail is only as wide as the type set down it
             and the panel is held to a readable measure, so the wall takes
-            whatever is left. */}
-        <div className="mt-12 lg:mt-16 lg:grid lg:grid-cols-[3.5rem_minmax(0,1fr)_minmax(19rem,26rem)] lg:items-start lg:gap-8 xl:gap-10">
+            whatever is left.
+
+            The top margin clears the eyebrow, which is only set below `lg`;
+            from `lg` the rail is the heading and there is nothing above the
+            grid to clear, so the section's own padding is the whole of it. */}
+        <div className="mt-10 lg:mt-0 lg:grid lg:grid-cols-[4.5rem_minmax(0,1fr)_minmax(19rem,26rem)] lg:items-start lg:gap-8 xl:gap-10">
           <Rail label={heading.eyebrow} visible={visible} />
 
           {/* Four across from `md`, rather than three held wider: the
@@ -197,7 +195,7 @@ export default function AboutTeam({
         </div>
 
         <p
-          className="hl-reveal mt-12 text-xs text-steel-800/70"
+          className="hl-reveal mt-12 text-xs text-white/45"
           data-visible={visible}
           style={{ animationDelay: "900ms" }}
         >
@@ -219,14 +217,14 @@ export default function AboutTeam({
 function Rail({ label, visible }: { label: string; visible: boolean }) {
   return (
     <div
-      className="hl-reveal hidden lg:sticky lg:top-[calc(var(--header-h)+2.5rem)] lg:flex lg:h-[20rem] lg:flex-col lg:items-center lg:gap-6"
+      className="hl-reveal hidden lg:sticky lg:top-[calc(var(--header-h)+2.5rem)] lg:flex lg:h-[26rem] lg:flex-col lg:items-center lg:gap-7"
       data-visible={visible}
       aria-hidden
     >
-      <span className="type-display rotate-180 text-[clamp(1.3rem,2.1vw,1.85rem)] whitespace-nowrap text-steel-900 uppercase [writing-mode:vertical-rl]">
+      <span className="type-display rotate-180 text-[clamp(2.1rem,3.4vw,3.1rem)] whitespace-nowrap text-white uppercase [writing-mode:vertical-rl]">
         {label}
       </span>
-      <span className="w-px flex-1 bg-steel-900/20" />
+      <span className="w-px flex-1 bg-white/20" />
     </div>
   );
 }
@@ -269,7 +267,7 @@ function Portrait({
       /* The ceiling sits on the whole cell, not on the photograph alone, so
          the name and seat under it run to the same edge the photograph does
          rather than out past it. */
-      className="hl-reveal group block w-full max-w-[8.75rem] cursor-pointer text-left"
+      className="hl-reveal group block w-full max-w-[9.5rem] cursor-pointer text-left"
       data-visible={visible}
       style={{ animationDelay: `${240 + index * 70}ms` }}
     >
@@ -300,19 +298,19 @@ function Portrait({
         />
       </span>
 
-      {/* Set in black on the band, like the plate beside them, rather than in
-          the page's navy and blue: the only colour on this section is the
-          photographs and the rule under the one being read. */}
+      {/* Set in white on the black band rather than in the page's navy and
+          blue: the only colour on this section is the photographs and the
+          rule under the one being read. */}
       <span
         className={`mt-3 block font-display text-[14px] leading-snug font-semibold transition-colors ${
-          reading ? "text-black" : "text-black/55"
+          reading ? "text-white" : "text-white/50"
         }`}
       >
         {member.name}
       </span>
       <span
         className={`mt-1 block text-[9.5px] leading-[1.45] font-semibold tracking-[0.13em] uppercase transition-colors ${
-          reading ? "text-black/70" : "text-black/40"
+          reading ? "text-white/65" : "text-white/35"
         }`}
       >
         {member.role}
@@ -344,7 +342,7 @@ function Panel({
   return (
     <aside
       ref={ref}
-      className="team-plate hl-reveal mt-12 flex flex-col p-8 sm:p-9 lg:sticky lg:top-[calc(var(--header-h)+2.5rem)] lg:mt-0 lg:min-h-[28rem]"
+      className="team-plate team-panel hl-reveal mt-12 flex flex-col p-8 sm:p-9 lg:sticky lg:top-[calc(var(--header-h)+2.5rem)] lg:mt-0 lg:min-h-[28rem]"
       data-visible={visible}
       style={{ animationDelay: `${240 + count * 70}ms` }}
       aria-live="polite"

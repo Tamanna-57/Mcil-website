@@ -338,7 +338,9 @@ export const sections: SectionSchema[] = [
             type: "group",
             key: "heading",
             label: "Section heading",
-            fields: headingFields,
+            /* No standfirst: the team band does not set one, so offering the
+               field would be offering an edit that never shows up. */
+            fields: headingFields.filter((field) => field.key !== "standfirst"),
           },
           {
             type: "list",

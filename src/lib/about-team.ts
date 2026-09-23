@@ -24,11 +24,17 @@ export type TeamMember = {
   image: string;
 };
 
+/**
+ * `standfirst` is empty by design. Every section's heading carries the same
+ * eyebrow / title / standfirst trio, so the field stays on the type, but this
+ * section no longer sets a line under the label: the rail names it and the
+ * wall of portraits is the whole of what it has to say. `AboutTeam` does not
+ * read the field, so filling it back in here would not print it.
+ */
 export const teamHeading = {
   eyebrow: "Our Team",
   title: "The people behind the line",
-  standfirst:
-    "Metal Coatings (India) Ltd is run by its promoters and overseen by an independent board, with the finance and secretarial functions reporting into it.",
+  standfirst: "",
 };
 
 export const team: TeamMember[] = [

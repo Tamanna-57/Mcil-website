@@ -21,12 +21,17 @@
   --foreground: #1a192f;
 
   --steel-900: #1a192f;
-  /* The team section stands on its own band — a warm greige rather than the
-     page's cool near-white — and reads from a plate that is all but black, so
-     the seven photographs and the profile beside them are the only things on
-     it carrying colour. */
-  --team-band: #e2dbd3;
-  --team-plate: #131210;
+  /* The team section stands on its own band, and that band is black: the
+     seven portraits are the only light on it, so the wall reads as plates
+     hung in a dark room rather than photographs laid on paper.
+
+     The reading panel beside them is a shade up from the band rather than the
+     same black — on an unbroken ground it would have no edge at all — and
+     carries a hairline besides (see .team-plate below). The portrait frames
+     use the same tone, though it only shows for the moment before a
+     photograph loads over it. */
+  --team-band: #0c0c0b;
+  --team-plate: #191816;
   --steel-800: #454455;
   --steel-100: #cadbf5;
 
@@ -63,8 +68,11 @@
 
   /* Hero rhythm. One slide = sweep-in, hold, sweep-out, rest. */
   /* Height of the fixed site header; sticky sections reserve it. */
-  /* The logo lockup plus the bar's padding — see LOGO_HEIGHT in brand.ts. */
-  --header-h: 97px;
+  /* The logo lockup plus the bar's padding — see LOGO_HEIGHT in brand.ts.
+     Held in px rather than rem so it stays exactly what the bar measures:
+     the mark and the wordmark under it are both set in px too, so the sum
+     does not move with the root font size set above. */
+  --header-h: 69px;
 
   --hero-slide-duration: 4500ms;
   --hero-fade-duration: 1000ms;
@@ -93,7 +101,23 @@
   --font-display: var(--font-josefin);
 }
 
+/*
+ * The whole page is set one step back from the browser's own 100%.
+ *
+ * Everything on the site is sized in rem — Tailwind's spacing scale, its type
+ * scale, the measures the columns are held to, and the rem ends of every
+ * clamp() — so the root font size is the one lever that takes the layout down
+ * as a piece. At the browser's 16px the sections were filling the screen a
+ * heading at a time and the shape of each one only read once you zoomed out;
+ * at 14px a section fits the viewport and its composition is visible.
+ *
+ * What does NOT follow this: the vw gutters (deliberately — they stay in
+ * proportion to the window), the few hard px values, and --header-h below.
+ * Media queries are unaffected: `rem` in a media query is always the initial
+ * 16px, never this, so every breakpoint still lands where it did.
+ */
 html {
+  font-size: 87.5%;
   scroll-behavior: smooth;
 }
 
@@ -249,9 +273,17 @@ body {
    "METAL COATINGS INDIA | PRECISION STRIPS" — measures ~23.8em, so at 87vw of
    usable width the type has to sit at or under 3.66vw to stay on one row.
    Below 1024px the sector word drops to a second line and the type grows back
-   to a readable size. Re-measure if the display face or tracking changes. */
+   to a readable size. Re-measure if the display face or tracking changes.
+
+   Both sizes are driven by the viewport rather than by the root font size, so
+   neither follows the step back the root takes (see `html` above), and the
+   headline would have been left as the one piece of the page still at its old
+   size. They are taken down the same 12.5% by hand instead, which is where
+   these numbers come from — 6.2vw and 3.6vw, less that step. The 3.66vw
+   ceiling is a ratio of the line to the window and so is unchanged by any of
+   this; 3.15vw is comfortably under it. */
 .hero-headline {
-  font-size: clamp(1.5rem, 6.2vw, 3.25rem);
+  font-size: clamp(1.4rem, 5.4vw, 3.25rem);
   letter-spacing: 0.04em;
 }
 
@@ -261,7 +293,7 @@ body {
 
 @media (min-width: 1024px) {
   .hero-headline {
-    font-size: min(3.6vw, 4.2rem);
+    font-size: min(3.15vw, 4.2rem);
     white-space: nowrap;
   }
 }
@@ -1752,6 +1784,14 @@ body {
   background: var(--team-plate);
 }
 
+/* The reading panel only. The portraits cover their plate with a photograph,
+   so an edge there would read as a frame drawn round each one; the panel has
+   nothing but its own tone to separate it from the band, and at this little
+   distance from black that is not enough on its own. */
+.team-panel {
+  border: 1px solid color-mix(in srgb, #fff 9%, transparent);
+}
+
 /* The reading panel's contents are keyed on the person, so React replaces
    them outright when the pointer moves along the wall. This gives that
    replacement a moment of its own instead of letting the new biography
@@ -1888,9 +1928,9 @@ body {
  * wrapping it would push the bar past the height the rest of the site reserves.
  */
 .site-wordmark {
-  font-size: 7px;
+  font-size: 6px;
   line-height: 1;
-  letter-spacing: 0.09em;
+  letter-spacing: 0.07em;
   text-transform: uppercase;
   white-space: nowrap;
   color: color-mix(in srgb, #fff 78%, transparent);
@@ -1898,8 +1938,8 @@ body {
 
 @media (min-width: 640px) {
   .site-wordmark {
-    font-size: 8px;
-    letter-spacing: 0.11em;
+    font-size: 6.5px;
+    letter-spacing: 0.09em;
   }
 }
 
