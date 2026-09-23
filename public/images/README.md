@@ -60,11 +60,11 @@ so the paths carry no spaces.
 
 | File                  | Photograph                                  | Where it is used                                          | Source size |
 | --------------------- | ------------------------------------------- | --------------------------------------------------------- | ----------- |
-| `works-coil-bay.jpg`  | Finished coils stacked down the bay          | Sustainability hero; Latest News card 3                   | 1200 × 1200 |
-| `works-inspection.jpg`| An engineer checking a coil on the line      | Sustainability People & Safety; Latest News card 2        | 1200 × 1200 |
-| `works-coil-line.jpg` | The coil line down the length of the works   | Sustainability "The works" band; Latest News card 1; Products, HRPO gallery wipe | 800 × 800   |
+| `works-coil-bay.jpg`  | Finished coils stacked down the bay          | Sustainability hero                                       | 1200 × 1200 |
+| `works-inspection.jpg`| An engineer checking a coil on the line      | Sustainability People & Safety                            | 1200 × 1200 |
+| `works-coil-line.jpg` | The coil line down the length of the works   | Sustainability "The works" band; Products, HRPO gallery wipe | 800 × 800   |
 | `hrpo-coils.jpg`      | Hot rolled coils in stock                    | Products, HRPO gallery; Sustainability "Material" band    | 1200 × 1600 |
-| `hrpo-coils-banded.jpg` | Banded hot rolled coils, close up          | Products, HRPO gallery                                    | 1200 × 630  |
+| `hrpo-coils-banded.jpg` | Banded hot rolled coils, close up          | Products, HRPO gallery; Sustainability Certification card | 1200 × 630  |
 
 ## process-1..4
 
@@ -75,9 +75,10 @@ The unlabelled originals are the four `ChatGPT Image …png` files.
 
 ## Still wanted
 
-Four slots on the Sustainability page are hero slides standing in for
+Three slots on the Sustainability page are hero slides standing in for
 photographs that do not exist yet, each marked `PLACEHOLDER` in
 `src/lib/sustainability.ts`: planting or the site from outside (Environment),
-the board or the works from the gate (Governance), the BIS or a test
-certificate (Certification), and the works team (Community). The hero there
+the board or the works from the gate (Governance), and the works team
+(Community). Certification borrows the banded-coils photograph from the
+Products gallery until the BIS or a test certificate is photographed. The hero there
 wants an environmental photograph too.

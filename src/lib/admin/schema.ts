@@ -61,6 +61,10 @@ export type Field =
       fields: Field[];
       /** Seed values for a newly added row. */
       template?: Record<string, unknown>;
+      /** A list field on each row whose length is shown beside its title. */
+      countKey?: string;
+      /** Noun for `countKey`'s items, singular — "document", "sub-category". */
+      countLabel?: string;
       /**
        * Rows carry a stable `id`. The editor mints one when a row is added and
        * never shows or changes it afterwards.
@@ -899,8 +903,11 @@ export const sections: SectionSchema[] = [
             type: "list",
             key: "categories",
             label: "Categories",
+            help: "The tabs across the Latest Reports card. Add, rename, reorder or delete them freely — a category shows on the site once it has at least one sub-category.",
             identify: true,
             titleKey: "label",
+            countKey: "subCategories",
+            countLabel: "sub-category",
             addLabel: "Add category",
             template: { label: "", blurb: "", subCategories: [] },
             fields: [
@@ -910,8 +917,11 @@ export const sections: SectionSchema[] = [
                 type: "list",
                 key: "subCategories",
                 label: "Sub-categories",
+                help: "The chips under the tabs. Deleting one removes it and every document in it from the site when you save.",
                 identify: true,
                 titleKey: "label",
+                countKey: "docs",
+                countLabel: "document",
                 addLabel: "Add sub-category",
                 template: { label: "", docs: [] },
                 fields: [

@@ -79,10 +79,10 @@ export const approach = {
  * The foundations, after the reference's card row: a photograph with the
  * title on it, which opens to the paragraph under it.
  *
- * People & Safety carries a works photograph. The other four are still hero
- * slides standing in for pictures that belong to these subjects — planting at
- * the works, the board, the certificate, the works team — and each is marked
- * where it sits. Replacing an `image` path is the only change one needs.
+ * People & Safety carries a works photograph and Certification the banded
+ * coils from the Products gallery. The other three are still hero slides
+ * standing in for pictures that belong to these subjects — planting at the
+ * works, the board, the works team — and each is marked where it sits. Replacing an `image` path is the only change one needs.
  *
  * What is deliberately not used here, or anywhere outside the process
  * walkthrough on the landing page, is `process-1..4`: those four carry their
@@ -125,8 +125,8 @@ export const foundations: Foundation[] = [
     href: "/products",
     linkLabel: "What we make",
     /* PLACEHOLDER — the BIS certificate or a test certificate belongs here. */
-    image: "/images/hero-3.jpg",
-    alt: "Certified stock bundled across the warehouse floor",
+    image: "/images/hrpo-coils-banded.jpg",
+    alt: "Banded coils in stock, each under its own heat number",
   },
   {
     id: "community",
