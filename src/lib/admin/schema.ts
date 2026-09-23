@@ -922,7 +922,7 @@ export const sections: SectionSchema[] = [
                     label: "Documents",
                     titleKey: "title",
                     addLabel: "Add document",
-                    help: "Newest first — the list is shown in the order set here.",
+                    help: "Order here does not matter — the page sorts by Date, newest first.",
                     template: { title: "", date: "", href: "" },
                     fields: [
                       { type: "text", key: "title", label: "Title" },
@@ -930,7 +930,7 @@ export const sections: SectionSchema[] = [
                         type: "date",
                         key: "date",
                         label: "Date",
-                        help: "Filing date, as YYYY-MM-DD.",
+                        help: "Filing date, as YYYY-MM-DD. Not shown on the page — it is what orders the list, newest first.",
                       },
                       {
                         type: "file",

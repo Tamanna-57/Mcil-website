@@ -15,7 +15,10 @@
 
 export type ReportDoc = {
   title: string;
-  /** ISO yyyy-mm-dd. Formatted for display; also what the list sorts on. */
+  /**
+   * ISO yyyy-mm-dd. Not printed anywhere — the titles carry the year
+   * themselves — but it is what the list is ordered by, newest first.
+   */
   date: string;
   /** URL of the file to download. Absent until the document is available. */
   href?: string;
@@ -560,14 +563,3 @@ export const reportCategories: ReportCategory[] = [
     ],
   },
 ];
-
-/** "2026-08-14" -> "14 August 2026", the format the list sets dates in. */
-export function formatReportDate(iso: string): string {
-  const [y, m, d] = iso.split("-").map(Number);
-  return new Date(Date.UTC(y, m - 1, d)).toLocaleDateString("en-GB", {
-    day: "numeric",
-    month: "long",
-    year: "numeric",
-    timeZone: "UTC",
-  });
-}
