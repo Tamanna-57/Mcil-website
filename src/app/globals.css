@@ -64,11 +64,12 @@
 
   /* Hero rhythm. One slide = sweep-in, hold, sweep-out, rest. */
   /* Height of the fixed site header; sticky sections reserve it. */
-  /* The logo lockup plus the bar's padding — see LOGO_HEIGHT in brand.ts.
+  /* The logo lockup plus the bar's padding — see HEADER_LOGO_HEIGHT in
+     brand.ts (30px mark + 3px gap + 6.5px name + 2 x 5.25px padding).
      Held in px rather than rem so it stays exactly what the bar measures:
      the mark and the wordmark under it are both set in px too, so the sum
      does not move with the root font size set above. */
-  --header-h: 69px;
+  --header-h: 50px;
 
   --hero-slide-duration: 4500ms;
   --hero-fade-duration: 1000ms;
@@ -1775,14 +1776,61 @@ body {
   background: var(--team-plate);
 }
 
+/*
+ * The whole wall — portraits and panel — is meant to be taken in at once, on
+ * one screen, as the reference is. The portraits' ceiling comes from the
+ * height the window has: what is left under the header, less the section's
+ * padding, the footnote and the gaps between rows, shared by the rows (three
+ * at `md`, two from `lg` — see SCATTER_* in AboutTeam), less each plate's
+ * caption, and turned from a height into a width at 3:4. The rem cap keeps a
+ * tall screen from blowing them up past their detail.
+ */
+@media (min-width: 768px) {
+  .team-portrait {
+    max-width: clamp(
+      5.5rem,
+      calc(((100svh - var(--header-h) - 9.5rem) / 3 - 6rem) * 0.75),
+      7.75rem
+    );
+  }
+}
+@media (min-width: 1024px) {
+  .team-portrait {
+    max-width: clamp(
+      5.5rem,
+      calc(((100svh - var(--header-h) - 8.5rem) / 2 - 6rem) * 0.75),
+      7.75rem
+    );
+  }
+}
+
+/* The panel is held to the screen too: never taller than what is under the
+   header, with a long biography scrolling inside it rather than running the
+   panel off the bottom. */
+@media (min-width: 1024px) {
+  .team-panel {
+    max-height: calc(100svh - var(--header-h) - 5.5rem);
+  }
+  .team-bio {
+    overflow-y: auto;
+    min-height: 0;
+    scrollbar-width: thin;
+    scrollbar-color: rgb(255 255 255 / 0.25) transparent;
+  }
+  .team-panel .team-swap {
+    flex: 1 1 auto;
+    min-height: 0;
+  }
+}
+
 /* The reading panel's contents are keyed on the person, so React replaces
-   them outright when the pointer moves along the wall. This gives that
-   replacement a moment of its own instead of letting the new biography
-   appear fully formed where the old one was. */
+   them outright when the pointer moves along the wall. The new person comes
+   in as the reference brings its photographs in: a touch large and dim, then
+   settling to size as it brightens. */
 @keyframes team-swap {
   from {
     opacity: 0;
-    transform: translateY(7px);
+    transform: scale(1.06);
   }
   to {
     opacity: 1;
@@ -1791,12 +1839,66 @@ body {
 }
 
 .team-swap {
-  animation: team-swap 340ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  transform-origin: 50% 40%;
+  animation: team-swap 560ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+/* The tag that trails the pointer across the wall (WallCursor). A dark
+   square with a white dot; over a portrait it opens to the right to read
+   "Profile". Width is animated through the label's max-width, since a width
+   of auto cannot be. */
+.team-cursor {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 40;
+  display: flex;
+  align-items: center;
+  height: 22px;
+  padding: 0 7.5px;
+  background: var(--team-plate);
+  color: #fff;
+  pointer-events: none;
+  will-change: transform;
+  transition: opacity 220ms ease;
+}
+.team-cursor[data-state="hidden"] {
+  opacity: 0;
+}
+.team-cursor__dot {
+  width: 4px;
+  height: 4px;
+  flex: none;
+  background: #fff;
+  opacity: 0.85;
+}
+.team-cursor__label {
+  max-width: 0;
+  overflow: hidden;
+  opacity: 0;
+  white-space: nowrap;
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  transition:
+    max-width 380ms cubic-bezier(0.22, 1, 0.36, 1),
+    margin 380ms cubic-bezier(0.22, 1, 0.36, 1),
+    opacity 200ms ease;
+}
+.team-cursor[data-state="profile"] .team-cursor__label {
+  max-width: 5rem;
+  margin-left: 8px;
+  opacity: 1;
+  transition-delay: 0ms, 0ms, 80ms;
 }
 
 @media (prefers-reduced-motion: reduce) {
   .team-swap {
     animation: none;
+  }
+  .team-cursor {
+    display: none;
   }
 }
 
