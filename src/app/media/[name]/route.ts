@@ -25,7 +25,7 @@ export const dynamic = "force-dynamic";
  * absolute URLs and nothing reaches this route at all.
  */
 export async function GET(
-  _request: Request,
+  request: Request,
   { params }: { params: Promise<{ name: string }> },
 ) {
   const { name } = await params;
@@ -69,9 +69,14 @@ export async function GET(
   // A filing is something to keep, and it should land in the visitor's
   // downloads named the way it was uploaded rather than with our token on the
   // front. Images stay inline so they can be rendered.
+  // `?view=1` on a PDF opens it in the browser instead — what a document
+  // title links to (see viewUrlFor).
   if (DOCUMENT_TYPES[ext]) {
     const clean = displayName(safe).replace(/"/g, "");
-    headers["content-disposition"] = `attachment; filename="${clean}"`;
+    const view =
+      ext === ".pdf" && new URL(request.url).searchParams.has("view");
+    headers["content-disposition"] =
+      `${view ? "inline" : "attachment"}; filename="${clean}"`;
   }
 
   return new NextResponse(body, { headers });
