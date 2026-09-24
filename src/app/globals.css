@@ -2053,3 +2053,29 @@ html[data-editing] button [data-edit] {
 html[data-editing] body {
   padding-bottom: 5rem;
 }
+
+/* Text that is empty while editing (a new footnote, a cleared line) keeps a
+   size and says what it is for, so it can still be clicked into. */
+html[data-editing] [data-edit]:empty {
+  display: inline-block;
+  min-width: 6ch;
+  min-height: 1em;
+}
+html[data-editing] [data-edit]:empty::before {
+  content: "Click to type…";
+  opacity: 0.45;
+  font-style: italic;
+}
+/* Some text sits on layers that let the pointer through (the investor
+   banner); while editing it has to be reachable. */
+html[data-editing] [data-edit] {
+  pointer-events: auto;
+}
+/* The entry the toolbar is acting on. */
+html[data-editing] [data-edit-item]:hover {
+  outline: 2px dashed color-mix(in srgb, var(--color-brand, #2563eb) 55%, transparent);
+  outline-offset: 4px;
+}
+html[data-editing] [data-edit-item] [data-edit-item]:hover {
+  outline-offset: 2px;
+}

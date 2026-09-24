@@ -1,6 +1,7 @@
 "use client";
 
-import { edit } from "@/lib/admin/editable";
+import { useDraft, useEditingEditor } from "@/lib/admin/draft";
+import { edit, editItem } from "@/lib/admin/editable";
 import { useEffect, useRef, useState } from "react";
 import { company as defaultCompany } from "@/lib/company";
 import {
@@ -16,12 +17,15 @@ function telHref(phone: string) {
 
 /** The written details under the card — small, on the same blue ground. */
 export default function ContactDetails({
-  locations = defaultLocations,
-  company = defaultCompany,
+  locations: publishedLocations = defaultLocations,
+  company: publishedCompany = defaultCompany,
 }: {
   locations?: ContactLocation[];
   company?: typeof defaultCompany;
 }) {
+  const locations = useDraft("contact.locations", publishedLocations);
+  const company = useDraft("company", publishedCompany);
+  const editing = Boolean(useEditingEditor());
   const sectionRef = useRef<HTMLElement>(null);
   const [visible, setVisible] = useState(false);
 
@@ -55,6 +59,7 @@ export default function ContactDetails({
           className="cc-tile hl-reveal rounded-2xl p-5"
           data-visible={visible}
           style={{ animationDelay: `${60 + i * 80}ms` }}
+          {...editItem("contact.locations", i)}
         >
           <h2 className="text-[10px] font-semibold tracking-[0.16em] text-brand-deep uppercase" {...edit(`contact.locations.${i}.label`)}>
             {location.label}
@@ -68,6 +73,15 @@ export default function ContactDetails({
           >
             <span {...edit(`contact.locations.${i}.phone`)}>{location.phone}</span>
           </a>
+          {/* Not printed on the page, but it is what the map looks up. */}
+          {editing ? (
+            <p className="mt-3 text-[11px] text-steel-800/70">
+              Map search:{" "}
+              <span {...edit(`contact.locations.${i}.mapQuery`)}>
+                {location.mapQuery}
+              </span>
+            </p>
+          ) : null}
         </article>
       ))}
 

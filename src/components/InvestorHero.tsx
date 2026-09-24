@@ -1,6 +1,7 @@
 "use client";
 
-import { edit, editImage } from "@/lib/admin/editable";
+import { useDraft } from "@/lib/admin/draft";
+import { edit, editImage, editItem } from "@/lib/admin/editable";
 import { useEditing } from "@/lib/admin/edit-mode";
 import Image from "next/image";
 import { useCallback, useEffect, useRef, useState } from "react";
@@ -12,11 +13,14 @@ import {
 } from "@/lib/investor-hero";
 
 export default function InvestorHero({
-  slides = defaultSlides,
+  slides: publishedSlides = defaultSlides,
 }: {
   slides?: InvestorSlide[];
 }) {
-  const [index, setIndex] = useState(0);
+  const slides = useDraft("investors.slides", publishedSlides);
+  const [shownIndex, setIndex] = useState(0);
+  /* A slide deleted in the editor can leave the index past the end. */
+  const index = Math.min(shownIndex, Math.max(slides.length - 1, 0));
   const [paused, setPaused] = useState(false);
   const plateRefs = useRef<(HTMLDivElement | null)[]>([]);
   /* Held still while an admin is editing, so the slide being edited stays. */
@@ -58,6 +62,7 @@ export default function InvestorHero({
       onMouseLeave={() => setPaused(false)}
       onFocusCapture={() => setPaused(true)}
       onBlurCapture={() => setPaused(false)}
+      {...editItem("investors.slides", index)}
     >
       {slides.map((s, i) => (
         <div
@@ -106,11 +111,13 @@ export default function InvestorHero({
           className="grid w-full gap-x-16 gap-y-12 lg:grid-cols-[minmax(0,0.85fr)_minmax(0,1fr)] lg:items-center"
         >
           <Copy slide={slide} index={index} />
-          {slide.groups ? <Metrics slide={slide} /> : null}
+          {slide.groups ? <Metrics slide={slide} index={index} /> : null}
         </div>
       </div>
 
-      {slide.banner ? <Banner key={`b-${slide.id}`} slide={slide} /> : null}
+      {slide.banner ? (
+        <Banner key={`b-${slide.id}`} slide={slide} index={index} />
+      ) : null}
 
       <Controls
         slides={slides}
@@ -143,10 +150,11 @@ function Copy({ slide, index }: { slide: InvestorSlide; index: number }) {
       <h1 className="ir-headline mt-5 font-display font-light text-white uppercase">
         {slide.headline.map((line, i) => (
           <span
-            key={line}
+            key={`${i}-${line}`}
             className="ir-in block"
             style={{ animationDelay: `${200 + i * 110}ms` }}
             {...edit(`${base}.headline.${i}`)}
+            {...editItem(`${base}.headline`, i)}
           >
             {line}
           </span>
@@ -187,7 +195,8 @@ function Copy({ slide, index }: { slide: InvestorSlide; index: number }) {
   );
 }
 
-function Metrics({ slide }: { slide: InvestorSlide }) {
+function Metrics({ slide, index }: { slide: InvestorSlide; index: number }) {
+  const base = `investors.slides.${index}.groups`;
   return (
     <div className="grid gap-x-12 gap-y-10 sm:grid-cols-2 lg:gap-x-14">
       {slide.groups!.map((group, gi) => (
@@ -202,6 +211,7 @@ function Metrics({ slide }: { slide: InvestorSlide }) {
           <h2
             className="ir-in text-xl leading-tight font-semibold text-white sm:text-2xl"
             style={{ animationDelay: `${300 + gi * 90}ms` }}
+            {...edit(`${base}.${gi}.heading`)}
           >
             {group.heading}
           </h2>
@@ -209,8 +219,9 @@ function Metrics({ slide }: { slide: InvestorSlide }) {
           <dl className="mt-6 space-y-6">
             {group.metrics.map((metric, mi) => (
               <Metric
-                key={metric.label}
+                key={mi}
                 metric={metric}
+                path={`${base}.${gi}.metrics.${mi}`}
                 delay={400 + gi * 90 + mi * 110}
               />
             ))}
@@ -220,6 +231,7 @@ function Metrics({ slide }: { slide: InvestorSlide }) {
             <p
               className="ir-in mt-7 max-w-[26ch] text-xs leading-relaxed text-white/70"
               style={{ animationDelay: `${760 + gi * 90}ms` }}
+              {...edit(`${base}.${gi}.footnote`)}
             >
               {group.footnote}
             </p>
@@ -230,21 +242,34 @@ function Metrics({ slide }: { slide: InvestorSlide }) {
   );
 }
 
-function Metric({ metric, delay }: { metric: HeroMetric; delay: number }) {
+function Metric({
+  metric,
+  path,
+  delay,
+}: {
+  metric: HeroMetric;
+  path: string;
+  delay: number;
+}) {
   return (
     <div>
       <dt
         className="ir-chip ir-in relative inline-block text-sm font-bold tracking-[0.06em] text-white uppercase sm:text-base"
         style={{ animationDelay: `${delay}ms` }}
       >
-        <span className="relative z-10">{metric.label}</span>
+        <span className="relative z-10" {...edit(`${path}.label`)}>
+          {metric.label}
+        </span>
       </dt>
       <dd
         className="ir-in mt-1.5 flex items-baseline gap-2.5"
         style={{ animationDelay: `${delay + 70}ms` }}
       >
         {metric.prefix ? (
-          <span className="text-lg font-light text-white/85 sm:text-xl">
+          <span
+            className="text-lg font-light text-white/85 sm:text-xl"
+            {...edit(`${path}.prefix`)}
+          >
             {metric.prefix}
           </span>
         ) : null}
@@ -254,13 +279,14 @@ function Metric({ metric, delay }: { metric: HeroMetric; delay: number }) {
               {metric.trend === "up" ? "↑" : "↓"}
             </span>
           ) : null}
-          {metric.value}
+          <span {...edit(`${path}.value`)}>{metric.value}</span>
         </span>
       </dd>
       {metric.note ? (
         <p
           className="ir-in mt-1 text-xs text-white/70"
           style={{ animationDelay: `${delay + 140}ms` }}
+          {...edit(`${path}.note`)}
         >
           {metric.note}
         </p>
@@ -269,8 +295,9 @@ function Metric({ metric, delay }: { metric: HeroMetric; delay: number }) {
   );
 }
 
-function Banner({ slide }: { slide: InvestorSlide }) {
+function Banner({ slide, index }: { slide: InvestorSlide; index: number }) {
   const { stats, footnote } = slide.banner!;
+  const base = `investors.slides.${index}.banner`;
   return (
     <div className="pointer-events-none absolute inset-x-0 bottom-28 z-10 flex justify-end px-6 sm:bottom-24 sm:px-10 lg:px-[6.5vw]">
       <div className="w-full lg:w-[52%]">
@@ -278,12 +305,15 @@ function Banner({ slide }: { slide: InvestorSlide }) {
           <HatchMark />
           {stats.map((stat, i) => (
             <div
-              key={stat.label}
+              key={i}
               className={`flex flex-col justify-center ${
                 i > 0 ? "border-l border-white/30 pl-6 sm:pl-10" : ""
               }`}
             >
-              <span className="text-[11px] font-semibold tracking-[0.14em] text-white/85 uppercase">
+              <span
+                className="text-[11px] font-semibold tracking-[0.14em] text-white/85 uppercase"
+                {...edit(`${base}.stats.${i}.label`)}
+              >
                 {stat.label}
               </span>
               <span className="text-2xl leading-none font-bold text-white sm:text-3xl">
@@ -292,7 +322,7 @@ function Banner({ slide }: { slide: InvestorSlide }) {
                     {stat.trend === "up" ? "↑" : "↓"}
                   </span>
                 ) : null}
-                {stat.value}
+                <span {...edit(`${base}.stats.${i}.value`)}>{stat.value}</span>
               </span>
             </div>
           ))}
@@ -301,6 +331,7 @@ function Banner({ slide }: { slide: InvestorSlide }) {
           <p
             className="ir-in mt-2 text-right text-[11px] text-white/65"
             style={{ animationDelay: "900ms" }}
+            {...edit(`${base}.footnote`)}
           >
             {footnote}
           </p>

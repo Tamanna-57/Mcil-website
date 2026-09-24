@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
-import { edit, editImage } from "@/lib/admin/editable";
+import { edit, editImage, editItem } from "@/lib/admin/editable";
 import type { Product, ProductPlate } from "@/lib/products";
 
 /**
@@ -167,6 +167,7 @@ export default function ProductBand({
       ref={sectionRef}
       id={product.id}
       className="scroll-mt-[var(--header-h)] bg-background px-6 py-16 sm:px-10 lg:px-[6.5vw] lg:py-20"
+      {...editItem("products.items", index)}
     >
       <div className="mx-auto w-full max-w-6xl">
         {divider && (
@@ -405,7 +406,7 @@ function Plate({
           alt={plate.alt}
           fill
           sizes={sizes}
-          {...editImage(`${path}.src`)}
+          {...editImage(`${path}.src`, { optional: true })}
           className="object-cover"
         />
       ) : (
@@ -438,7 +439,9 @@ function Plate({
               alt={compare.alt}
               fill
               sizes={sizes}
-              {...editImage(`${path}.compare.src`)}
+              {...editImage(`${path}.compare.src`, {
+                removes: `${path}.compare`,
+              })}
               className="object-cover"
             />
           </div>
@@ -480,7 +483,7 @@ function Placeholder({ plate, path }: { plate: ProductPlate; path: string }) {
 
   return (
     <div
-      {...editImage(`${path}.src`)}
+      {...editImage(`${path}.src`, { empty: true })}
       className={`absolute inset-2 flex flex-col items-center justify-center gap-3 rounded-lg border border-dashed p-4 text-center sm:inset-3 ${
         onDark ? "border-white/35" : "border-steel-900/25"
       }`}

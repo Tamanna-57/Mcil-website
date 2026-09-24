@@ -2,7 +2,8 @@
 
 import Image from "next/image";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { edit, editImage } from "@/lib/admin/editable";
+import { useDraft } from "@/lib/admin/draft";
+import { edit, editImage, editItem } from "@/lib/admin/editable";
 import { processSteps, type ProcessStep } from "@/lib/about-process";
 
 /**
@@ -38,14 +39,17 @@ const MIN_VISIBLE = 0.6;
 export default function AboutProcess({
   eyebrow = "Process",
   title = "How a coil is made",
-  steps = processSteps,
+  steps: publishedSteps = processSteps,
 }: {
   eyebrow?: string;
   title?: string;
   steps?: ProcessStep[];
 }) {
+  const steps = useDraft("about.process.steps", publishedSteps);
   const panelRef = useRef<HTMLDivElement | null>(null);
-  const [step, setStep] = useState(0);
+  const [shownStep, setStep] = useState(0);
+  /* A stage deleted in the editor can leave the index past the end. */
+  const step = Math.min(shownStep, Math.max(steps.length - 1, 0));
 
   const goToStep = useCallback(
     (i: number) => setStep(Math.min(Math.max(i, 0), steps.length - 1)),
@@ -186,6 +190,7 @@ export default function AboutProcess({
             through the bottom. */}
         <div
           ref={panelRef}
+          {...editItem("about.process.steps", step)}
           className="ap-panel mt-6 grid items-center gap-8 rounded-3xl bg-surface p-5 ring-1 ring-steel-900/10 sm:p-7 lg:mt-[var(--ap-gap,1.5rem)] lg:grid-cols-[minmax(0,0.78fr)_minmax(0,1fr)] lg:items-stretch lg:gap-12 lg:p-[var(--ap-pad,2.25rem)]"
         >
           <Copy step={active} index={step} />
@@ -234,9 +239,10 @@ function Copy({ step, index }: { step: ProcessStep; index: number }) {
       <dl className="mt-7 flex flex-wrap gap-x-10 gap-y-4 lg:mt-[var(--ap-facts,1.75rem)]">
         {step.facts.map((fact, f) => (
           <div
-            key={fact.label}
+            key={f}
             className="ap-in"
             style={{ animationDelay: `${190 + f * 70}ms` }}
+            {...editItem(`about.process.steps.${index}.facts`, f)}
           >
             <dt
               className="text-[11px] tracking-[0.12em] text-steel-800/70 uppercase"

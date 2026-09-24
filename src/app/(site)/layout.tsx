@@ -26,13 +26,16 @@ export default async function SiteLayout({
   const [content, admin] = await Promise.all([getContent(), isAdmin()]);
   const { company } = content;
 
-  return (
+  const site = (
     <>
       <SiteHeader />
       {children}
       <SiteFooter company={company} isAdmin={admin} />
-      {/* The in-page editor, for a signed-in admin only. */}
-      {admin ? <EditBar content={content} /> : null}
     </>
   );
+
+  /* For a signed-in admin the whole site sits inside the in-page editor, so
+     every section can render from the admin's unsaved draft. The public get
+     the site on its own. */
+  return admin ? <EditBar content={content}>{site}</EditBar> : site;
 }

@@ -30,7 +30,36 @@ export function edit(path: string, options: EditOptions = {}) {
   };
 }
 
+type ImageOptions = {
+  /**
+   * The picture may be taken away, and the page has something to show in its
+   * place (a customer's typeset name, a product plate's placeholder). Removing
+   * it deletes the value at `removes` — by default the path itself.
+   */
+  optional?: boolean;
+  /** What "Remove" deletes, when that is more than the `src` itself. */
+  removes?: string;
+  /** Nothing is there yet: the button offers to add a picture. */
+  empty?: boolean;
+};
+
 /** Marks an image whose `src` is stored at `path`. */
-export function editImage(path: string) {
-  return { "data-edit-image": path };
+export function editImage(path: string, options: ImageOptions = {}) {
+  return {
+    "data-edit-image": path,
+    ...(options.optional || options.removes
+      ? { "data-edit-image-removes": options.removes ?? path }
+      : {}),
+    ...(options.empty ? { "data-edit-image-empty": "" } : {}),
+  };
+}
+
+/**
+ * Marks one entry of an editable list — a slide, a team member, a customer.
+ * In edit mode, pointing at it brings up its toolbar: move it, add another
+ * after it, or delete it. `list` is the list's path; `index` is where this
+ * entry sits in it as stored.
+ */
+export function editItem(list: string, index: number) {
+  return { "data-edit-item": list, "data-edit-index": index };
 }

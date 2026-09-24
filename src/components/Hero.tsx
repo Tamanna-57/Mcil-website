@@ -2,7 +2,8 @@
 
 import Image from "next/image";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { edit, editImage } from "@/lib/admin/editable";
+import { useDraft } from "@/lib/admin/draft";
+import { edit, editImage, editItem } from "@/lib/admin/editable";
 import { useEditing } from "@/lib/admin/edit-mode";
 import {
   HERO_SLIDE_DURATION,
@@ -20,13 +21,18 @@ const DEFAULT_STANDFIRST =
  * store is ever unreachable.
  */
 export default function Hero({
-  slides = heroSlides,
-  standfirst = DEFAULT_STANDFIRST,
+  slides: publishedSlides = heroSlides,
+  standfirst: publishedStandfirst = DEFAULT_STANDFIRST,
 }: {
   slides?: HeroSlide[];
   standfirst?: string;
 }) {
-  const [index, setIndex] = useState(0);
+  /* A signed-in admin sees their unsaved draft; everyone else, the page. */
+  const slides = useDraft("home.hero.slides", publishedSlides);
+  const standfirst = useDraft("home.hero.standfirst", publishedStandfirst);
+  const [shownIndex, setIndex] = useState(0);
+  /* A slide deleted in the editor can leave the index past the end. */
+  const index = Math.min(shownIndex, Math.max(slides.length - 1, 0));
   const [outgoing, setOutgoing] = useState<number | null>(null);
   const plateRefs = useRef<(HTMLDivElement | null)[]>([]);
   /* Held still while an admin is editing, so the slide being edited stays. */
@@ -88,6 +94,7 @@ export default function Hero({
       className="relative isolate h-[100svh] min-h-[560px] w-full overflow-hidden bg-steel-900"
       aria-roledescription="carousel"
       aria-label="MCIL capabilities"
+      {...editItem("home.hero.slides", index)}
     >
       {/* Background plates — all mounted, crossfaded by opacity. */}
       {slides.map((slide, i) => (

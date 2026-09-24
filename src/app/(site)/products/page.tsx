@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import ProductBand from "@/components/ProductBand";
+import ProductList from "@/components/ProductList";
 import { edit } from "@/lib/admin/editable";
 import { getContent } from "@/lib/content/store";
 
@@ -33,14 +33,7 @@ export default async function ProductsPage() {
         </div>
       </section>
 
-      {items.map((product, i) => (
-        <ProductBand
-          key={product.id}
-          product={product}
-          index={i}
-          divider={i > 0}
-        />
-      ))}
+      <ProductList items={items} />
     </main>
   );
 }

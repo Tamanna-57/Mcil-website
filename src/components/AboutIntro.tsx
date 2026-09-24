@@ -2,15 +2,16 @@
 
 import Image from "next/image";
 import { useState } from "react";
-import { edit, editImage } from "@/lib/admin/editable";
+import { useDraft } from "@/lib/admin/draft";
+import { edit, editImage, editItem } from "@/lib/admin/editable";
 import { advantage, type AdvantagePoint } from "@/lib/about-advantage";
 
 export default function AboutIntro({
   eyebrow = advantage.eyebrow,
   title = advantage.title,
   standfirst = advantage.standfirst,
-  points = advantage.points,
-  image = advantage.image,
+  points: publishedPoints = advantage.points,
+  image: publishedImage = advantage.image,
   alt = advantage.alt,
   badgeLabel = advantage.badgeLabel,
   badgeText = advantage.badgeText,
@@ -24,6 +25,8 @@ export default function AboutIntro({
   badgeLabel?: string;
   badgeText?: string;
 }) {
+  const points = useDraft("about.advantage.points", publishedPoints);
+  const image = useDraft("about.advantage.image", publishedImage);
   /* The first point is open on arrival, as the reference has it. */
   const [open, setOpen] = useState(points[0]?.id ?? "");
 
@@ -51,6 +54,7 @@ export default function AboutIntro({
                 <div
                   key={point.id}
                   className="border-t border-steel-900/12 last:border-b"
+                  {...editItem("about.advantage.points", p)}
                 >
                   <dt>
                     <button
