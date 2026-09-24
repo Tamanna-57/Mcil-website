@@ -27,8 +27,12 @@ const GESTURE_GAP = 250;
  */
 const RELEASE_HOLD = 700;
 
-/** Room the section wants around it before it will take the wheel, px. */
-const FRAMING_SLACK = 100;
+/**
+ * How much of the card has to be on screen before the wheel over it drives the
+ * stages, as a fraction of its height. Enough that the photographs changing
+ * are plainly visible; not so much that a flick has to land it exactly.
+ */
+const MIN_VISIBLE = 0.6;
 
 export default function AboutProcess({
   eyebrow = "Process",
@@ -39,7 +43,7 @@ export default function AboutProcess({
   title?: string;
   steps?: ProcessStep[];
 }) {
-  const sectionRef = useRef<HTMLElement | null>(null);
+  const panelRef = useRef<HTMLDivElement | null>(null);
   const [step, setStep] = useState(0);
 
   const goToStep = useCallback(
@@ -56,24 +60,22 @@ export default function AboutProcess({
   }, [step]);
 
   /*
-   * The stages belong to the pointer, not to the page's scroll position.
+   * Both ways through the section, chosen by where the pointer is.
    *
-   * With the pointer over the section the wheel is taken outright — the event
-   * is cancelled, so the page does not move by a pixel — and spent on the
-   * next stage instead. With the pointer anywhere else the section never sees
-   * the event at all and the page scrolls as it always does, stages untouched.
+   * Scroll with the pointer on the card and the wheel steps through the
+   * stages instead of moving the page — the photographs slide across, one
+   * stage per flick. Past the last stage (or the first, scrolling up) the
+   * wheel is handed back and the page carries on.
    *
-   * The wheel is only taken while the section is sitting whole on the screen,
-   * so the page is never frozen half way through scrolling it into view; the
-   * section is cut to fit the screen with room to spare for exactly that (see
-   * `.ap-section` in globals.css). Where there is no room for that, there is
-   * no capture either, and the pills below are how the stages change.
+   * Scroll with the pointer anywhere else — the heading, the pills, the space
+   * either side of the card — and the page scrolls as it always does, so
+   * someone who does not want the stages is never held by them.
    *
    * Only for a mouse or trackpad: a touchscreen has no pointer to be "over"
-   * the section, so there the pills are all there is.
+   * the card, so there the pills are all there is.
    */
   useEffect(() => {
-    const el = sectionRef.current;
+    const el = panelRef.current;
     if (!el) return;
     if (!window.matchMedia("(hover: hover) and (pointer: fine)").matches) {
       return;
@@ -99,17 +101,13 @@ export default function AboutProcess({
       const midGesture = now - lastEventAt < GESTURE_GAP;
       lastEventAt = now;
 
+      /* Mostly off the screen still: the card is on its way in or out, and
+         the wheel is the page's until it has arrived. */
       const box = el.getBoundingClientRect();
-      const top = headerHeight();
-      const floor = window.innerHeight;
-
-      /* No room to sit whole on this screen: the section is an ordinary block
-         here and the wheel is the page's. */
-      if (floor - top - box.height < FRAMING_SLACK) return;
-
-      /* Still on its way in or out. Freezing the page now would leave the
-         section half off the screen, so it is left to arrive first. */
-      if (box.top < top - 2 || box.bottom > floor + 2) return;
+      const visible =
+        Math.min(box.bottom, window.innerHeight) -
+        Math.max(box.top, headerHeight());
+      if (box.height <= 0 || visible / box.height < MIN_VISIBLE) return;
 
       const next = stepRef.current + (event.deltaY > 0 ? 1 : -1);
       if (next < 0 || next > steps.length - 1) {
@@ -140,7 +138,6 @@ export default function AboutProcess({
 
   return (
     <section
-      ref={sectionRef}
       id="process"
       className="ap-section scroll-mt-[var(--header-h)] bg-background px-4 sm:px-8 lg:px-[5vw]"
     >
@@ -186,7 +183,10 @@ export default function AboutProcess({
         {/* The panel takes whatever height the section has left, so a short
             laptop gets a shorter photograph rather than a panel running out
             through the bottom. */}
-        <div className="ap-panel mt-6 grid items-center gap-8 rounded-3xl bg-surface p-5 ring-1 ring-steel-900/10 sm:p-7 lg:mt-[var(--ap-gap,1.5rem)] lg:grid-cols-[minmax(0,0.78fr)_minmax(0,1fr)] lg:items-stretch lg:gap-12 lg:p-[var(--ap-pad,2.25rem)]">
+        <div
+          ref={panelRef}
+          className="ap-panel mt-6 grid items-center gap-8 rounded-3xl bg-surface p-5 ring-1 ring-steel-900/10 sm:p-7 lg:mt-[var(--ap-gap,1.5rem)] lg:grid-cols-[minmax(0,0.78fr)_minmax(0,1fr)] lg:items-stretch lg:gap-12 lg:p-[var(--ap-pad,2.25rem)]"
+        >
           <Copy step={active} index={step} />
           <Stage steps={steps} current={step} />
         </div>
@@ -198,6 +198,11 @@ export default function AboutProcess({
             style={{ width: `${((step + 1) / steps.length) * 100}%` }}
           />
         </div>
+
+        {/* Only where the wheel does something here: a mouse or trackpad. */}
+        <p className="mt-3 hidden shrink-0 text-center text-[11px] tracking-[0.14em] text-steel-800/60 uppercase pointer-fine:block">
+          Scroll on the card to see each stage · scroll beside it to move on
+        </p>
       </div>
     </section>
   );
