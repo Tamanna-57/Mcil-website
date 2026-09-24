@@ -26,8 +26,10 @@ import { team, teamHeading, type TeamMember } from "@/lib/about-team";
  * five, then six. Below `md` there are too few columns for cells to be spared
  * at all.
  */
-const SCATTER_6 = [1, 3, 6, 2, 4, 1, 5] as const;
-const SCATTER_5 = [1, 3, 5, 2, 4, 1, 3] as const;
+/* From `lg` the wall is two rows deep — four across, then three — so the
+   section, wall and panel together, fits on one screen. */
+const SCATTER_6 = [1, 2, 4, 6, 2, 3, 5] as const;
+const SCATTER_5 = [1, 2, 4, 5, 2, 3, 5] as const;
 const SCATTER_4 = [1, 3, 4, 2, 4, 1, 3] as const;
 
 /* Written out in full because the stylesheet is built by reading these files;
@@ -139,6 +141,7 @@ export default function AboutTeam({
      and moving the page under a pointer that is only passing across the wall
      would be the wrong thing entirely. */
   const panelRef = useRef<HTMLElement | null>(null);
+  const wallRef = useRef<HTMLUListElement | null>(null);
 
   function follow() {
     if (typeof window === "undefined" || !window.matchMedia) return;
@@ -152,7 +155,7 @@ export default function AboutTeam({
     <section
       ref={sectionRef}
       id="team"
-      className="team-band scroll-mt-[var(--header-h)] px-6 py-20 sm:px-10 lg:px-[3vw] lg:py-24"
+      className="team-band scroll-mt-[var(--header-h)] px-6 py-16 sm:px-10 lg:flex lg:min-h-[calc(100svh-var(--header-h))] lg:flex-col lg:justify-center lg:px-[3vw] lg:py-5"
     >
       {/* The wall runs the width of the window rather than sitting in the
           page's usual centred measure. The reference hangs a long row of small
@@ -194,7 +197,10 @@ export default function AboutTeam({
               worth more as the air between the plates than as bigger plates.
               Below `md` there are too few columns for cells to be spared, so
               the scatter is dropped and the portraits simply run. */}
-          <ul className="grid grid-cols-2 gap-x-4 gap-y-8 sm:grid-cols-3 sm:gap-x-5 md:grid-cols-4 md:gap-y-9 lg:grid-cols-5 lg:gap-y-10 xl:grid-cols-6">
+          <ul
+            ref={wallRef}
+            className="team-wall grid grid-cols-2 gap-x-4 gap-y-8 sm:grid-cols-3 sm:gap-x-5 md:grid-cols-4 md:gap-y-6 lg:grid-cols-5 lg:gap-y-5 xl:grid-cols-6"
+          >
             {members.map((member, i) => (
               <li
                 key={member.id}
@@ -214,6 +220,8 @@ export default function AboutTeam({
             ))}
           </ul>
 
+          <WallCursor wall={wallRef} />
+
           <Panel
             ref={panelRef}
             member={reading}
@@ -224,7 +232,7 @@ export default function AboutTeam({
         </div>
 
         <p
-          className="hl-reveal mt-12 text-xs text-steel-800/70"
+          className="hl-reveal mt-10 text-xs text-steel-800/70 lg:mt-3"
           data-visible={visible}
           style={{ animationDelay: "900ms" }}
           {...edit("about.team.footnote")}
@@ -301,7 +309,7 @@ function Portrait({
       aria-pressed={reading}
       /* The ceiling sits on the whole cell rather than on the photograph
          alone, so what is left over stays as the gap between plates. */
-      className="hl-reveal group block w-full max-w-[10rem] cursor-pointer text-left sm:max-w-[8.5rem]"
+      className="team-portrait hl-reveal group block w-full max-w-[10rem] cursor-pointer text-left"
       data-visible={visible}
       style={{ animationDelay: `${240 + index * 70}ms` }}
     >
@@ -389,7 +397,7 @@ function Panel({
     <aside
       ref={ref}
       {...editItem("about.team.members", index)}
-      className="team-plate hl-reveal mt-12 flex flex-col p-8 sm:p-9 lg:sticky lg:top-[calc(var(--header-h)+2.5rem)] lg:mt-0 lg:min-h-[28rem]"
+      className="team-plate team-panel hl-reveal mt-12 flex flex-col overflow-hidden p-7 sm:p-8 lg:sticky lg:top-[calc(var(--header-h)+1rem)] lg:mt-0"
       data-visible={visible}
       style={{ animationDelay: `${240 + count * 70}ms` }}
       aria-live="polite"
@@ -397,33 +405,7 @@ function Panel({
       {/* Keyed on the person, so the panel's contents arrive rather than
           swapping in place when the pointer moves along the wall. */}
       <div key={member.id} className="team-swap flex h-full flex-col">
-        <span className="inline-flex w-fit items-center gap-1.5 rounded-full bg-white/12 px-3 py-1.5 text-[11px] font-semibold tracking-[0.06em] text-white/85">
-          <svg
-            width="11"
-            height="11"
-            viewBox="0 0 12 12"
-            fill="none"
-            aria-hidden
-          >
-            <circle
-              cx="6"
-              cy="6"
-              r="5"
-              stroke="currentColor"
-              strokeWidth="1.3"
-            />
-            <path
-              d="M3.6 6.1l1.7 1.7 3.1-3.4"
-              stroke="currentColor"
-              strokeWidth="1.3"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-          </svg>
-          <span {...edit(`about.team.members.${index}.chip`)}>{member.chip}</span>
-        </span>
-
-        <h3 className="mt-6 font-display text-xl leading-snug font-semibold text-white" {...edit(`about.team.members.${index}.name`)}>
+        <h3 className="font-display text-xl leading-snug font-semibold text-white" {...edit(`about.team.members.${index}.name`)}>
           {member.name}
         </h3>
         <p className="mt-1.5 text-[11px] font-semibold tracking-[0.14em] text-brand-pale uppercase" {...edit(`about.team.members.${index}.role`)}>
@@ -436,7 +418,7 @@ function Panel({
             merged or split while they were being typed into. */}
         <div
           key={member.bio}
-          className="mt-5 space-y-3.5 text-sm leading-relaxed text-white/75"
+          className="team-bio mt-4 space-y-3 text-[13px] leading-relaxed text-white/75"
           {...edit(`about.team.members.${index}.bio`, { multiline: true })}
         >
           {member.bio
@@ -452,7 +434,7 @@ function Panel({
             one line on the panel that is a fact rather than a description,
             and it is what the section is read for after the name. */}
         {member.qualification || editing ? (
-          <div className="mt-auto pt-7">
+          <div className="mt-auto pt-5">
             <span className="block h-px w-full bg-white/15" aria-hidden />
             <p className="mt-4 text-[10px] font-semibold tracking-[0.18em] text-white/50 uppercase">
               Qualification
@@ -467,5 +449,92 @@ function Panel({
         ) : null}
       </div>
     </aside>
+  );
+}
+
+/**
+ * The small square that trails the pointer across the wall, as the reference
+ * has it: a dot while it crosses the gaps, opening into a "Profile" tag over a
+ * portrait. It follows with a little lag — eased towards the pointer each
+ * frame rather than pinned to it — which is what makes it read as smooth.
+ *
+ * Only where there is a pointer to follow, and not for reduced motion. It is
+ * decoration: the portraits are buttons and say what they do on their own.
+ */
+function WallCursor({
+  wall,
+}: {
+  wall: React.RefObject<HTMLUListElement | null>;
+}) {
+  const ref = useRef<HTMLSpanElement | null>(null);
+
+  useEffect(() => {
+    const area = wall.current;
+    const el = ref.current;
+    if (!area || !el) return;
+    if (
+      !window.matchMedia("(hover: hover) and (pointer: fine)").matches ||
+      window.matchMedia("(prefers-reduced-motion: reduce)").matches
+    ) {
+      return;
+    }
+
+    /* Where the pointer is, and where the tag has got to. */
+    let tx = 0;
+    let ty = 0;
+    let x = 0;
+    let y = 0;
+    let frame = 0;
+    let placed = false;
+
+    const tick = () => {
+      x += (tx - x) * 0.2;
+      y += (ty - y) * 0.2;
+      el.style.transform = `translate3d(${x}px, ${y}px, 0)`;
+      frame =
+        Math.abs(tx - x) + Math.abs(ty - y) > 0.3
+          ? requestAnimationFrame(tick)
+          : 0;
+    };
+
+    const onMove = (event: PointerEvent) => {
+      /* Down and to the right of the pointer, clear of the arrow. */
+      tx = event.clientX + 14;
+      ty = event.clientY + 16;
+      if (!placed) {
+        x = tx;
+        y = ty;
+        placed = true;
+      }
+      const onPortrait = Boolean(
+        (event.target as HTMLElement).closest?.(".team-portrait"),
+      );
+      el.dataset.state = onPortrait ? "profile" : "dot";
+      if (!frame) frame = requestAnimationFrame(tick);
+    };
+
+    const onLeave = () => {
+      el.dataset.state = "hidden";
+      placed = false;
+    };
+
+    area.addEventListener("pointermove", onMove);
+    area.addEventListener("pointerleave", onLeave);
+    /* It is fixed to the window, so a scroll under a still pointer would
+       leave it behind; hide it until the pointer moves again. */
+    window.addEventListener("scroll", onLeave, { passive: true });
+    return () => {
+      area.removeEventListener("pointermove", onMove);
+      area.removeEventListener("pointerleave", onLeave);
+      window.removeEventListener("scroll", onLeave);
+      if (frame) cancelAnimationFrame(frame);
+    };
+  }, [wall]);
+
+  return (
+    <span ref={ref} className="team-cursor" data-state="hidden" aria-hidden>
+      <span className="team-cursor__dot" />
+      <span className="team-cursor__label">Profile</span>
+    </span>
   );
 }

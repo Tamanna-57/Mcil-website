@@ -33,6 +33,12 @@
  */
 export const LOGO_HEIGHT = 42;
 
+/**
+ * The mark as the fixed header sets it: smaller than the footer's, so the bar
+ * reads as a slim strip rather than a band. `--header-h` follows from it.
+ */
+export const HEADER_LOGO_HEIGHT = 30;
+
 /** Set small under the mark, and the link's accessible name. */
 export const LOGO_NAME = "Metal Coatings (India) Limited";
 export const LOGO_LINE = "Metal Coatings (India) Ltd";
