@@ -17,7 +17,9 @@ export default async function proxy(request: NextRequest) {
   // The login page itself is open; a signed-in admin is sent on to the panel.
   if (pathname === "/admin/login") {
     if (!signedIn) return NextResponse.next();
-    const next = request.nextUrl.searchParams.get("next") || "/admin";
+    const wanted = request.nextUrl.searchParams.get("next") || "/";
+    const next =
+      wanted.startsWith("/") && !wanted.startsWith("//") ? wanted : "/";
     return NextResponse.redirect(new URL(next, request.url));
   }
 

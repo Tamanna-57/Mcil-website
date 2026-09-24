@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import { useState } from "react";
+import { edit, editImage } from "@/lib/admin/editable";
 import { advantage, type AdvantagePoint } from "@/lib/about-advantage";
 
 export default function AboutIntro({
@@ -34,17 +35,17 @@ export default function AboutIntro({
       <div className="mx-auto grid w-full max-w-6xl items-center gap-12 lg:grid-cols-[minmax(0,1fr)_minmax(0,0.8fr)] lg:gap-16">
         <div>
           <p className="text-[11px] font-semibold tracking-[0.24em] text-accent uppercase">
-            [ {eyebrow} ]
+            [ <span {...edit("about.advantage.eyebrow")}>{eyebrow}</span> ]
           </p>
-          <h2 className="type-display mt-4 text-[clamp(1.6rem,4.2vw,2.8rem)] leading-[1.15] text-steel-900 uppercase">
+          <h2 className="type-display mt-4 text-[clamp(1.6rem,4.2vw,2.8rem)] leading-[1.15] text-steel-900 uppercase" {...edit("about.advantage.title")}>
             {title}
           </h2>
-          <p className="mt-5 max-w-lg text-sm leading-relaxed text-steel-800 sm:text-base">
+          <p className="mt-5 max-w-lg text-sm leading-relaxed text-steel-800 sm:text-base" {...edit("about.advantage.standfirst")}>
             {standfirst}
           </p>
 
           <dl className="mt-10">
-            {points.map((point) => {
+            {points.map((point, p) => {
               const isOpen = open === point.id;
               return (
                 <div
@@ -58,7 +59,10 @@ export default function AboutIntro({
                       aria-expanded={isOpen}
                       className="flex w-full cursor-pointer items-center justify-between gap-6 py-5 text-left"
                     >
-                      <span className="font-display text-lg font-semibold text-steel-900">
+                      <span
+                        className="font-display text-lg font-semibold text-steel-900"
+                        {...edit(`about.advantage.points.${p}.title`)}
+                      >
                         {point.title}
                       </span>
                       <span
@@ -76,7 +80,10 @@ export default function AboutIntro({
                     style={{ gridTemplateRows: isOpen ? "1fr" : "0fr" }}
                   >
                     <div className="overflow-hidden">
-                      <p className="pb-5 text-sm leading-relaxed text-steel-800">
+                      <p
+                        className="pb-5 text-sm leading-relaxed text-steel-800"
+                        {...edit(`about.advantage.points.${p}.body`)}
+                      >
                         {point.body}
                       </p>
                     </div>
@@ -93,6 +100,7 @@ export default function AboutIntro({
             alt={alt}
             fill
             sizes="(min-width: 1024px) 40vw, 92vw"
+            {...editImage("about.advantage.image")}
             className="object-cover"
           />
           <div
@@ -104,10 +112,10 @@ export default function AboutIntro({
               WebkitBackdropFilter: "blur(16px) saturate(140%)",
             }}
           >
-            <p className="text-[11px] tracking-[0.16em] uppercase opacity-80">
+            <p className="text-[11px] tracking-[0.16em] uppercase opacity-80" {...edit("about.advantage.badgeLabel")}>
               {badgeLabel}
             </p>
-            <p className="mt-1 font-display text-lg font-semibold">
+            <p className="mt-1 font-display text-lg font-semibold" {...edit("about.advantage.badgeText")}>
               {badgeText}
             </p>
           </div>

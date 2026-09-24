@@ -1,5 +1,6 @@
 "use client";
 
+import { edit } from "@/lib/admin/editable";
 import { useEffect, useId, useMemo, useRef, useState } from "react";
 import {
   BAR_STAGGER,
@@ -83,10 +84,10 @@ export default function InvestorPerformance({
     >
       <div className="mx-auto w-full max-w-6xl">
         <header className="text-center">
-          <h2 className="type-display text-[clamp(1.7rem,5.4vw,3.9rem)] leading-[1.15] text-steel-900 uppercase">
+          <h2 className="type-display text-[clamp(1.7rem,5.4vw,3.9rem)] leading-[1.15] text-steel-900 uppercase" {...edit("investors.performance.title")}>
             {title}
           </h2>
-          <p className="mt-4 text-sm tracking-[0.04em] text-steel-800 sm:text-base">
+          <p className="mt-4 text-sm tracking-[0.04em] text-steel-800 sm:text-base" {...edit("investors.performance.standfirst")}>
             {standfirst}
           </p>
         </header>
