@@ -1,5 +1,6 @@
 import SiteFooter from "@/components/SiteFooter";
 import SiteHeader from "@/components/SiteHeader";
+import EditBar from "@/components/admin/EditBar";
 import { isAdmin } from "@/lib/admin/session";
 import { getContent } from "@/lib/content/store";
 
@@ -22,13 +23,16 @@ export default async function SiteLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const [{ company }, admin] = await Promise.all([getContent(), isAdmin()]);
+  const [content, admin] = await Promise.all([getContent(), isAdmin()]);
+  const { company } = content;
 
   return (
     <>
       <SiteHeader />
       {children}
       <SiteFooter company={company} isAdmin={admin} />
+      {/* The in-page editor, for a signed-in admin only. */}
+      {admin ? <EditBar content={content} /> : null}
     </>
   );
 }

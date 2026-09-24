@@ -1,5 +1,6 @@
 "use client";
 
+import { edit } from "@/lib/admin/editable";
 import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
 import {
@@ -70,12 +71,13 @@ export default function InvestorHighlights({
             className="hl-reveal text-[11px] font-semibold tracking-[0.24em] text-accent uppercase"
             data-visible={started}
           >
-            [ {heading.eyebrow} ]
+            [ <span {...edit("investors.highlights.heading.eyebrow")}>{heading.eyebrow}</span> ]
           </p>
           <h2
             className="hl-reveal type-display mt-4 text-[clamp(1.6rem,4.6vw,3.1rem)] leading-[1.15] text-steel-900 uppercase"
             data-visible={started}
             style={{ animationDelay: "80ms" }}
+            {...edit("investors.highlights.heading.title")}
           >
             {heading.title}
           </h2>
@@ -83,6 +85,7 @@ export default function InvestorHighlights({
             className="hl-reveal mx-auto mt-4 max-w-xl text-sm text-steel-800 sm:text-base"
             data-visible={started}
             style={{ animationDelay: "160ms" }}
+            {...edit("investors.highlights.heading.standfirst")}
           >
             {heading.standfirst}
           </p>
@@ -143,10 +146,10 @@ function Card({
     >
       <Figure item={item} shown={shown} decimals={decimals} />
 
-      <h3 className="mt-3 font-display text-xl font-semibold text-steel-900 sm:text-2xl">
+      <h3 className="mt-3 font-display text-xl font-semibold text-steel-900 sm:text-2xl" {...edit(`investors.highlights.items.${index}.title`)}>
         {item.title}
       </h3>
-      <p className="mt-3 max-w-sm text-sm leading-relaxed text-steel-800">
+      <p className="mt-3 max-w-sm text-sm leading-relaxed text-steel-800" {...edit(`investors.highlights.items.${index}.body`)}>
         {item.body}
       </p>
 

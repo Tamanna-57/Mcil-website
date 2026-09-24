@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
+import { edit, editImage } from "@/lib/admin/editable";
 import { team, teamHeading, type TeamMember } from "@/lib/about-team";
 
 /**
@@ -167,7 +168,7 @@ export default function AboutTeam({
             className="hl-reveal text-[11px] font-semibold tracking-[0.24em] text-accent uppercase lg:hidden"
             data-visible={visible}
           >
-            [ {heading.eyebrow} ]
+            [ <span {...edit("about.team.heading.eyebrow")}>{heading.eyebrow}</span> ]
           </p>
         </header>
 
@@ -206,6 +207,7 @@ export default function AboutTeam({
           <Panel
             ref={panelRef}
             member={reading}
+            index={members.indexOf(reading)}
             visible={visible}
             count={members.length}
           />
@@ -215,6 +217,7 @@ export default function AboutTeam({
           className="hl-reveal mt-12 text-xs text-steel-800/70"
           data-visible={visible}
           style={{ animationDelay: "900ms" }}
+          {...edit("about.team.footnote")}
         >
           {footnote}
         </p>
@@ -238,7 +241,9 @@ function Rail({ label, visible }: { label: string; visible: boolean }) {
       data-visible={visible}
       aria-hidden
     >
-      <span className="type-display rotate-180 text-[clamp(2.1rem,3.4vw,3.1rem)] whitespace-nowrap text-steel-900 uppercase [writing-mode:vertical-rl]">
+      <span className="type-display rotate-180 text-[clamp(2.1rem,3.4vw,3.1rem)] whitespace-nowrap text-steel-900 uppercase [writing-mode:vertical-rl]"
+        {...edit("about.team.heading.eyebrow")}
+      >
         {label}
       </span>
       <span className="w-px flex-1 bg-steel-900/20" />
@@ -303,6 +308,7 @@ function Portrait({
             alt={`Portrait of ${member.name}`}
             fill
             sizes="(min-width: 640px) 8.5rem, 44vw"
+            {...editImage(`about.team.members.${index}.image`)}
             className={`object-cover transition duration-500 ${
               reading
                 ? "scale-[1.03] opacity-100"
@@ -325,6 +331,7 @@ function Portrait({
             className={`block font-display text-[11px] leading-tight font-semibold transition-colors ${
               reading ? "text-white" : "text-white/70"
             }`}
+            {...edit(`about.team.members.${index}.name`)}
           >
             {member.name}
           </span>
@@ -332,6 +339,7 @@ function Portrait({
             className={`mt-1 block text-[8px] leading-[1.5] font-semibold tracking-[0.1em] uppercase transition-colors ${
               reading ? "text-white/60" : "text-white/40"
             }`}
+            {...edit(`about.team.members.${index}.role`)}
           >
             {member.role}
           </span>
@@ -352,11 +360,13 @@ function Portrait({
 function Panel({
   ref,
   member,
+  index,
   visible,
   count,
 }: {
   ref: React.Ref<HTMLElement>;
   member: TeamMember;
+  index: number;
   visible: boolean;
   /** Only used to time the panel's own arrival behind the last portrait. */
   count: number;
@@ -395,18 +405,21 @@ function Panel({
               strokeLinejoin="round"
             />
           </svg>
-          {member.chip}
+          <span {...edit(`about.team.members.${index}.chip`)}>{member.chip}</span>
         </span>
 
-        <h3 className="mt-6 font-display text-xl leading-snug font-semibold text-white">
+        <h3 className="mt-6 font-display text-xl leading-snug font-semibold text-white" {...edit(`about.team.members.${index}.name`)}>
           {member.name}
         </h3>
-        <p className="mt-1.5 text-[11px] font-semibold tracking-[0.14em] text-brand-pale uppercase">
+        <p className="mt-1.5 text-[11px] font-semibold tracking-[0.14em] text-brand-pale uppercase" {...edit(`about.team.members.${index}.role`)}>
           {member.role}
         </p>
 
         {/* The profile as the Board writes it, a paragraph to a break. */}
-        <div className="mt-5 space-y-3.5 text-sm leading-relaxed text-white/75">
+        <div
+          className="mt-5 space-y-3.5 text-sm leading-relaxed text-white/75"
+          {...edit(`about.team.members.${index}.bio`, { multiline: true })}
+        >
           {member.bio
             .split(/\n\s*\n/)
             .map((para) => para.trim())
@@ -425,7 +438,10 @@ function Panel({
             <p className="mt-4 text-[10px] font-semibold tracking-[0.18em] text-white/50 uppercase">
               Qualification
             </p>
-            <p className="mt-1.5 text-[13px] leading-snug text-white/80">
+            <p
+              className="mt-1.5 text-[13px] leading-snug text-white/80"
+              {...edit(`about.team.members.${index}.qualification`)}
+            >
               {member.qualification}
             </p>
           </div>

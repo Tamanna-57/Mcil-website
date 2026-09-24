@@ -1,5 +1,6 @@
 "use client";
 
+import { edit } from "@/lib/admin/editable";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { viewUrlFor } from "@/lib/document-view";
 import {
@@ -140,12 +141,13 @@ export default function InvestorReports({
             className="rp-rise text-[11px] font-semibold tracking-[0.24em] text-accent uppercase"
             data-visible={visible}
           >
-            [ {heading.eyebrow} ]
+            [ <span {...edit("investors.reports.heading.eyebrow")}>{heading.eyebrow}</span> ]
           </p>
           <h2
             className="rp-rise type-display mt-4 text-[clamp(1.7rem,5.4vw,3.9rem)] leading-[1.15] text-steel-900 uppercase"
             data-visible={visible}
             style={{ animationDelay: "80ms" }}
+            {...edit("investors.reports.heading.title")}
           >
             {heading.title}
           </h2>
@@ -153,6 +155,7 @@ export default function InvestorReports({
             className="rp-rise mx-auto mt-4 max-w-2xl text-sm text-steel-800 sm:text-base"
             data-visible={visible}
             style={{ animationDelay: "160ms" }}
+            {...edit("investors.reports.heading.standfirst")}
           >
             {heading.standfirst}
           </p>

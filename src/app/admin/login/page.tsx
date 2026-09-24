@@ -15,9 +15,14 @@ export default async function LoginPage({
   searchParams: Promise<{ next?: string }>;
 }) {
   const { next } = await searchParams;
+  /* Signing in lands on the site itself, with the edit bar, unless the
+     visitor was on their way to a particular page. Only a path on this site
+     is followed — never "//elsewhere". */
+  const safeNext =
+    next && next.startsWith("/") && !next.startsWith("//") ? next : "/";
   return (
     <LoginForm
-      next={next && next.startsWith("/admin") ? next : "/admin"}
+      next={safeNext}
       configured={!isAdminDisabled()}
     />
   );

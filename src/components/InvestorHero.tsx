@@ -1,5 +1,7 @@
 "use client";
 
+import { edit, editImage } from "@/lib/admin/editable";
+import { useEditing } from "@/lib/admin/edit-mode";
 import Image from "next/image";
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
@@ -17,6 +19,8 @@ export default function InvestorHero({
   const [index, setIndex] = useState(0);
   const [paused, setPaused] = useState(false);
   const plateRefs = useRef<(HTMLDivElement | null)[]>([]);
+  /* Held still while an admin is editing, so the slide being edited stays. */
+  const editing = useEditing();
 
   const go = useCallback(
     (delta: number) => {
@@ -26,10 +30,10 @@ export default function InvestorHero({
   );
 
   useEffect(() => {
-    if (paused) return;
+    if (paused || editing) return;
     const timer = window.setTimeout(() => go(1), IR_SLIDE_DURATION);
     return () => window.clearTimeout(timer);
-  }, [index, paused, go]);
+  }, [index, paused, editing, go]);
 
   /* Restart the push-in on the newly active plate without remounting the
      <Image>, same approach as the homepage hero. */
@@ -77,6 +81,7 @@ export default function InvestorHero({
               fill
               priority={i === 0}
               sizes="100vw"
+              {...editImage(`investors.slides.${i}.image`)}
               className="object-cover"
               style={{ objectPosition: s.position }}
             />
@@ -100,7 +105,7 @@ export default function InvestorHero({
           key={slide.id}
           className="grid w-full gap-x-16 gap-y-12 lg:grid-cols-[minmax(0,0.85fr)_minmax(0,1fr)] lg:items-center"
         >
-          <Copy slide={slide} />
+          <Copy slide={slide} index={index} />
           {slide.groups ? <Metrics slide={slide} /> : null}
         </div>
       </div>
@@ -123,12 +128,14 @@ export default function InvestorHero({
   );
 }
 
-function Copy({ slide }: { slide: InvestorSlide }) {
+function Copy({ slide, index }: { slide: InvestorSlide; index: number }) {
+  const base = `investors.slides.${index}`;
   return (
     <div className="max-w-xl">
       <p
         className="ir-in text-[11px] font-semibold tracking-[0.22em] text-[var(--ir-soft)] uppercase sm:text-xs"
         style={{ animationDelay: "80ms" }}
+        {...edit(`${base}.eyebrow`)}
       >
         {slide.eyebrow}
       </p>
@@ -139,6 +146,7 @@ function Copy({ slide }: { slide: InvestorSlide }) {
             key={line}
             className="ir-in block"
             style={{ animationDelay: `${200 + i * 110}ms` }}
+            {...edit(`${base}.headline.${i}`)}
           >
             {line}
           </span>
@@ -149,6 +157,7 @@ function Copy({ slide }: { slide: InvestorSlide }) {
         <p
           className="ir-in mt-6 max-w-md text-sm leading-relaxed text-white/75 sm:text-base"
           style={{ animationDelay: "440ms" }}
+          {...edit(`${base}.standfirst`)}
         >
           {slide.standfirst}
         </p>
@@ -159,7 +168,7 @@ function Copy({ slide }: { slide: InvestorSlide }) {
           href={slide.cta.href}
           className="ir-cta group inline-flex items-center gap-3 px-7 py-3.5 text-[13px] font-semibold tracking-[0.1em] text-white uppercase"
         >
-          {slide.cta.label}
+          <span {...edit(`${base}.cta.label`)}>{slide.cta.label}</span>
           <svg
             width="16"
             height="10"

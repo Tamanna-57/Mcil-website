@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import { useCallback, useEffect, useRef, useState } from "react";
+import { edit, editImage } from "@/lib/admin/editable";
 import { processSteps, type ProcessStep } from "@/lib/about-process";
 
 /**
@@ -144,9 +145,9 @@ export default function AboutProcess({
       <div className="ap-inner mx-auto flex w-full max-w-6xl flex-col py-20">
         <header className="text-center">
           <p className="text-[11px] font-semibold tracking-[0.24em] text-accent uppercase">
-            [ {eyebrow} ]
+            [ <span {...edit("about.process.eyebrow")}>{eyebrow}</span> ]
           </p>
-          <h2 className="ap-title type-display mt-3 text-[clamp(1.5rem,4vw,2.6rem)] leading-[1.15] text-steel-900 uppercase">
+          <h2 className="ap-title type-display mt-3 text-[clamp(1.5rem,4vw,2.6rem)] leading-[1.15] text-steel-900 uppercase" {...edit("about.process.title")}>
             {title}
           </h2>
         </header>
@@ -174,7 +175,7 @@ export default function AboutProcess({
                 <span className="mr-2 opacity-60 tabular-nums">
                   {String(i + 1).padStart(2, "0")}
                 </span>
-                {s.tab}
+                <span {...edit(`about.process.steps.${i}.tab`)}>{s.tab}</span>
               </button>
             ))}
           </div>
@@ -218,27 +219,35 @@ function Copy({ step, index }: { step: ProcessStep; index: number }) {
       <h3
         className="ap-in mt-3 font-display text-2xl leading-tight font-semibold text-steel-900 sm:text-3xl lg:mt-[var(--ap-lead,0.75rem)]"
         style={{ animationDelay: "60ms" }}
+        {...edit(`about.process.steps.${index}.title`)}
       >
         {step.title}
       </h3>
       <p
         className="ap-in mt-4 max-w-md text-sm leading-relaxed text-steel-800 sm:text-base lg:mt-[var(--ap-body,1rem)]"
         style={{ animationDelay: "120ms" }}
+        {...edit(`about.process.steps.${index}.body`)}
       >
         {step.body}
       </p>
 
       <dl className="mt-7 flex flex-wrap gap-x-10 gap-y-4 lg:mt-[var(--ap-facts,1.75rem)]">
-        {step.facts.map((fact, i) => (
+        {step.facts.map((fact, f) => (
           <div
             key={fact.label}
             className="ap-in"
-            style={{ animationDelay: `${190 + i * 70}ms` }}
+            style={{ animationDelay: `${190 + f * 70}ms` }}
           >
-            <dt className="text-[11px] tracking-[0.12em] text-steel-800/70 uppercase">
+            <dt
+              className="text-[11px] tracking-[0.12em] text-steel-800/70 uppercase"
+              {...edit(`about.process.steps.${index}.facts.${f}.label`)}
+            >
               {fact.label}
             </dt>
-            <dd className="mt-1 font-display text-lg font-semibold text-steel-900">
+            <dd
+              className="mt-1 font-display text-lg font-semibold text-steel-900"
+              {...edit(`about.process.steps.${index}.facts.${f}.value`)}
+            >
               {fact.value}
             </dd>
           </div>
@@ -280,6 +289,7 @@ function Stage({ steps, current }: { steps: ProcessStep[]; current: number }) {
               fill
               sizes="(min-width: 1024px) 58vw, 92vw"
               priority={i === 0}
+              {...editImage(`about.process.steps.${i}.image`)}
               /* Anchored to the top left: the step number and title are burned
                  into that corner of each photograph, so a centred crop cuts
                  them off — sideways once the frame is wider than the 3:2

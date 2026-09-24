@@ -2031,3 +2031,25 @@ body {
     animation: none;
   }
 }
+
+/* ─── In-page editor (admin only) ─────────────────────────────────────────
+   Marked content is outlined while Edit mode is on, so it is plain what can
+   be changed; the outline firms up under the pointer and while typing. */
+html[data-editing] [data-edit] {
+  outline: 1px dashed color-mix(in srgb, var(--color-accent, #d97706) 70%, transparent);
+  outline-offset: 3px;
+  border-radius: 2px;
+  cursor: text;
+}
+html[data-editing] [data-edit]:hover,
+html[data-editing] [data-edit]:focus {
+  outline: 2px solid var(--color-accent, #d97706);
+  background-color: color-mix(in srgb, var(--color-accent, #d97706) 8%, transparent);
+}
+html[data-editing] [data-edit][data-edit-raw],
+html[data-editing] button [data-edit] {
+  cursor: pointer;
+}
+html[data-editing] body {
+  padding-bottom: 5rem;
+}

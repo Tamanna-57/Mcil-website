@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
+import { edit, editImage } from "@/lib/admin/editable";
 import {
   customers as defaultCustomers,
   customersHeading,
@@ -75,12 +76,13 @@ export default function Customers({
             className="hl-reveal text-[11px] font-semibold tracking-[0.24em] text-accent uppercase"
             data-visible={visible}
           >
-            [ {eyebrow} ]
+            [ <span {...edit("home.customers.eyebrow")}>{eyebrow}</span> ]
           </p>
           <h2
             className="hl-reveal type-display mt-4 text-[clamp(1.35rem,3.2vw,2.1rem)] leading-[1.18] text-steel-900 uppercase"
             data-visible={visible}
             style={{ animationDelay: "80ms" }}
+            {...edit("home.customers.title")}
           >
             {title}
           </h2>
@@ -90,6 +92,7 @@ export default function Customers({
               className="hl-reveal mt-5 text-sm leading-relaxed text-steel-800 sm:text-base"
               data-visible={visible}
               style={{ animationDelay: "160ms" }}
+              {...edit("home.customers.standfirst")}
             >
               {standfirst}
             </p>
@@ -107,7 +110,7 @@ export default function Customers({
               data-visible={visible}
               style={{ animationDelay: `${240 + i * 60}ms` }}
             >
-              <Mark customer={customer} />
+              <Mark customer={customer} index={i} />
             </li>
           ))}
         </ul>
@@ -117,6 +120,7 @@ export default function Customers({
             className="hl-reveal mt-12 text-center text-[11px] leading-relaxed text-steel-800/55"
             data-visible={visible}
             style={{ animationDelay: `${240 + items.length * 60}ms` }}
+            {...edit("home.customers.footnote")}
           >
             {footnote}
           </p>
@@ -143,7 +147,7 @@ const LOGO_BASE = 58;
  * which will not process SVG without `dangerouslyAllowSVG` — a flag worth
  * avoiding for a handful of files that are already a few kilobytes each.
  */
-function Mark({ customer }: { customer: Customer }) {
+function Mark({ customer, index }: { customer: Customer; index: number }) {
   const { name, mark, suffix, font, logo, logoAlt, scale = 1 } = customer;
 
   if (logo) {
@@ -161,6 +165,7 @@ function Mark({ customer }: { customer: Customer }) {
           width={320}
           height={128}
           unoptimized={logo.endsWith(".svg")}
+          {...editImage(`home.customers.items.${index}.logo`)}
           className="w-auto max-w-[8.5rem] object-contain sm:max-w-[10rem] lg:max-w-[11rem]"
           style={{ height: `${Math.round(LOGO_BASE * scale)}%` }}
         />
