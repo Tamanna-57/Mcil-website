@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { viewUrlFor } from "@/lib/document-view";
 import {
   ARCHIVE_BEFORE,
   isArchived,
@@ -334,7 +335,8 @@ function monthYear(iso: string): string {
 }
 
 /**
- * One document: the icon, the title, and its Download control.
+ * One document: the icon, the title — a link that opens a PDF to read in a
+ * new tab — and its Download control.
  *
  * The filing date is not set here. It is still on every row — it is what the
  * list is ordered by, newest first — but the titles carry the year themselves
@@ -343,6 +345,7 @@ function monthYear(iso: string): string {
  * row a second line to read past.
  */
 function Row({ doc, index }: { doc: ReportDoc; index: number }) {
+  const view = viewUrlFor(doc.href);
   return (
     <li
       className="rp-row flex items-center gap-4 border-b border-steel-900/10 py-4 last:border-b-0 sm:gap-5 sm:py-5"
@@ -352,7 +355,20 @@ function Row({ doc, index }: { doc: ReportDoc; index: number }) {
 
       <div className="min-w-0 flex-1">
         <p className="text-sm font-semibold text-steel-900 sm:text-[0.95rem]">
-          {doc.title}
+          {view ? (
+            // Opens the PDF in a new tab to read; Download beside it saves it.
+            <a
+              href={view}
+              target="_blank"
+              rel="noopener"
+              className="underline-offset-4 transition-colors hover:text-brand-deep hover:underline"
+            >
+              {doc.title}
+              <span className="sr-only"> (opens in a new tab)</span>
+            </a>
+          ) : (
+            doc.title
+          )}
         </p>
       </div>
 
