@@ -1,6 +1,7 @@
 "use client";
 
-import { edit } from "@/lib/admin/editable";
+import { useDraft } from "@/lib/admin/draft";
+import { edit, editItem } from "@/lib/admin/editable";
 import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
 import {
@@ -23,11 +24,12 @@ const THUMBS = [
 
 export default function InvestorHighlights({
   heading = defaultHeading,
-  items = defaultHighlights,
+  items: publishedItems = defaultHighlights,
 }: {
   heading?: { eyebrow: string; title: string; standfirst: string };
   items?: Highlight[];
 }) {
+  const items = useDraft("investors.highlights.items", publishedItems);
   const sectionRef = useRef<HTMLElement | null>(null);
   const [started, setStarted] = useState(false);
 
@@ -143,6 +145,7 @@ function Card({
       className={`hl-reveal flex flex-col rounded-2xl bg-surface p-6 ring-1 ring-steel-900/8 sm:p-7 ${className}`}
       data-visible={started}
       style={{ animationDelay: `${240 + index * 110}ms` }}
+      {...editItem("investors.highlights.items", index)}
     >
       <Figure item={item} shown={shown} decimals={decimals} />
 

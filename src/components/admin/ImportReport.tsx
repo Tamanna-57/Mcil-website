@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   FIELD_LABELS,
   PER_SHARE_FIELDS,
@@ -16,7 +16,11 @@ import {
   type EditorialNotes,
 } from "@/lib/investor/derive";
 import { fyLabel, type FinancialYear } from "@/lib/investor/years";
-import { inputClass } from "./Fields";
+
+export const inputClass =
+  "w-full rounded-lg border border-steel-900/15 bg-white px-3 py-2 text-sm text-steel-900 " +
+  "shadow-xs outline-none transition-colors placeholder:text-steel-800/40 " +
+  "focus:border-brand-deep focus:ring-2 focus:ring-brand-deep/20";
 
 /**
  * "Import from annual report" — upload the PDF, check what was read out of it,
@@ -26,7 +30,8 @@ import { inputClass } from "./Fields";
  * PDF's text, which is reliable enough to save typing and nowhere near
  * reliable enough to publish unseen, so every figure arrives beside the line it
  * was taken from and nothing leaves this panel until someone presses Apply —
- * and even then it only fills the Investors form, which still has to be saved.
+ * and even then it only changes the page in front of them, which still has to
+ * be saved.
  */
 
 type Json = Record<string, unknown>;
@@ -319,9 +324,12 @@ function NoteField({
 export default function ImportReport({
   investors,
   onApply,
+  initialFile,
 }: {
   investors: Json;
   onApply: (next: Json) => void;
+  /** A PDF already chosen elsewhere (the "Add report" dialog), read at once. */
+  initialFile?: File;
 }) {
   const fileRef = useRef<HTMLInputElement>(null);
   const [phase, setPhase] = useState<Phase>({ kind: "idle" });
@@ -340,6 +348,14 @@ export default function ImportReport({
     onApply(regenerate(investors, years, regenNotes));
     setPhase({ kind: "idle" });
   }
+
+  /* Started from a file already in hand: read it straight away. */
+  const started = useRef(false);
+  useEffect(() => {
+    if (!initialFile || started.current) return;
+    started.current = true;
+    void read(initialFile);
+  }, [initialFile]);
 
   async function read(file: File) {
     setPhase({ kind: "reading" });
@@ -407,8 +423,8 @@ export default function ImportReport({
       }),
     );
 
-    /* Fold the panel away — the figures are now in the form below, which is
-       where they get checked a second time before being saved. */
+    /* Fold the panel away — the figures are now on the page, which is where
+       they get checked a second time before being saved. */
     setPhase({ kind: "idle" });
     setDraft(null);
     setPending(null);
@@ -432,10 +448,10 @@ export default function ImportReport({
         Upload the report as a PDF and the figures are read out of it, then
         shown here beside the lines they came from. Check them, correct
         anything the parser got wrong, and Apply fills in the hero panel, the
-        highlights cards, the performance chart and the reports list below —
-        which you then save as usual. Figures can also be typed straight into
-        “Reported figures by year” below; Regenerate rebuilds the panels from
-        them.
+        highlights cards, the performance chart and the reports list on this
+        page — which you then check and save as usual. Figures can also be
+        typed into “Reported figures by year” above; Regenerate rebuilds the
+        panels from them.
       </p>
 
       <input
@@ -482,9 +498,9 @@ export default function ImportReport({
         <div className="mt-5 rounded-xl bg-white p-4 ring-1 ring-steel-900/10 sm:p-5">
           <p className="text-sm leading-relaxed text-steel-800">
             Rebuild the hero panel, the highlights cards and the performance
-            chart from the {years.length} years of figures below, the most
+            chart from the {years.length} years of figures above, the most
             recent being {fyLabel(latest.fy)}. Use this after correcting a
-            figure by hand — editing it below changes the stored number but
+            figure by hand — editing it above changes the stored number but
             leaves the panels showing the old one until you do.
           </p>
           <p className="mt-2 text-sm leading-relaxed text-steel-800/80">
@@ -544,7 +560,7 @@ export default function ImportReport({
               Cancel
             </button>
             <p className="text-xs text-steel-800/70">
-              Nothing is published until you save the section.
+              Nothing is published until you press Save.
             </p>
           </div>
         </div>
@@ -709,7 +725,7 @@ export default function ImportReport({
               disabled={uploading}
               className={`${buttonClass} bg-steel-900 text-white hover:bg-navy`}
             >
-              {uploading ? "Attaching…" : "Apply to the form below"}
+              {uploading ? "Attaching…" : "Apply to the page"}
             </button>
             <button
               type="button"
@@ -724,7 +740,7 @@ export default function ImportReport({
               Discard
             </button>
             <p className="text-xs text-steel-800/70">
-              Nothing is published until you save the section.
+              Nothing is published until you press Save.
             </p>
           </div>
         </div>

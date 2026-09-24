@@ -2,7 +2,8 @@
 
 import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
-import { edit, editImage } from "@/lib/admin/editable";
+import { useDraft, useEditingEditor } from "@/lib/admin/draft";
+import { edit, editImage, editItem } from "@/lib/admin/editable";
 import { team, teamHeading, type TeamMember } from "@/lib/about-team";
 
 /**
@@ -84,7 +85,7 @@ const DEFAULT_FOOTNOTE =
  */
 export default function AboutTeam({
   heading = teamHeading,
-  members = team,
+  members: publishedMembers = team,
   footnote = DEFAULT_FOOTNOTE,
 }: {
   /* `standfirst` is still on the content type — every section's heading
@@ -94,6 +95,10 @@ export default function AboutTeam({
   members?: TeamMember[];
   footnote?: string;
 }) {
+  const members = useDraft("about.team.members", publishedMembers);
+  /* While editing, the panel moves on a click rather than a hover, so it does
+     not change under someone reaching for the text in it. */
+  const editing = Boolean(useEditingEditor());
   const sectionRef = useRef<HTMLElement | null>(null);
   const [visible, setVisible] = useState(false);
 
@@ -191,7 +196,11 @@ export default function AboutTeam({
               the scatter is dropped and the portraits simply run. */}
           <ul className="grid grid-cols-2 gap-x-4 gap-y-8 sm:grid-cols-3 sm:gap-x-5 md:grid-cols-4 md:gap-y-9 lg:grid-cols-5 lg:gap-y-10 xl:grid-cols-6">
             {members.map((member, i) => (
-              <li key={member.id} className={scatter(i)}>
+              <li
+                key={member.id}
+                className={scatter(i)}
+                {...editItem("about.team.members", i)}
+              >
                 <Portrait
                   member={member}
                   index={i}
@@ -199,6 +208,7 @@ export default function AboutTeam({
                   reading={member.id === reading.id}
                   onRead={() => setReadingId(member.id)}
                   onTap={follow}
+                  hoverReads={!editing}
                 />
               </li>
             ))}
@@ -266,6 +276,7 @@ function Portrait({
   reading,
   onRead,
   onTap,
+  hoverReads = true,
 }: {
   member: TeamMember;
   index: number;
@@ -275,12 +286,14 @@ function Portrait({
   onRead: () => void;
   /** Run after a tap, once the panel holds this person. */
   onTap: () => void;
+  /** Pointing at the portrait opens it in the panel (not while editing). */
+  hoverReads?: boolean;
 }) {
   return (
     <button
       type="button"
-      onPointerEnter={onRead}
-      onFocus={onRead}
+      onPointerEnter={hoverReads ? onRead : undefined}
+      onFocus={hoverReads ? onRead : undefined}
       onClick={() => {
         onRead();
         onTap();
@@ -371,9 +384,11 @@ function Panel({
   /** Only used to time the panel's own arrival behind the last portrait. */
   count: number;
 }) {
+  const editing = Boolean(useEditingEditor());
   return (
     <aside
       ref={ref}
+      {...editItem("about.team.members", index)}
       className="team-plate hl-reveal mt-12 flex flex-col p-8 sm:p-9 lg:sticky lg:top-[calc(var(--header-h)+2.5rem)] lg:mt-0 lg:min-h-[28rem]"
       data-visible={visible}
       style={{ animationDelay: `${240 + count * 70}ms` }}
@@ -416,7 +431,11 @@ function Panel({
         </p>
 
         {/* The profile as the Board writes it, a paragraph to a break. */}
+        {/* Keyed on the text, so an edit re-draws the paragraphs from
+            scratch rather than React reconciling ones the browser has already
+            merged or split while they were being typed into. */}
         <div
+          key={member.bio}
           className="mt-5 space-y-3.5 text-sm leading-relaxed text-white/75"
           {...edit(`about.team.members.${index}.bio`, { multiline: true })}
         >
@@ -432,7 +451,7 @@ function Panel({
         {/* Set apart at the foot rather than run into the profile: it is the
             one line on the panel that is a fact rather than a description,
             and it is what the section is read for after the name. */}
-        {member.qualification ? (
+        {member.qualification || editing ? (
           <div className="mt-auto pt-7">
             <span className="block h-px w-full bg-white/15" aria-hidden />
             <p className="mt-4 text-[10px] font-semibold tracking-[0.18em] text-white/50 uppercase">

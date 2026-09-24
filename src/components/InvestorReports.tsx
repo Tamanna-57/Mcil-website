@@ -1,6 +1,7 @@
 "use client";
 
-import { edit } from "@/lib/admin/editable";
+import { type Editor, useDraft, useEditingEditor } from "@/lib/admin/draft";
+import { edit, editItem } from "@/lib/admin/editable";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   ARCHIVE_BEFORE,
@@ -23,21 +24,78 @@ import {
  * gathered under a fifth tab, Archives, which keeps the same sub-categories
  * as chips. Which tab a filing lands in follows its date alone, so an old
  * filing added from the admin panel files itself.
+ *
+ * In the in-page editor every row carries its date, a button to upload or
+ * replace its file, and Delete; each list opens on "+ Add report". Rows keep
+ * the path they are stored at through the sorting and the archive split, so
+ * an edit lands on the right filing whichever tab it is shown under.
  */
+
+/** A filing, and where it is stored. */
+type Entry = { doc: ReportDoc; list: string; index: number };
+
+type ViewSub = {
+  id: string;
+  label: string;
+  docs: Entry[];
+  /** Where it is stored; absent on the Archives tab's gathered chips. */
+  path?: string;
+  /** Its place among its category's sub-categories. */
+  at?: number;
+};
+
+type ViewCategory = {
+  id: string;
+  label: string;
+  blurb: string;
+  subCategories: ViewSub[];
+  path?: string;
+};
+
+const ROOT = "investors.reports.categories";
+
+function located(categories: ReportCategory[]): ViewCategory[] {
+  return categories.map((c, ci) => {
+    const path = `${ROOT}.${ci}`;
+    return {
+      id: c.id,
+      label: c.label,
+      blurb: c.blurb,
+      path,
+      subCategories: (c.subCategories ?? []).map((s, si) => {
+        const subPath = `${path}.subCategories.${si}`;
+        return {
+          id: s.id,
+          label: s.label,
+          path: subPath,
+          at: si,
+          docs: (s.docs ?? []).map((doc, index) => ({
+            doc,
+            list: `${subPath}.docs`,
+            index,
+          })),
+        };
+      }),
+    };
+  });
+}
 export default function InvestorReports({
   heading,
-  categories: allCategories,
+  categories: publishedCategories,
 }: {
   heading: { eyebrow: string; title: string; standfirst: string };
   categories: ReportCategory[];
 }) {
-  /* Categories and sub-categories are added and deleted from the admin panel,
-     so any of them can arrive empty. A category with no sub-categories has
-     nothing to show and is left out of the tab row until it gets one. */
+  const allCategories = useDraft(ROOT, publishedCategories);
+  const editor = useEditingEditor();
+
+  /* Sub-categories are added and deleted from the editor, so any category can
+     arrive empty. A category with no sub-categories has nothing to show and
+     is left out of the tab row until it gets one. */
   const categories = useMemo(
     () =>
       withArchives(
-        allCategories.filter((c) => (c.subCategories ?? []).length > 0),
+        located(allCategories).filter((c) => c.subCategories.length > 0),
       ),
     [allCategories],
   );
@@ -105,7 +163,7 @@ export default function InvestorReports({
   /* Newest first, whatever order the rows were written in. The React compiler
      memoizes this; a manual useMemo on `sub` is what it cannot preserve. */
   const docs = [...(sub?.docs ?? [])].sort((a, b) =>
-    (b.date ?? "").localeCompare(a.date ?? ""),
+    (b.doc.date ?? "").localeCompare(a.doc.date ?? ""),
   );
   const shown = expanded ? docs : docs.slice(0, REPORTS_PAGE_SIZE);
 
@@ -189,7 +247,11 @@ export default function InvestorReports({
                   }`}
                   data-active={active}
                 >
-                  {c.label}
+                  {c.path ? (
+                    <span {...edit(`${c.path}.label`)}>{c.label}</span>
+                  ) : (
+                    c.label
+                  )}
                 </button>
                 {i < categories.length - 1 && (
                   <span className="text-steel-900/25 select-none" aria-hidden>
@@ -209,7 +271,10 @@ export default function InvestorReports({
           data-visible={visible}
           style={{ animationDelay: "320ms" }}
         >
-          <p className="text-center text-xs text-steel-800/80 sm:text-sm">
+          <p
+            className="text-center text-xs text-steel-800/80 sm:text-sm"
+            {...(category.path ? edit(`${category.path}.blurb`) : {})}
+          >
             {category.blurb}
           </p>
 
@@ -234,8 +299,15 @@ export default function InvestorReports({
                   }}
                   className="rp-chip cursor-pointer rounded-full px-3.5 py-1.5 text-[11px] tracking-[0.04em] transition-colors sm:text-xs"
                   data-active={active}
+                  {...(s.path && category.path && s.at !== undefined
+                    ? editItem(`${category.path}.subCategories`, s.at)
+                    : {})}
                 >
-                  {s.label}
+                  {s.path ? (
+                    <span {...edit(`${s.path}.label`)}>{s.label}</span>
+                  ) : (
+                    s.label
+                  )}
                 </button>
               );
             })}
@@ -243,11 +315,25 @@ export default function InvestorReports({
 
           <div className="mt-6 border-t border-steel-900/10 pt-1" />
 
+          {editor ? (
+            <AddReport
+              key={`${category.id}-${sub.id}`}
+              editor={editor}
+              sub={sub}
+              isAnnualReport={sub.id === "annual-audited"}
+            />
+          ) : null}
+
           {/* Keyed on the active list so the rows re-mount and the rise
               animation replays on every change of tab or chip. */}
           <ul key={`${category.id}-${sub.id}-${expanded}`} className="mt-1">
-            {shown.map((doc, i) => (
-              <Row key={`${i}-${doc.title}`} doc={doc} index={i} />
+            {shown.map((entry, i) => (
+              <Row
+                key={`${entry.list}.${entry.index}`}
+                entry={entry}
+                index={i}
+                editor={editor}
+              />
             ))}
           </ul>
 
@@ -283,13 +369,13 @@ const ARCHIVES_ID = "archives";
  * sub-category keeps its place in its own tab even when all it holds is
  * archived, so the chips a shareholder knows do not come and go.
  */
-function withArchives(categories: ReportCategory[]): ReportCategory[] {
-  const archived: ReportCategory["subCategories"] = [];
+function withArchives(categories: ViewCategory[]): ViewCategory[] {
+  const archived: ViewSub[] = [];
   const current = categories.map((c) => ({
     ...c,
     subCategories: c.subCategories.map((s) => {
-      const docs = s.docs ?? [];
-      const old = docs.filter(isArchived);
+      const docs = s.docs;
+      const old = docs.filter((e) => isArchived(e.doc));
       if (old.length > 0) {
         archived.push({
           id: `${ARCHIVES_ID}-${c.id}-${s.id}`,
@@ -297,7 +383,7 @@ function withArchives(categories: ReportCategory[]): ReportCategory[] {
           docs: old,
         });
       }
-      return { ...s, docs: docs.filter((d) => !isArchived(d)) };
+      return { ...s, docs: docs.filter((e) => !isArchived(e.doc)) };
     }),
   }));
 
@@ -345,21 +431,37 @@ function monthYear(iso: string): string {
  * printing the date under each one said the same thing twice and gave every
  * row a second line to read past.
  */
-function Row({ doc, index }: { doc: ReportDoc; index: number }) {
+function Row({
+  entry,
+  index,
+  editor,
+}: {
+  entry: Entry;
+  index: number;
+  editor: Editor | null;
+}) {
+  const { doc, list, index: at } = entry;
+  const path = `${list}.${at}`;
+
   return (
     <li
-      className="rp-row flex items-center gap-4 border-b border-steel-900/10 py-4 last:border-b-0 sm:gap-5 sm:py-5"
-      style={{ animationDelay: `${index * 70}ms` }}
+      className="rp-row flex flex-wrap items-center gap-x-4 gap-y-2 border-b border-steel-900/10 py-4 last:border-b-0 sm:gap-x-5 sm:py-5"
+      style={{ animationDelay: `${Math.min(index, 12) * 70}ms` }}
     >
       <DocIcon />
 
       <div className="min-w-0 flex-1">
-        <p className="text-sm font-semibold text-steel-900 sm:text-[0.95rem]">
+        <p
+          className="text-sm font-semibold text-steel-900 sm:text-[0.95rem]"
+          {...edit(`${path}.title`)}
+        >
           {doc.title}
         </p>
       </div>
 
-      {doc.href ? (
+      {editor ? (
+        <RowTools editor={editor} doc={doc} list={list} at={at} />
+      ) : doc.href ? (
         <a
           href={doc.href}
           download
@@ -384,6 +486,284 @@ function Row({ doc, index }: { doc: ReportDoc; index: number }) {
         </button>
       )}
     </li>
+  );
+}
+
+const TOOL =
+  "cursor-pointer rounded-full px-3 py-1.5 text-[11px] font-semibold transition-colors disabled:cursor-default disabled:opacity-50";
+
+/** A filing's controls in edit mode: its date, its file, and Delete. */
+function RowTools({
+  editor,
+  doc,
+  list,
+  at,
+}: {
+  editor: Editor;
+  doc: ReportDoc;
+  list: string;
+  at: number;
+}) {
+  const path = `${list}.${at}`;
+  const fileRef = useRef<HTMLInputElement>(null);
+  const [busy, setBusy] = useState(false);
+
+  const attach = async (file: File) => {
+    setBusy(true);
+    editor.say("Uploading…");
+    try {
+      const url = await editor.upload(file, "document");
+      editor.update(`${path}.href`, url);
+      editor.say(`File attached to “${doc.title}” — press Save to publish`);
+    } catch (err) {
+      editor.say(`Upload failed: ${(err as Error).message}`, true);
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  return (
+    <div data-edit-ui className="flex shrink-0 flex-wrap items-center gap-1.5">
+      <input
+        type="date"
+        value={doc.date ?? ""}
+        onChange={(e) => editor.update(`${path}.date`, e.target.value)}
+        title="Filed on — the list is ordered by this, and filings before March 2018 move to Archives"
+        className="rounded-full border border-steel-900/15 bg-white px-2.5 py-1 text-[11px] text-steel-900"
+      />
+      <input
+        ref={fileRef}
+        type="file"
+        accept=".pdf,.doc,.docx,.xls,.xlsx,.csv"
+        hidden
+        onChange={(e) => {
+          const file = e.target.files?.[0];
+          e.target.value = "";
+          if (file) void attach(file);
+        }}
+      />
+      {doc.href ? (
+        <a
+          href={doc.href}
+          target="_blank"
+          rel="noreferrer"
+          className={`${TOOL} text-steel-800 ring-1 ring-steel-900/15 hover:bg-steel-900/5`}
+        >
+          Open
+        </a>
+      ) : null}
+      <button
+        type="button"
+        disabled={busy}
+        onClick={() => fileRef.current?.click()}
+        className={`${TOOL} ${doc.href ? "text-steel-900 ring-1 ring-steel-900/15 hover:bg-steel-900/5" : "bg-amber-400 text-steel-900 hover:bg-amber-300"}`}
+      >
+        {busy ? "Uploading…" : doc.href ? "Replace file" : "Upload file"}
+      </button>
+      <button
+        type="button"
+        onClick={() => {
+          if (!confirm(`Delete “${doc.title}” from the list?`)) return;
+          editor.remove(list, at);
+          editor.say("Report deleted — press Save to publish");
+        }}
+        className={`${TOOL} bg-red-600 text-white hover:bg-red-500`}
+      >
+        Delete
+      </button>
+    </div>
+  );
+}
+
+/**
+ * "+ Add report": a title, the date it was filed, and the file. It goes to the
+ * top of the list as it is shown now, and is published with Save.
+ *
+ * An annual report can also be read for its figures. That hands the file to
+ * the investor-figures import instead, which attaches it to this list itself
+ * when its figures are applied — so it is not added twice.
+ */
+function AddReport({
+  editor,
+  sub,
+  isAnnualReport,
+}: {
+  editor: Editor;
+  sub: ViewSub;
+  isAnnualReport: boolean;
+}) {
+  const [open, setOpen] = useState(false);
+  const [title, setTitle] = useState("");
+  const [date, setDate] = useState(() => new Date().toISOString().slice(0, 10));
+  const [file, setFile] = useState<File | null>(null);
+  const [link, setLink] = useState("");
+  const [readFigures, setReadFigures] = useState(isAnnualReport);
+  const [busy, setBusy] = useState(false);
+
+  /* The Archives tab gathers filings from every other tab; a new one is added
+     under its own tab and moves here by its date. */
+  if (!sub.path) {
+    return (
+      <p
+        data-edit-ui
+        className="mt-3 rounded-xl bg-steel-900/5 px-4 py-3 text-center text-xs text-steel-800"
+      >
+        Add a filing under its own tab — one dated before March 2018 moves here
+        by itself.
+      </p>
+    );
+  }
+
+  const isPdf = Boolean(file && /\.pdf$/i.test(file.name));
+
+  const reset = () => {
+    setOpen(false);
+    setTitle("");
+    setFile(null);
+    setLink("");
+    setReadFigures(isAnnualReport);
+  };
+
+  const submit = async (event: React.FormEvent) => {
+    event.preventDefault();
+    if (isAnnualReport && readFigures && isPdf && file) {
+      editor.openFigures(file);
+      reset();
+      return;
+    }
+    if (!title.trim()) {
+      editor.say("Give the report a title", true);
+      return;
+    }
+    setBusy(true);
+    try {
+      let href = link.trim();
+      if (file) href = await editor.upload(file, "document");
+      editor.insert(`${sub.path}.docs`, 0, {
+        title: title.trim(),
+        date,
+        ...(href ? { href } : {}),
+      });
+      editor.say(`“${title.trim()}” added — press Save to publish`);
+      reset();
+    } catch (err) {
+      editor.say(`Upload failed: ${(err as Error).message}`, true);
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const input =
+    "w-full rounded-lg border border-steel-900/15 bg-white px-3 py-2 text-sm text-steel-900 outline-none focus:border-brand-deep";
+
+  if (!open) {
+    return (
+      <div data-edit-ui className="mt-3 flex flex-wrap justify-center gap-2">
+        <button
+          type="button"
+          onClick={() => setOpen(true)}
+          className={`${TOOL} bg-emerald-600 px-4 py-2 text-xs text-white hover:bg-emerald-500`}
+        >
+          + Add report to “{sub.label}”
+        </button>
+        {isAnnualReport ? (
+          <button
+            type="button"
+            onClick={() => editor.openFigures()}
+            className={`${TOOL} bg-steel-900 px-4 py-2 text-xs text-white hover:bg-steel-800`}
+          >
+            Import annual report &amp; update figures
+          </button>
+        ) : null}
+      </div>
+    );
+  }
+
+  return (
+    <form
+      data-edit-ui
+      onSubmit={submit}
+      className="mt-3 grid gap-3 rounded-2xl bg-white p-4 ring-1 ring-steel-900/10 sm:grid-cols-[1fr_11rem]"
+    >
+      <p className="text-sm font-semibold text-steel-900 sm:col-span-2">
+        New report in “{sub.label}”
+      </p>
+      <label className="grid gap-1 text-[11px] font-semibold tracking-[0.08em] text-steel-800 uppercase">
+        Title
+        <input
+          autoFocus
+          value={title}
+          onChange={(e) => setTitle(e.target.value)}
+          placeholder="e.g. Shareholding Pattern — 30.09.2026"
+          className={`${input} normal-case tracking-normal`}
+        />
+      </label>
+      <label className="grid gap-1 text-[11px] font-semibold tracking-[0.08em] text-steel-800 uppercase">
+        Filed on
+        <input
+          type="date"
+          value={date}
+          onChange={(e) => setDate(e.target.value)}
+          className={input}
+        />
+      </label>
+      <label className="grid gap-1 text-[11px] font-semibold tracking-[0.08em] text-steel-800 uppercase sm:col-span-2">
+        File (PDF, Word, Excel)
+        <input
+          type="file"
+          accept=".pdf,.doc,.docx,.xls,.xlsx,.csv"
+          onChange={(e) => setFile(e.target.files?.[0] ?? null)}
+          className="text-sm font-normal tracking-normal normal-case"
+        />
+      </label>
+      {!file ? (
+        <label className="grid gap-1 text-[11px] font-semibold tracking-[0.08em] text-steel-800 uppercase sm:col-span-2">
+          …or a link to it (e.g. on BSE)
+          <input
+            value={link}
+            onChange={(e) => setLink(e.target.value)}
+            placeholder="https://"
+            className={`${input} normal-case tracking-normal`}
+          />
+        </label>
+      ) : null}
+      {isAnnualReport && isPdf ? (
+        <label className="flex items-start gap-2 text-sm text-steel-800 sm:col-span-2">
+          <input
+            type="checkbox"
+            checked={readFigures}
+            onChange={(e) => setReadFigures(e.target.checked)}
+            className="mt-1"
+          />
+          <span>
+            This is the annual report: read the figures out of it and update
+            the hero, the highlights and the performance chart too. You check
+            the figures before anything changes, and the report is added to
+            this list when you apply them.
+          </span>
+        </label>
+      ) : null}
+      <div className="flex flex-wrap gap-2 sm:col-span-2">
+        <button
+          type="submit"
+          disabled={busy}
+          className={`${TOOL} bg-steel-900 px-4 py-2 text-xs text-white hover:bg-steel-800`}
+        >
+          {busy
+            ? "Uploading…"
+            : isAnnualReport && readFigures && isPdf
+              ? "Read the figures"
+              : "Add report"}
+        </button>
+        <button
+          type="button"
+          onClick={reset}
+          className={`${TOOL} px-4 py-2 text-xs text-steel-800 hover:bg-steel-900/6`}
+        >
+          Cancel
+        </button>
+      </div>
+    </form>
   );
 }
 

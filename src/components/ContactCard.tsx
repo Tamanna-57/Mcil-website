@@ -1,5 +1,6 @@
 "use client";
 
+import { useDraft } from "@/lib/admin/draft";
 import { useEffect, useState } from "react";
 import ContactForm from "@/components/ContactForm";
 import {
@@ -54,10 +55,11 @@ function whenIdle(run: () => void) {
  * between them is immediate rather than a fresh load of Google's app.
  */
 export default function ContactCard({
-  locations = defaultLocations,
+  locations: publishedLocations = defaultLocations,
 }: {
   locations?: ContactLocation[];
 }) {
+  const locations = useDraft("contact.locations", publishedLocations);
   /* Which frame is in the server-rendered HTML, and so the one whose load
      the effects below wait on. */
   const firstId = locations[0]?.id ?? "";
