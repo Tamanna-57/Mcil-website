@@ -3,6 +3,7 @@
 import { type Editor, useDraft, useEditingEditor } from "@/lib/admin/draft";
 import { edit, editItem } from "@/lib/admin/editable";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { viewUrlFor } from "@/lib/document-view";
 import {
   ARCHIVE_BEFORE,
   isArchived,
@@ -423,7 +424,8 @@ function monthYear(iso: string): string {
 }
 
 /**
- * One document: the icon, the title, and its Download control.
+ * One document: the icon, the title — a link that opens a PDF to read in a
+ * new tab — and its Download control.
  *
  * The filing date is not set here. It is still on every row — it is what the
  * list is ordered by, newest first — but the titles carry the year themselves
@@ -442,6 +444,8 @@ function Row({
 }) {
   const { doc, list, index: at } = entry;
   const path = `${list}.${at}`;
+  /* While editing, the title is text to type into rather than a link. */
+  const view = editor ? null : viewUrlFor(doc.href);
 
   return (
     <li
@@ -451,12 +455,27 @@ function Row({
       <DocIcon />
 
       <div className="min-w-0 flex-1">
-        <p
-          className="text-sm font-semibold text-steel-900 sm:text-[0.95rem]"
-          {...edit(`${path}.title`)}
-        >
-          {doc.title}
-        </p>
+        {view ? (
+          <p className="text-sm font-semibold text-steel-900 sm:text-[0.95rem]">
+            {/* Opens the PDF in a new tab to read; Download beside it saves it. */}
+            <a
+              href={view}
+              target="_blank"
+              rel="noopener"
+              className="underline-offset-4 transition-colors hover:text-brand-deep hover:underline"
+            >
+              {doc.title}
+              <span className="sr-only"> (opens in a new tab)</span>
+            </a>
+          </p>
+        ) : (
+          <p
+            className="text-sm font-semibold text-steel-900 sm:text-[0.95rem]"
+            {...edit(`${path}.title`)}
+          >
+            {doc.title}
+          </p>
+        )}
       </div>
 
       {editor ? (
@@ -544,7 +563,7 @@ function RowTools({
       />
       {doc.href ? (
         <a
-          href={doc.href}
+          href={viewUrlFor(doc.href) ?? doc.href}
           target="_blank"
           rel="noreferrer"
           className={`${TOOL} text-steel-800 ring-1 ring-steel-900/15 hover:bg-steel-900/5`}
