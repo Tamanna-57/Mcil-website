@@ -2,11 +2,11 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
+  ARCHIVE_BEFORE,
+  isArchived,
   type ReportCategory,
-  reportCategories as defaultCategories,
   type ReportDoc,
   REPORTS_PAGE_SIZE,
-  reportsHeading as defaultHeading,
 } from "@/lib/investor-reports";
 
 /**
@@ -16,21 +16,28 @@ import {
  *
  * MCIL files under four categories, each with its own sub-categories, so the
  * card carries a second row of chips under the tabs. "View All" expands the
- * active sub-category in place rather than routing anywhere — the documents
- * themselves are not attached yet (see src/lib/investor-reports.ts).
+ * active sub-category in place rather than routing anywhere.
+ *
+ * Filings older than ARCHIVE_BEFORE are lifted out of their sub-category and
+ * gathered under a fifth tab, Archives, which keeps the same sub-categories
+ * as chips. Which tab a filing lands in follows its date alone, so an old
+ * filing added from the admin panel files itself.
  */
 export default function InvestorReports({
-  heading = defaultHeading,
-  categories: allCategories = defaultCategories,
+  heading,
+  categories: allCategories,
 }: {
-  heading?: { eyebrow: string; title: string; standfirst: string };
-  categories?: ReportCategory[];
+  heading: { eyebrow: string; title: string; standfirst: string };
+  categories: ReportCategory[];
 }) {
   /* Categories and sub-categories are added and deleted from the admin panel,
      so any of them can arrive empty. A category with no sub-categories has
      nothing to show and is left out of the tab row until it gets one. */
   const categories = useMemo(
-    () => allCategories.filter((c) => (c.subCategories ?? []).length > 0),
+    () =>
+      withArchives(
+        allCategories.filter((c) => (c.subCategories ?? []).length > 0),
+      ),
     [allCategories],
   );
 
@@ -82,8 +89,8 @@ export default function InvestorReports({
   );
 
   /* The hero CTAs and the header menu link straight at a category
-     (/investors#financials, #compliance, #policies, #letters), so the hash
-     both scrolls here and opens the right tab. */
+     (/investors#financials, #compliance, #policies, #letters, #archives), so
+     the hash both scrolls here and opens the right tab. */
   useEffect(() => {
     const apply = () => {
       const id = window.location.hash.replace("#", "");
@@ -260,17 +267,70 @@ export default function InvestorReports({
           )}
         </div>
 
-        <p
-          className="rp-rise mt-6 text-center text-xs text-steel-800/70"
-          data-visible={visible}
-          style={{ animationDelay: "420ms" }}
-        >
-          Document files are being migrated; titles are shown ahead of the
-          downloads going live.
-        </p>
       </div>
     </section>
   );
+}
+
+const ARCHIVES_ID = "archives";
+
+/**
+ * Splits every sub-category into its current filings and its archived ones,
+ * and gathers the archived ones into an Archives category on the end. A
+ * sub-category keeps its place in its own tab even when all it holds is
+ * archived, so the chips a shareholder knows do not come and go.
+ */
+function withArchives(categories: ReportCategory[]): ReportCategory[] {
+  const archived: ReportCategory["subCategories"] = [];
+  const current = categories.map((c) => ({
+    ...c,
+    subCategories: c.subCategories.map((s) => {
+      const docs = s.docs ?? [];
+      const old = docs.filter(isArchived);
+      if (old.length > 0) {
+        archived.push({
+          id: `${ARCHIVES_ID}-${c.id}-${s.id}`,
+          label: s.label,
+          docs: old,
+        });
+      }
+      return { ...s, docs: docs.filter((d) => !isArchived(d)) };
+    }),
+  }));
+
+  if (archived.length === 0) return current;
+
+  /* "Others" is a sub-category of two tabs; in one row of chips it needs
+     saying which. */
+  const seen = new Map<string, number>();
+  for (const s of archived) seen.set(s.label, (seen.get(s.label) ?? 0) + 1);
+  const labelled = archived.map((s) => {
+    if ((seen.get(s.label) ?? 0) < 2) return s;
+    const owner = current.find((c) =>
+      s.id.startsWith(`${ARCHIVES_ID}-${c.id}-`),
+    );
+    return owner ? { ...s, label: `${s.label} — ${owner.label}` } : s;
+  });
+
+  return [
+    ...current,
+    {
+      id: ARCHIVES_ID,
+      label: "Archives",
+      blurb: `Filings from before ${monthYear(ARCHIVE_BEFORE)}, kept for reference.`,
+      subCategories: labelled,
+    },
+  ];
+}
+
+/** "2018-03-01" → "March 2018". */
+function monthYear(iso: string): string {
+  const [y, m] = iso.split("-").map(Number);
+  return new Date(Date.UTC(y, m - 1, 1)).toLocaleDateString("en-GB", {
+    month: "long",
+    year: "numeric",
+    timeZone: "UTC",
+  });
 }
 
 /**
