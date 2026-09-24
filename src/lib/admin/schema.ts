@@ -940,7 +940,7 @@ export const sections: SectionSchema[] = [
                         type: "date",
                         key: "date",
                         label: "Date",
-                        help: "Filing date, as YYYY-MM-DD. Not shown on the page — it is what orders the list, newest first.",
+                        help: "Filing date, as YYYY-MM-DD. Not shown on the page — it is what orders the list, newest first. A date before 1 March 2018 files the row under Archives.",
                       },
                       {
                         type: "file",

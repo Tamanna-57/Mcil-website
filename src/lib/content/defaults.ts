@@ -20,7 +20,8 @@ import {
   performanceHeading,
   performanceMetrics,
 } from "@/lib/investor-performance";
-import { reportCategories, reportsHeading } from "@/lib/investor-reports";
+import { reportCategories } from "@/lib/investor-report-categories";
+import { reportsHeading } from "@/lib/investor-reports";
 import { financialYears } from "@/lib/investor/years";
 import { products, productsIntro } from "@/lib/products";
 import type { SiteContent } from "./types";

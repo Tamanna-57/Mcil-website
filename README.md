@@ -318,11 +318,18 @@ the live mcil.net investor section, each with its real sub-categories:
 | Letters Sent to Stock Exchange      | Intimation, Outcome, Newspaper Publication, Others                                                         |
 | Policies, Code & Unclaimed Dividend | Policies, Code, Unclaimed Dividend, Investor Forms                                                         |
 
-The rows that ship are **placeholders** — titles and dates are shaped like the
-real filings, but no file is attached yet. Publishing one is a job for the
-admin panel, not the code: see [Uploading filings](#uploading-filings). The
-list in `src/lib/investor-reports.ts` is only the starting point an admin edits
-from.
+The rows that ship are **every filing from the old mcil.net** — 720 of them,
+from 2012 on — generated into `src/lib/investor-report-docs.json` by
+[`tools/old-reports/`](tools/old-reports/README.md). The files themselves live
+in the bucket under `reports/`, copied there once by that folder's Cloud Shell
+script, and each row links to `/reports/<sub-category>/<file>`, which sends the
+visitor on to the bucket. New filings go through the admin panel as before: see
+[Uploading filings](#uploading-filings).
+
+**Archives.** Filings dated before 1 March 2018 (`ARCHIVE_BEFORE` in
+`src/lib/investor-reports.ts`) are taken out of their sub-category and listed
+under a fifth tab, Archives, which keeps the same sub-category chips. The date
+alone decides it, so an old filing added from the admin panel files itself.
 
 A row with a document renders a live download; a row without one keeps the same
 Download control, inert. Nothing links back to mcil.net.
@@ -332,10 +339,12 @@ Rows sort newest-first on `date`, so entries can be added in any order, and
 place.
 
 Each category is also an anchor — `/investors#financials`, `#compliance`,
-`#letters`, `#policies` — which scrolls to the band and opens that tab.
+`#letters`, `#policies`, `#archives` — which scrolls to the band and opens that
+tab.
 
 ## Still to do
 
 - Higher-resolution originals for `hero-1` and `hero-4` (above).
 - The rest of the site: Media, Careers, Contact.
-- Real PDFs behind the investor document rows (above).
+- The old reports listed in `tools/old-reports/CHECK-BY-HAND.md`: three whose
+  file was missing on mcil.net too, and some dates worth confirming.
