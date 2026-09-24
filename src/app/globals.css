@@ -704,50 +704,48 @@ body {
 /* ------------------------------------------------------------------ */
 
 /*
- * The stages run off the page's own scroll, with the panel stuck to the
- * viewport while they last: scrolling over the section changes the stage and
- * nothing on screen moves, and the page carries on once the last stage has
- * been reached.
+ * The stages are changed by the wheel, not by where the page has been
+ * scrolled to. With the pointer over the section a flick moves to the next
+ * stage and the page does not move at all; with the pointer anywhere else the
+ * page scrolls exactly as it always does and the stages sit still. Only when
+ * there is no stage left in the direction being scrolled does the section
+ * hand the wheel back, so it can never hold the page longer than it has
+ * stages.
  *
- * The track is the panel's own height plus a share of it again for every
- * stage after the first — that share is `STEP_TRAVEL` in AboutProcess.tsx,
- * which hands the finished multiplier down as `--ap-span`, so the length of
- * the track follows however many stages the admin panel saves.
- *
- * Pinning starts here, at `lg`. Narrower than that the section is an ordinary
- * block that the pills page through: a screen that scrolls without moving is
- * hard enough to read as deliberate on a desktop, and on a phone — where the
- * address bar is already sliding about — it reads as a page that has hung.
+ * For that hand-over to land on a framed section rather than a half-scrolled
+ * one, the section takes the wheel only once it is sitting whole on the
+ * screen — which it can only do if it is shorter than the screen. So here it
+ * is cut to fit, with a margin left over, and its rhythm follows the height
+ * it is given. Below the sizes this query covers there is no room for that,
+ * and the section keeps its natural height with the pills alone changing the
+ * stages; the component reads that off the section's measured height rather
+ * than repeating this query in script.
  */
-@media (min-width: 1024px) and (min-height: 600px) {
-  .ap-track {
-    /* The panel stands in the space the fixed header leaves. */
-    --ap-pin-h: calc(100dvh - var(--header-h));
-
+@media (min-width: 1024px) and (min-height: 720px) {
+  .ap-section {
     /*
-     * The rhythm inside the pin, which has only that height to work with and
-     * cannot spill into the section below it. Both are the comfortable fixed
-     * measure until the screen is too short to afford it, and follow the
-     * height from there — so a laptop with a bookmarks bar gets a tighter
-     * panel rather than one running off the bottom of its own pin.
+     * The margin is the 140px held back here. It has to be worth more than
+     * one notch of a wheel, or a single flick could step clean over the range
+     * where the section is fully in view and the wheel would never be taken.
      */
-    --ap-gap: min(1.5rem, 2.6vh);
-    --ap-pad: min(2.25rem, 3.8vh);
+    height: min(40rem, calc(100dvh - var(--header-h) - 140px));
 
-    height: calc(var(--ap-pin-h) * var(--ap-span, 1));
-  }
-
-  .ap-pin {
-    position: sticky;
-    top: var(--header-h);
-    height: var(--ap-pin-h);
+    /* The rhythm inside that height: the comfortable fixed measure until the
+       screen is too short to afford it, and a share of the height from there.
+       A laptop with a bookmarks bar gets a tighter panel rather than one
+       running out through the bottom of its own section. */
+    --ap-gap: min(1.5rem, 2.2vh);
+    --ap-pad: min(2.25rem, 3.2vh);
+    --ap-lead: min(0.75rem, 1.2vh);
+    --ap-body: min(1rem, 1.6vh);
+    --ap-facts: min(1.75rem, 2.6vh);
   }
 
   /*
-   * Everything below only makes sense against a pin of a known height, and
-   * `lg:` alone would apply it to a window that is wide but too short to be
-   * pinned at all. So it is set here, where the same query decides both, and
-   * the section keeps its ordinary block layout wherever pinning is off.
+   * Everything below only makes sense against a section of a known height,
+   * and `lg:` alone would apply it to a window that is wide but too short to
+   * have one. So it is set here, under the same query that decides the
+   * height, and the section keeps its ordinary block layout everywhere else.
    */
   .ap-inner {
     height: 100%;
@@ -755,17 +753,14 @@ body {
     padding-block: var(--ap-gap);
   }
 
-  /* The panel takes what the pinned screen has left, within reason: a short
-     laptop gets a shorter photograph rather than a panel running off the
-     bottom of its pin, and a tall monitor does not get a vast one. */
+  /* The panel takes what the section has left over. */
   .ap-panel {
     flex: 1 1 0%;
-    min-height: 15rem;
-    max-height: 32rem;
+    min-height: 0;
   }
 
   /* However long the body text an editor saves runs, the copy stays inside
-     the panel rather than pushing it through the bottom of the pin. */
+     the panel rather than pushing it out through the bottom. */
   .ap-copy {
     max-height: 100%;
     overflow-y: auto;
