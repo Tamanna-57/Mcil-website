@@ -455,8 +455,10 @@ function Panel({
 /**
  * The small square that trails the pointer across the wall, as the reference
  * has it: a dot while it crosses the gaps, opening into a "Profile" tag over a
- * portrait. It follows with a little lag — eased towards the pointer each
- * frame rather than pinned to it — which is what makes it read as smooth.
+ * portrait. Over a portrait it stands in for the pointer itself — the hand is
+ * hidden there, and the dot sits where the pointer is. It follows with a
+ * little lag — eased towards the pointer each frame rather than pinned to it
+ * — which is what makes it read as smooth.
  *
  * Only where there is a pointer to follow, and not for reduced motion. It is
  * decoration: the portraits are buttons and say what they do on their own.
@@ -488,8 +490,8 @@ function WallCursor({
     let placed = false;
 
     const tick = () => {
-      x += (tx - x) * 0.2;
-      y += (ty - y) * 0.2;
+      x += (tx - x) * 0.3;
+      y += (ty - y) * 0.3;
       el.style.transform = `translate3d(${x}px, ${y}px, 0)`;
       frame =
         Math.abs(tx - x) + Math.abs(ty - y) > 0.3
@@ -498,9 +500,10 @@ function WallCursor({
     };
 
     const onMove = (event: PointerEvent) => {
-      /* Down and to the right of the pointer, clear of the arrow. */
-      tx = event.clientX + 14;
-      ty = event.clientY + 16;
+      /* The dot's centre on the pointer: the square is 22px tall and its dot
+         sits 9.5px in from the left. */
+      tx = event.clientX - 9.5;
+      ty = event.clientY - 11;
       if (!placed) {
         x = tx;
         y = ty;
@@ -518,12 +521,15 @@ function WallCursor({
       placed = false;
     };
 
+    /* Only once the dot is there to replace it is the pointer hidden. */
+    area.classList.add("team-wall--dot");
     area.addEventListener("pointermove", onMove);
     area.addEventListener("pointerleave", onLeave);
     /* It is fixed to the window, so a scroll under a still pointer would
        leave it behind; hide it until the pointer moves again. */
     window.addEventListener("scroll", onLeave, { passive: true });
     return () => {
+      area.classList.remove("team-wall--dot");
       area.removeEventListener("pointermove", onMove);
       area.removeEventListener("pointerleave", onLeave);
       window.removeEventListener("scroll", onLeave);

@@ -1862,6 +1862,10 @@ body {
   will-change: transform;
   transition: opacity 220ms ease;
 }
+/* Over a portrait the dot is the pointer. */
+.team-wall--dot .team-portrait {
+  cursor: none;
+}
 .team-cursor[data-state="hidden"] {
   opacity: 0;
 }
