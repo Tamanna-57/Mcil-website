@@ -2,6 +2,8 @@
 
 import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
+import { useDraft, useEditingEditor } from "@/lib/admin/draft";
+import { edit, editImage, editItem } from "@/lib/admin/editable";
 import {
   customers as defaultCustomers,
   customersHeading,
@@ -26,7 +28,7 @@ export default function Customers({
   title = customersHeading.title,
   standfirst = customersHeading.standfirst,
   footnote = customersHeading.footnote,
-  items = defaultCustomers,
+  items: publishedItems = defaultCustomers,
 }: {
   eyebrow?: string;
   title?: string;
@@ -34,6 +36,10 @@ export default function Customers({
   footnote?: string;
   items?: Customer[];
 }) {
+  const items = useDraft("home.customers.items", publishedItems);
+  /* Optional lines are kept on the page while editing, so an empty one can
+     still be clicked and filled in. */
+  const editing = Boolean(useEditingEditor());
   const sectionRef = useRef<HTMLElement | null>(null);
   const [visible, setVisible] = useState(false);
 
@@ -75,21 +81,23 @@ export default function Customers({
             className="hl-reveal text-[11px] font-semibold tracking-[0.24em] text-accent uppercase"
             data-visible={visible}
           >
-            [ {eyebrow} ]
+            [ <span {...edit("home.customers.eyebrow")}>{eyebrow}</span> ]
           </p>
           <h2
             className="hl-reveal type-display mt-4 text-[clamp(1.35rem,3.2vw,2.1rem)] leading-[1.18] text-steel-900 uppercase"
             data-visible={visible}
             style={{ animationDelay: "80ms" }}
+            {...edit("home.customers.title")}
           >
             {title}
           </h2>
           {/* Optional, and empty as it ships: the heading says it. */}
-          {standfirst ? (
+          {standfirst || editing ? (
             <p
               className="hl-reveal mt-5 text-sm leading-relaxed text-steel-800 sm:text-base"
               data-visible={visible}
               style={{ animationDelay: "160ms" }}
+              {...edit("home.customers.standfirst")}
             >
               {standfirst}
             </p>
@@ -106,17 +114,19 @@ export default function Customers({
               className="hl-reveal flex w-[calc(50%-0.75rem)] justify-center sm:w-[calc(33.333%-1.667rem)] lg:w-[calc(25%-1.875rem)]"
               data-visible={visible}
               style={{ animationDelay: `${240 + i * 60}ms` }}
+              {...editItem("home.customers.items", i)}
             >
-              <Mark customer={customer} />
+              <Mark customer={customer} index={i} />
             </li>
           ))}
         </ul>
 
-        {footnote ? (
+        {footnote || editing ? (
           <p
             className="hl-reveal mt-12 text-center text-[11px] leading-relaxed text-steel-800/55"
             data-visible={visible}
             style={{ animationDelay: `${240 + items.length * 60}ms` }}
+            {...edit("home.customers.footnote")}
           >
             {footnote}
           </p>
@@ -143,7 +153,7 @@ const LOGO_BASE = 58;
  * which will not process SVG without `dangerouslyAllowSVG` — a flag worth
  * avoiding for a handful of files that are already a few kilobytes each.
  */
-function Mark({ customer }: { customer: Customer }) {
+function Mark({ customer, index }: { customer: Customer; index: number }) {
   const { name, mark, suffix, font, logo, logoAlt, scale = 1 } = customer;
 
   if (logo) {
@@ -161,6 +171,9 @@ function Mark({ customer }: { customer: Customer }) {
           width={320}
           height={128}
           unoptimized={logo.endsWith(".svg")}
+          {...editImage(`home.customers.items.${index}.logo`, {
+            optional: true,
+          })}
           className="w-auto max-w-[8.5rem] object-contain sm:max-w-[10rem] lg:max-w-[11rem]"
           style={{ height: `${Math.round(LOGO_BASE * scale)}%` }}
         />
@@ -171,7 +184,8 @@ function Mark({ customer }: { customer: Customer }) {
   return (
     <span
       title={name}
-      className="customer-mark flex h-16 items-center justify-center text-steel-900"
+      className="customer-mark flex h-16 min-w-[8rem] items-center justify-center text-steel-900"
+      {...editImage(`home.customers.items.${index}.logo`, { empty: true })}
     >
       <span
         className={`flex items-baseline gap-1.5 whitespace-nowrap ${
@@ -185,10 +199,13 @@ function Mark({ customer }: { customer: Customer }) {
               : "text-[clamp(1rem,2.2vw,1.32rem)] font-bold tracking-[0.02em]"
           }
         >
-          {mark}
+          <span {...edit(`home.customers.items.${index}.mark`)}>{mark}</span>
         </span>
         {suffix ? (
-          <span className="text-[clamp(0.62rem,1.4vw,0.76rem)] font-light tracking-[0.22em]">
+          <span
+            className="text-[clamp(0.62rem,1.4vw,0.76rem)] font-light tracking-[0.22em]"
+            {...edit(`home.customers.items.${index}.suffix`)}
+          >
             {suffix}
           </span>
         ) : null}

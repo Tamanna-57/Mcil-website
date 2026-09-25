@@ -14,18 +14,40 @@ npm run lint
 
 ## The admin panel
 
-`/admin` is a password-protected editor for the site's text and images. Nothing
-on it requires touching the code: whoever has the password can rewrite copy,
-reorder and add list items (hero slides, team members, products, report rows)
-and upload photographs, and the change is live on the next page load.
+There is no separate admin dashboard: the site is edited where it stands, the
+way the KBI site is. Sign in and you land on the website itself with the admin
+bar at the foot of the window. Switch on **Edit mode** and:
+
+- **Text** — every outlined piece of text can be clicked and typed into. Text on
+  a button (a stage pill, a team plate, a report tab) is edited with a
+  double-click, so the button still works on a single click.
+- **Images** — every photograph carries **Change image**; where the page has
+  something to show without one (a customer's logo, a product plate) there is
+  also a red **×** to remove it, and an empty slot offers **Add image**.
+- **Lists** — point at a slide, a process stage, a customer, a team member, a
+  product, a contact location, a highlight card or a report sub-category and
+  its toolbar appears: **◀ ▶** to move it, **+ Add** to add another after it,
+  **Delete** to remove it.
+- **Reports** — on the investor page every filing shows its date, **Upload
+  file** / **Replace file**, and **Delete**; each list opens on **+ Add
+  report**. Old filings (before March 2018) move to Archives by their date.
+- **Investor figures** — **Import annual report & update figures** (on the
+  Annual Report list, or **Investor figures** in the bar) reads the latest
+  annual report PDF, shows each figure beside the line it came from for
+  checking, and on Apply updates the hero panel, the highlights, the
+  performance chart and adds the report to the list.
+
+Nothing is published until **Save changes**, which writes every changed
+section and reloads the page. **Discard** throws the draft away. Moving to
+another page keeps the draft and edit mode.
 
 ### Signing in
 
-Set `ADMIN_PASSWORD` on the deployment and go to `/admin`. There are no
-per-user accounts — it is one shared password, which is what a small office
-actually wants. With no password set the panel refuses every login rather than
-falling back to a default, so a deployment that forgot the variable is closed
-rather than open.
+Set `ADMIN_PASSWORD` on the deployment and go to `/admin` (or the "Admin" link
+in the footer). There are no per-user accounts — it is one shared password,
+which is what a small office actually wants. With no password set every login
+is refused rather than falling back to a default, so a deployment that forgot
+the variable is closed rather than open.
 
 To run it locally:
 
@@ -38,48 +60,32 @@ npm run dev                  # http://localhost:3000/admin
 
 The copy in `src/lib/*.ts` stays the baseline. What an admin saves is stored
 separately, as an *override*, and merged over that baseline on every request.
-Two things follow:
+A section nobody has edited keeps tracking the repo, so a copy change made in
+code still reaches the site. Objects merge key by key; lists replace
+wholesale, because a list is something an admin curates.
 
-- A section nobody has edited keeps tracking the repo, so a copy change made in
-  code still reaches the site.
-- **Restore original** on any section deletes its override and brings back
-  exactly what the repo ships. Nothing is lost by experimenting.
+For a signed-in admin the site is wrapped in the editor
+(`src/components/admin/EditBar.tsx`), which holds a draft of the whole
+`SiteContent`. Sections read their data through `useDraft(path, value)`
+(`src/lib/admin/draft.ts`), so the public get exactly what the server rendered
+and an admin sees their unsaved draft.
 
-Objects merge key by key; lists replace wholesale, because a list is something
-an admin curates and a cleverer merge would make deleting an item impossible.
+### Making something editable
 
-### Adding a new editable field
+Components mark what can be edited with the helpers in
+`src/lib/admin/editable.ts`, naming where the value lives in `SiteContent`:
 
-Two steps, both mechanical:
+- `edit("home.about.title")` on an element whose only child is the text;
+- `editImage("about.team.members.2.image", { optional })` on an image;
+- `editItem("about.team.members", i)` on each entry of a list, plus an entry
+  in `src/lib/admin/lists.ts` saying what the entry is called and how a new
+  one starts.
 
-1. Add the field to `SiteContent` in `src/lib/content/types.ts` and give it a
-   baseline in `src/lib/content/defaults.ts`.
-2. Describe it in `src/lib/admin/schema.ts`. The dashboard has no hand-written
-   forms — it walks that description and renders the right control, so a new
-   `{ type: "text", key: "...", label: "..." }` is all a new text box takes.
-
-Available field types: `text`, `textarea`, `number`, `image`, `file`, `url`,
-`date`, `select`, `boolean`, `strings` (a list of plain strings), `group` (a
-nested object, optionally addable and removable) and `list` (a repeatable row
-set with add, delete, duplicate and reorder).
-
-### Uploading filings
-
-Every row under **Investors → Reports & filings** takes a document: open the
-category, then the sub-category, then the row, and upload the PDF. The same
-control accepts `.doc`, `.docx`, `.xls`, `.xlsx` and `.csv`, and a row left
-without one shows its Download greyed out, so a filing can be listed before it
-is available. A filing hosted elsewhere — on BSE, say — still works: paste its
-URL into the box under the upload button instead.
-
-Adding next year's report is **+ Add document**, a title, a date and the file.
+A new field goes into `SiteContent` in `src/lib/content/types.ts` with a
+baseline in `src/lib/content/defaults.ts`; the component then reads it with
+`useDraft` and marks it.
 
 Documents are capped at 32 MB (`MAX_DOCUMENT_MB`) and images at 8 MB.
-Downloads are named the way they were uploaded, without the collision-avoiding
-token the stored file carries.
-
-Uploads are streamed rather than buffered, so a 30 MB report is not held in
-memory in one piece on its way to disk or to the bucket.
 
 ### Where content is stored
 
@@ -170,9 +176,10 @@ The hero section, modelled on the Aditya Birla Group homepage:
 
 ## Editing the hero
 
-Slide order, sector words, alt text, focal points and the standfirst are all
-editable from `/admin` — the table below is where their defaults live, and
-what the site falls back to when nothing has been saved.
+Slide order, sector words, photographs and the standfirst are all edited on
+the page itself in edit mode — the table below is where their defaults live
+(alt text and focal points included), and what the site falls back to when
+nothing has been saved.
 
 | What                                                    | Where                           |
 | ------------------------------------------------------- | ------------------------------- |
@@ -323,8 +330,8 @@ from 2012 on — generated into `src/lib/investor-report-docs.json` by
 [`tools/old-reports/`](tools/old-reports/README.md). The files themselves live
 in the bucket under `reports/`, copied there once by that folder's Cloud Shell
 script, and each row links to `/reports/<sub-category>/<file>`, which sends the
-visitor on to the bucket. New filings go through the admin panel as before: see
-[Uploading filings](#uploading-filings).
+visitor on to the bucket. New filings are added on the investor page itself in
+edit mode: see [The admin panel](#the-admin-panel).
 
 **Archives.** Filings dated before 1 March 2018 (`ARCHIVE_BEFORE` in
 `src/lib/investor-reports.ts`) are taken out of their sub-category and listed

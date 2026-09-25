@@ -2,6 +2,8 @@
 
 import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
+import { useDraft, useEditingEditor } from "@/lib/admin/draft";
+import { edit, editImage, editItem } from "@/lib/admin/editable";
 import { team, teamHeading, type TeamMember } from "@/lib/about-team";
 
 /**
@@ -24,8 +26,10 @@ import { team, teamHeading, type TeamMember } from "@/lib/about-team";
  * five, then six. Below `md` there are too few columns for cells to be spared
  * at all.
  */
-const SCATTER_6 = [1, 3, 6, 2, 4, 1, 5] as const;
-const SCATTER_5 = [1, 3, 5, 2, 4, 1, 3] as const;
+/* From `lg` the wall is two rows deep — four across, then three — so the
+   section, wall and panel together, fits on one screen. */
+const SCATTER_6 = [1, 2, 4, 6, 2, 3, 5] as const;
+const SCATTER_5 = [1, 2, 4, 5, 2, 3, 5] as const;
 const SCATTER_4 = [1, 3, 4, 2, 4, 1, 3] as const;
 
 /* Written out in full because the stylesheet is built by reading these files;
@@ -83,7 +87,7 @@ const DEFAULT_FOOTNOTE =
  */
 export default function AboutTeam({
   heading = teamHeading,
-  members = team,
+  members: publishedMembers = team,
   footnote = DEFAULT_FOOTNOTE,
 }: {
   /* `standfirst` is still on the content type — every section's heading
@@ -93,6 +97,10 @@ export default function AboutTeam({
   members?: TeamMember[];
   footnote?: string;
 }) {
+  const members = useDraft("about.team.members", publishedMembers);
+  /* While editing, the panel moves on a click rather than a hover, so it does
+     not change under someone reaching for the text in it. */
+  const editing = Boolean(useEditingEditor());
   const sectionRef = useRef<HTMLElement | null>(null);
   const [visible, setVisible] = useState(false);
 
@@ -133,6 +141,7 @@ export default function AboutTeam({
      and moving the page under a pointer that is only passing across the wall
      would be the wrong thing entirely. */
   const panelRef = useRef<HTMLElement | null>(null);
+  const wallRef = useRef<HTMLUListElement | null>(null);
 
   function follow() {
     if (typeof window === "undefined" || !window.matchMedia) return;
@@ -146,7 +155,7 @@ export default function AboutTeam({
     <section
       ref={sectionRef}
       id="team"
-      className="team-band scroll-mt-[var(--header-h)] px-6 py-20 sm:px-10 lg:px-[3vw] lg:py-24"
+      className="team-band scroll-mt-[var(--header-h)] px-6 py-16 sm:px-10 lg:flex lg:min-h-[calc(100svh-var(--header-h))] lg:flex-col lg:justify-center lg:px-[3vw] lg:py-5"
     >
       {/* The wall runs the width of the window rather than sitting in the
           page's usual centred measure. The reference hangs a long row of small
@@ -167,7 +176,7 @@ export default function AboutTeam({
             className="hl-reveal text-[11px] font-semibold tracking-[0.24em] text-accent uppercase lg:hidden"
             data-visible={visible}
           >
-            [ {heading.eyebrow} ]
+            [ <span {...edit("about.team.heading.eyebrow")}>{heading.eyebrow}</span> ]
           </p>
         </header>
 
@@ -188,9 +197,16 @@ export default function AboutTeam({
               worth more as the air between the plates than as bigger plates.
               Below `md` there are too few columns for cells to be spared, so
               the scatter is dropped and the portraits simply run. */}
-          <ul className="grid grid-cols-2 gap-x-4 gap-y-8 sm:grid-cols-3 sm:gap-x-5 md:grid-cols-4 md:gap-y-9 lg:grid-cols-5 lg:gap-y-10 xl:grid-cols-6">
+          <ul
+            ref={wallRef}
+            className="team-wall grid grid-cols-2 gap-x-4 gap-y-8 sm:grid-cols-3 sm:gap-x-5 md:grid-cols-4 md:gap-y-6 lg:grid-cols-5 lg:gap-y-5 xl:grid-cols-6"
+          >
             {members.map((member, i) => (
-              <li key={member.id} className={scatter(i)}>
+              <li
+                key={member.id}
+                className={scatter(i)}
+                {...editItem("about.team.members", i)}
+              >
                 <Portrait
                   member={member}
                   index={i}
@@ -198,23 +214,28 @@ export default function AboutTeam({
                   reading={member.id === reading.id}
                   onRead={() => setReadingId(member.id)}
                   onTap={follow}
+                  hoverReads={!editing}
                 />
               </li>
             ))}
           </ul>
 
+          <WallCursor wall={wallRef} />
+
           <Panel
             ref={panelRef}
             member={reading}
+            index={members.indexOf(reading)}
             visible={visible}
             count={members.length}
           />
         </div>
 
         <p
-          className="hl-reveal mt-12 text-xs text-steel-800/70"
+          className="hl-reveal mt-10 text-xs text-steel-800/70 lg:mt-3"
           data-visible={visible}
           style={{ animationDelay: "900ms" }}
+          {...edit("about.team.footnote")}
         >
           {footnote}
         </p>
@@ -238,7 +259,9 @@ function Rail({ label, visible }: { label: string; visible: boolean }) {
       data-visible={visible}
       aria-hidden
     >
-      <span className="type-display rotate-180 text-[clamp(2.1rem,3.4vw,3.1rem)] whitespace-nowrap text-steel-900 uppercase [writing-mode:vertical-rl]">
+      <span className="type-display rotate-180 text-[clamp(2.1rem,3.4vw,3.1rem)] whitespace-nowrap text-steel-900 uppercase [writing-mode:vertical-rl]"
+        {...edit("about.team.heading.eyebrow")}
+      >
         {label}
       </span>
       <span className="w-px flex-1 bg-steel-900/20" />
@@ -261,6 +284,7 @@ function Portrait({
   reading,
   onRead,
   onTap,
+  hoverReads = true,
 }: {
   member: TeamMember;
   index: number;
@@ -270,12 +294,14 @@ function Portrait({
   onRead: () => void;
   /** Run after a tap, once the panel holds this person. */
   onTap: () => void;
+  /** Pointing at the portrait opens it in the panel (not while editing). */
+  hoverReads?: boolean;
 }) {
   return (
     <button
       type="button"
-      onPointerEnter={onRead}
-      onFocus={onRead}
+      onPointerEnter={hoverReads ? onRead : undefined}
+      onFocus={hoverReads ? onRead : undefined}
       onClick={() => {
         onRead();
         onTap();
@@ -283,7 +309,7 @@ function Portrait({
       aria-pressed={reading}
       /* The ceiling sits on the whole cell rather than on the photograph
          alone, so what is left over stays as the gap between plates. */
-      className="hl-reveal group block w-full max-w-[10rem] cursor-pointer text-left sm:max-w-[8.5rem]"
+      className="team-portrait hl-reveal group block w-full max-w-[10rem] cursor-pointer text-left"
       data-visible={visible}
       style={{ animationDelay: `${240 + index * 70}ms` }}
     >
@@ -303,6 +329,7 @@ function Portrait({
             alt={`Portrait of ${member.name}`}
             fill
             sizes="(min-width: 640px) 8.5rem, 44vw"
+            {...editImage(`about.team.members.${index}.image`)}
             className={`object-cover transition duration-500 ${
               reading
                 ? "scale-[1.03] opacity-100"
@@ -325,6 +352,7 @@ function Portrait({
             className={`block font-display text-[11px] leading-tight font-semibold transition-colors ${
               reading ? "text-white" : "text-white/70"
             }`}
+            {...edit(`about.team.members.${index}.name`)}
           >
             {member.name}
           </span>
@@ -332,6 +360,7 @@ function Portrait({
             className={`mt-1 block text-[8px] leading-[1.5] font-semibold tracking-[0.1em] uppercase transition-colors ${
               reading ? "text-white/60" : "text-white/40"
             }`}
+            {...edit(`about.team.members.${index}.role`)}
           >
             {member.role}
           </span>
@@ -352,19 +381,23 @@ function Portrait({
 function Panel({
   ref,
   member,
+  index,
   visible,
   count,
 }: {
   ref: React.Ref<HTMLElement>;
   member: TeamMember;
+  index: number;
   visible: boolean;
   /** Only used to time the panel's own arrival behind the last portrait. */
   count: number;
 }) {
+  const editing = Boolean(useEditingEditor());
   return (
     <aside
       ref={ref}
-      className="team-plate hl-reveal mt-12 flex flex-col p-8 sm:p-9 lg:sticky lg:top-[calc(var(--header-h)+2.5rem)] lg:mt-0 lg:min-h-[28rem]"
+      {...editItem("about.team.members", index)}
+      className="team-plate team-panel hl-reveal mt-12 flex flex-col overflow-hidden p-7 sm:p-8 lg:sticky lg:top-[calc(var(--header-h)+1rem)] lg:mt-0"
       data-visible={visible}
       style={{ animationDelay: `${240 + count * 70}ms` }}
       aria-live="polite"
@@ -372,41 +405,22 @@ function Panel({
       {/* Keyed on the person, so the panel's contents arrive rather than
           swapping in place when the pointer moves along the wall. */}
       <div key={member.id} className="team-swap flex h-full flex-col">
-        <span className="inline-flex w-fit items-center gap-1.5 rounded-full bg-white/12 px-3 py-1.5 text-[11px] font-semibold tracking-[0.06em] text-white/85">
-          <svg
-            width="11"
-            height="11"
-            viewBox="0 0 12 12"
-            fill="none"
-            aria-hidden
-          >
-            <circle
-              cx="6"
-              cy="6"
-              r="5"
-              stroke="currentColor"
-              strokeWidth="1.3"
-            />
-            <path
-              d="M3.6 6.1l1.7 1.7 3.1-3.4"
-              stroke="currentColor"
-              strokeWidth="1.3"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-          </svg>
-          {member.chip}
-        </span>
-
-        <h3 className="mt-6 font-display text-xl leading-snug font-semibold text-white">
+        <h3 className="font-display text-xl leading-snug font-semibold text-white" {...edit(`about.team.members.${index}.name`)}>
           {member.name}
         </h3>
-        <p className="mt-1.5 text-[11px] font-semibold tracking-[0.14em] text-brand-pale uppercase">
+        <p className="mt-1.5 text-[11px] font-semibold tracking-[0.14em] text-brand-pale uppercase" {...edit(`about.team.members.${index}.role`)}>
           {member.role}
         </p>
 
         {/* The profile as the Board writes it, a paragraph to a break. */}
-        <div className="mt-5 space-y-3.5 text-sm leading-relaxed text-white/75">
+        {/* Keyed on the text, so an edit re-draws the paragraphs from
+            scratch rather than React reconciling ones the browser has already
+            merged or split while they were being typed into. */}
+        <div
+          key={member.bio}
+          className="team-bio mt-4 space-y-3 text-[13px] leading-relaxed text-white/75"
+          {...edit(`about.team.members.${index}.bio`, { multiline: true })}
+        >
           {member.bio
             .split(/\n\s*\n/)
             .map((para) => para.trim())
@@ -419,18 +433,114 @@ function Panel({
         {/* Set apart at the foot rather than run into the profile: it is the
             one line on the panel that is a fact rather than a description,
             and it is what the section is read for after the name. */}
-        {member.qualification ? (
-          <div className="mt-auto pt-7">
+        {member.qualification || editing ? (
+          <div className="mt-auto pt-5">
             <span className="block h-px w-full bg-white/15" aria-hidden />
             <p className="mt-4 text-[10px] font-semibold tracking-[0.18em] text-white/50 uppercase">
               Qualification
             </p>
-            <p className="mt-1.5 text-[13px] leading-snug text-white/80">
+            <p
+              className="mt-1.5 text-[13px] leading-snug text-white/80"
+              {...edit(`about.team.members.${index}.qualification`)}
+            >
               {member.qualification}
             </p>
           </div>
         ) : null}
       </div>
     </aside>
+  );
+}
+
+/**
+ * The small square that trails the pointer across the wall, as the reference
+ * has it: a dot while it crosses the gaps, opening into a "Profile" tag over a
+ * portrait. Over a portrait it stands in for the pointer itself — the hand is
+ * hidden there, and the dot sits where the pointer is. It follows with a
+ * little lag — eased towards the pointer each frame rather than pinned to it
+ * — which is what makes it read as smooth.
+ *
+ * Only where there is a pointer to follow, and not for reduced motion. It is
+ * decoration: the portraits are buttons and say what they do on their own.
+ */
+function WallCursor({
+  wall,
+}: {
+  wall: React.RefObject<HTMLUListElement | null>;
+}) {
+  const ref = useRef<HTMLSpanElement | null>(null);
+
+  useEffect(() => {
+    const area = wall.current;
+    const el = ref.current;
+    if (!area || !el) return;
+    if (
+      !window.matchMedia("(hover: hover) and (pointer: fine)").matches ||
+      window.matchMedia("(prefers-reduced-motion: reduce)").matches
+    ) {
+      return;
+    }
+
+    /* Where the pointer is, and where the tag has got to. */
+    let tx = 0;
+    let ty = 0;
+    let x = 0;
+    let y = 0;
+    let frame = 0;
+    let placed = false;
+
+    const tick = () => {
+      x += (tx - x) * 0.3;
+      y += (ty - y) * 0.3;
+      el.style.transform = `translate3d(${x}px, ${y}px, 0)`;
+      frame =
+        Math.abs(tx - x) + Math.abs(ty - y) > 0.3
+          ? requestAnimationFrame(tick)
+          : 0;
+    };
+
+    const onMove = (event: PointerEvent) => {
+      /* The dot's centre on the pointer: the square is 22px tall and its dot
+         sits 9.5px in from the left. */
+      tx = event.clientX - 9.5;
+      ty = event.clientY - 11;
+      if (!placed) {
+        x = tx;
+        y = ty;
+        placed = true;
+      }
+      const onPortrait = Boolean(
+        (event.target as HTMLElement).closest?.(".team-portrait"),
+      );
+      el.dataset.state = onPortrait ? "profile" : "dot";
+      if (!frame) frame = requestAnimationFrame(tick);
+    };
+
+    const onLeave = () => {
+      el.dataset.state = "hidden";
+      placed = false;
+    };
+
+    /* Only once the dot is there to replace it is the pointer hidden. */
+    area.classList.add("team-wall--dot");
+    area.addEventListener("pointermove", onMove);
+    area.addEventListener("pointerleave", onLeave);
+    /* It is fixed to the window, so a scroll under a still pointer would
+       leave it behind; hide it until the pointer moves again. */
+    window.addEventListener("scroll", onLeave, { passive: true });
+    return () => {
+      area.classList.remove("team-wall--dot");
+      area.removeEventListener("pointermove", onMove);
+      area.removeEventListener("pointerleave", onLeave);
+      window.removeEventListener("scroll", onLeave);
+      if (frame) cancelAnimationFrame(frame);
+    };
+  }, [wall]);
+
+  return (
+    <span ref={ref} className="team-cursor" data-state="hidden" aria-hidden>
+      <span className="team-cursor__dot" />
+      <span className="team-cursor__label">Profile</span>
+    </span>
   );
 }

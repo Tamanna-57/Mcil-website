@@ -28,6 +28,12 @@ export default function LoginForm({
         body: JSON.stringify({ password }),
       });
       if (res.ok) {
+        /* Land on the site with the editor already switched on. */
+        try {
+          sessionStorage.setItem("mcil-edit-mode", "1");
+        } catch {
+          /* private window: the admin switches it on from the bar */
+        }
         router.replace(next);
         router.refresh();
         return;

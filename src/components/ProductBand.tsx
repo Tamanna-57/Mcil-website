@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
+import { edit, editImage, editItem } from "@/lib/admin/editable";
 import type { Product, ProductPlate } from "@/lib/products";
 
 /**
@@ -149,9 +150,12 @@ function useCursorWipe(enabled: boolean) {
 
 export default function ProductBand({
   product,
+  index = 0,
   divider,
 }: {
   product: Product;
+  /** Where the product sits in the list, for the in-page editor. */
+  index?: number;
   /** The hairline above the band. Carried by every band after the first. */
   divider?: boolean;
 }) {
@@ -163,6 +167,7 @@ export default function ProductBand({
       ref={sectionRef}
       id={product.id}
       className="scroll-mt-[var(--header-h)] bg-background px-6 py-16 sm:px-10 lg:px-[6.5vw] lg:py-20"
+      {...editItem("products.items", index)}
     >
       <div className="mx-auto w-full max-w-6xl">
         {divider && (
@@ -181,6 +186,7 @@ export default function ProductBand({
             <h2
               className="pb-rise text-[clamp(1.5rem,4.6vw,2.5rem)] leading-[1.05] font-extrabold tracking-[-0.01em] text-steel-900 uppercase"
               data-visible={visible}
+              {...edit(`products.items.${index}.name`)}
             >
               {product.name}
             </h2>
@@ -188,6 +194,7 @@ export default function ProductBand({
               className="pb-rise mt-6 max-w-[34rem] text-[clamp(1.05rem,2.1vw,1.45rem)] leading-[1.35] text-steel-800"
               data-visible={visible}
               style={{ animationDelay: "110ms" }}
+              {...edit(`products.items.${index}.body`, { raw: true })}
             >
               <Body text={product.body} />
             </p>
@@ -197,9 +204,13 @@ export default function ProductBand({
 
         <div className="mt-12 lg:mt-16">
           {product.layout === "wordmark" ? (
-            <WordmarkBlock product={product} visible={visible} />
+            <WordmarkBlock
+              product={product}
+              path={`products.items.${index}`}
+              visible={visible}
+            />
           ) : (
-            <GalleryRow product={product} />
+            <GalleryRow product={product} path={`products.items.${index}`} />
           )}
         </div>
       </div>
@@ -237,9 +248,11 @@ function Body({ text }: { text: string }) {
  */
 function WordmarkBlock({
   product,
+  path,
   visible,
 }: {
   product: Product;
+  path: string;
   visible: boolean;
 }) {
   return (
@@ -261,6 +274,7 @@ function WordmarkBlock({
       <span
         className="pb-wordmark block origin-left scale-x-[0.94] text-[clamp(1.95rem,5.6vw,6.2rem)] leading-[0.9] font-extrabold tracking-[-0.055em] whitespace-nowrap text-accent lg:absolute lg:top-[11%] lg:left-[4.1%]"
         aria-hidden
+        {...edit(`${path}.wordmark`)}
       >
         {product.wordmark}
       </span>
@@ -268,6 +282,7 @@ function WordmarkBlock({
       <div className="mt-6 lg:absolute lg:top-[25%] lg:left-[25.4%] lg:mt-0 lg:h-[74%] lg:w-[49.2%]">
         <Plate
           plate={product.plate}
+          path={`${path}.plate`}
           pop
           /* Its own ratio in flow on a phone; filling the box it is given
              once the block goes absolute at lg. */
@@ -294,7 +309,7 @@ const GALLERY_GEOMETRY = [
   { left: "68.4%", width: "31.6%", height: "95.7%" },
 ] as const;
 
-function GalleryRow({ product }: { product: Product }) {
+function GalleryRow({ product, path }: { product: Product; path: string }) {
   const plates = product.plates ?? [];
 
   return (
@@ -306,6 +321,7 @@ function GalleryRow({ product }: { product: Product }) {
           <Plate
             key={plate.alt}
             plate={plate}
+            path={`${path}.plates.${i}`}
             className={i === 2 ? "col-span-2 aspect-[16/9]" : "aspect-[4/5]"}
             sizes={i === 2 ? "92vw" : "45vw"}
             delay={200 + i * 90}
@@ -325,6 +341,7 @@ function GalleryRow({ product }: { product: Product }) {
             >
               <Plate
                 plate={plate}
+                path={`${path}.plates.${i}`}
                 className="h-full"
                 sizes="35vw"
                 delay={200 + i * 110}
@@ -349,12 +366,14 @@ const TONES = {
  */
 function Plate({
   plate,
+  path,
   className = "",
   sizes,
   pop = false,
   delay = 260,
 }: {
   plate?: ProductPlate;
+  path: string;
   /** Carries the plate's sizing — a ratio in flow, or h-full in a fixed box. */
   className?: string;
   sizes: string;
@@ -387,10 +406,11 @@ function Plate({
           alt={plate.alt}
           fill
           sizes={sizes}
+          {...editImage(`${path}.src`, { optional: true })}
           className="object-cover"
         />
       ) : (
-        <Placeholder plate={plate} />
+        <Placeholder plate={plate} path={path} />
       )}
 
       {compare && (
@@ -419,6 +439,9 @@ function Plate({
               alt={compare.alt}
               fill
               sizes={sizes}
+              {...editImage(`${path}.compare.src`, {
+                removes: `${path}.compare`,
+              })}
               className="object-cover"
             />
           </div>
@@ -455,11 +478,12 @@ function Plate({
 /**
  * What goes in the slot, said plainly, inside a hairline frame.
  */
-function Placeholder({ plate }: { plate: ProductPlate }) {
+function Placeholder({ plate, path }: { plate: ProductPlate; path: string }) {
   const onDark = plate.tone === "navy" || plate.tone === "accent";
 
   return (
     <div
+      {...editImage(`${path}.src`, { empty: true })}
       className={`absolute inset-2 flex flex-col items-center justify-center gap-3 rounded-lg border border-dashed p-4 text-center sm:inset-3 ${
         onDark ? "border-white/35" : "border-steel-900/25"
       }`}
