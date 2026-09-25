@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { LOGO_HEIGHT, LOGO_LINE, LOGO_NAME } from "@/lib/brand";
+import { HEADER_LOGO_HEIGHT, LOGO_LINE, LOGO_NAME } from "@/lib/brand";
 import { navItems, type NavItem, type NavLink } from "@/lib/site-nav";
 
 /*
@@ -169,7 +169,7 @@ export default function SiteHeader() {
         if (e.key === "Escape") closeNow();
       }}
     >
-      <div className="flex items-center justify-between gap-6 px-6 py-2.5 sm:px-10 lg:px-[3vw]">
+      <div className="flex items-center justify-between gap-6 px-6 py-1.5 sm:px-10 lg:px-[3vw]">
         {/* The monogram with the company name under it. The mark is a
             background image and the name is decorative beside the link's own
             accessible name, so both are hidden from the reading order and the
@@ -182,7 +182,7 @@ export default function SiteHeader() {
         >
           <span
             className="site-logo block"
-            style={{ "--logo-h": `${LOGO_HEIGHT}px` } as React.CSSProperties}
+            style={{ "--logo-h": `${HEADER_LOGO_HEIGHT}px` } as React.CSSProperties}
             aria-hidden
           />
           <span className="site-wordmark block" aria-hidden>
@@ -335,7 +335,7 @@ function NavTrigger({
     </>
   );
 
-  const className = `relative cursor-pointer pb-1.5 text-[13px] tracking-[0.08em] uppercase transition-colors ${
+  const className = `relative cursor-pointer pb-1 text-[12px] tracking-[0.08em] uppercase transition-colors ${
     active
       ? "text-[color:var(--nav-ink)]"
       : "text-[color:var(--nav-ink-soft)] hover:text-[color:var(--nav-ink)]"

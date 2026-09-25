@@ -1,5 +1,7 @@
 "use client";
 
+import { useDraft, useEditingEditor } from "@/lib/admin/draft";
+import { edit } from "@/lib/admin/editable";
 import { useEffect, useId, useMemo, useRef, useState } from "react";
 import {
   BAR_STAGGER,
@@ -16,12 +18,14 @@ type Currency = "inr" | "usd";
 export default function InvestorPerformance({
   title = defaultHeading.title,
   standfirst = defaultHeading.standfirst,
-  metrics = defaultMetrics,
+  metrics: publishedMetrics = defaultMetrics,
 }: {
   title?: string;
   standfirst?: string;
   metrics?: PerformanceMetric[];
 }) {
+  const metrics = useDraft("investors.performance.metrics", publishedMetrics);
+  const editor = useEditingEditor();
   const sectionRef = useRef<HTMLElement | null>(null);
   const [visible, setVisible] = useState(false);
   const [metricId, setMetricId] = useState(metrics[0].id);
@@ -83,12 +87,24 @@ export default function InvestorPerformance({
     >
       <div className="mx-auto w-full max-w-6xl">
         <header className="text-center">
-          <h2 className="type-display text-[clamp(1.7rem,5.4vw,3.9rem)] leading-[1.15] text-steel-900 uppercase">
+          <h2 className="type-display text-[clamp(1.7rem,5.4vw,3.9rem)] leading-[1.15] text-steel-900 uppercase" {...edit("investors.performance.title")}>
             {title}
           </h2>
-          <p className="mt-4 text-sm tracking-[0.04em] text-steel-800 sm:text-base">
+          <p className="mt-4 text-sm tracking-[0.04em] text-steel-800 sm:text-base" {...edit("investors.performance.standfirst")}>
             {standfirst}
           </p>
+          {/* The chart is drawn from the reported years, which are kept up
+              from the annual report rather than typed bar by bar. */}
+          {editor ? (
+            <button
+              type="button"
+              data-edit-ui
+              onClick={() => editor.openFigures()}
+              className="mt-5 cursor-pointer rounded-full bg-steel-900 px-4 py-2 text-xs font-semibold text-white shadow-lg hover:bg-steel-800"
+            >
+              Edit the figures · import an annual report
+            </button>
+          ) : null}
         </header>
 
         <fieldset className="mt-10 flex items-center justify-center gap-7 lg:justify-end">

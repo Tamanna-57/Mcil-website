@@ -1,3 +1,4 @@
+import { edit } from "@/lib/admin/editable";
 import Link from "next/link";
 import { LOGO_HEIGHT, LOGO_LINE, LOGO_NAME } from "@/lib/brand";
 import type { SiteContent } from "@/lib/content/types";
@@ -59,7 +60,9 @@ export default function SiteFooter({
 
             <p className="mt-6 max-w-[22rem] text-[13px] leading-relaxed">
               Cold rolled steel strips, coils and HRPO, rolled at Faridabad.
-              Promoted by the {company.promoters}, {company.incorporated}.
+              Promoted by the{" "}
+              <span {...edit("company.promoters")}>{company.promoters}</span>,{" "}
+              <span {...edit("company.incorporated")}>{company.incorporated}</span>.
             </p>
 
             <div className="mt-5 flex flex-col items-start gap-1 text-[13px]">
@@ -67,13 +70,13 @@ export default function SiteFooter({
                 href={`tel:${company.phone.replace(/\s/g, "")}`}
                 className="transition-colors hover:text-white"
               >
-                {company.phone}
+                <span {...edit("company.phone")}>{company.phone}</span>
               </a>
               <a
                 href={`mailto:${company.email}`}
                 className="transition-colors hover:text-white"
               >
-                {company.email}
+                <span {...edit("company.email")}>{company.email}</span>
               </a>
             </div>
           </div>
@@ -104,17 +107,21 @@ export default function SiteFooter({
             <address className="mt-4 space-y-4 text-[13px] leading-relaxed not-italic">
               <div>
                 <p className="text-white/40">Registered office</p>
-                <p className="mt-1">{company.registeredOffice}</p>
+                <p className="mt-1" {...edit("company.registeredOffice")}>
+                  {company.registeredOffice}
+                </p>
               </div>
               <div>
                 <p className="text-white/40">Works</p>
-                <p className="mt-1">{company.works}</p>
+                <p className="mt-1" {...edit("company.works")}>
+                  {company.works}
+                </p>
                 <p className="mt-1">
                   <a
                     href={`tel:${company.worksPhone.split("/")[0].replace(/\s/g, "")}`}
                     className="transition-colors hover:text-white"
                   >
-                    {company.worksPhone}
+                    <span {...edit("company.worksPhone")}>{company.worksPhone}</span>
                   </a>
                 </p>
               </div>
@@ -129,19 +136,21 @@ export default function SiteFooter({
               <div>
                 <dt className="text-white/40">BSE scrip code</dt>
                 <dd className="mt-1 text-white/75">
-                  {company.bseScripCode}
+                  <span {...edit("company.bseScripCode")}>{company.bseScripCode}</span>
                   <span className="px-2 text-white/25">·</span>
-                  {company.bseScripId}
+                  <span {...edit("company.bseScripId")}>{company.bseScripId}</span>
                 </dd>
               </div>
               <div>
                 <dt className="text-white/40">ISIN</dt>
-                <dd className="mt-1 text-white/75">{company.isin}</dd>
+                <dd className="mt-1 text-white/75" {...edit("company.isin")}>
+                  {company.isin}
+                </dd>
               </div>
               <div>
                 <dt className="text-white/40">CIN</dt>
                 <dd className="mt-1 break-words text-white/75">
-                  {company.cin}
+                  <span {...edit("company.cin")}>{company.cin}</span>
                 </dd>
               </div>
             </dl>
@@ -161,7 +170,8 @@ export default function SiteFooter({
       <div className="border-t border-white/12">
         <div className="mx-auto flex w-full max-w-6xl flex-col gap-2 px-6 py-4 text-xs text-white/45 sm:flex-row sm:items-center sm:justify-between sm:px-10">
           <p>
-            © {new Date().getFullYear()} {company.legalName}. All rights
+            © {new Date().getFullYear()}{" "}
+            <span {...edit("company.legalName")}>{company.legalName}</span>. All rights
             reserved.
           </p>
 

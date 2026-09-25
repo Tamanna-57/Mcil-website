@@ -4,6 +4,7 @@ import AboutTeam from "@/components/AboutTeam";
 import Customers from "@/components/Customers";
 import Hero from "@/components/Hero";
 import SiteIntro from "@/components/SiteIntro";
+import { edit } from "@/lib/admin/editable";
 import { getContent } from "@/lib/content/store";
 
 /* Copy comes from the content store, which the admin panel writes to, so the
@@ -48,22 +49,25 @@ export default async function Home() {
         <div className="mx-auto grid w-full max-w-6xl gap-10 lg:grid-cols-[minmax(0,0.46fr)_minmax(0,1fr)] lg:gap-16">
           <div>
             <p className="text-[11px] font-semibold tracking-[0.24em] text-accent uppercase">
-              [ {home.about.eyebrow} ]
+              [ <span {...edit("home.about.eyebrow")}>{home.about.eyebrow}</span> ]
             </p>
             {/* One line at every width: tracked tighter than `type-display`
                 sets it, and held from wrapping — the clamp keeps it inside the
                 column rather than the wrap doing it. */}
-            <h2 className="type-display mt-5 text-[clamp(2.4rem,6vw,4.2rem)] leading-[1] tracking-[0.01em] whitespace-nowrap text-steel-900">
+            <h2 className="type-display mt-5 text-[clamp(2.4rem,6vw,4.2rem)] leading-[1] tracking-[0.01em] whitespace-nowrap text-steel-900" {...edit("home.about.title")}>
               {home.about.title}
             </h2>
           </div>
 
           <div>
-            <p className="max-w-2xl font-display text-lg leading-snug font-semibold text-steel-900 sm:text-xl">
+            <p className="max-w-2xl font-display text-lg leading-snug font-semibold text-steel-900 sm:text-xl" {...edit("home.about.lead")}>
               {home.about.lead}
             </p>
 
-            <div className="mt-8 text-[15px] leading-relaxed text-steel-800 sm:columns-2 sm:gap-10 sm:text-base lg:mt-10">
+            <div
+              className="mt-8 text-[15px] leading-relaxed text-steel-800 sm:columns-2 sm:gap-10 sm:text-base lg:mt-10"
+              {...edit("home.about.body", { multiline: true })}
+            >
               {home.about.body
                 .split(/\n\s*\n/)
                 .map((paragraph) => paragraph.trim())

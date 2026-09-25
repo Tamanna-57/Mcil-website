@@ -1,5 +1,7 @@
 "use client";
 
+import { useDraft, useEditingEditor } from "@/lib/admin/draft";
+import { edit, editItem } from "@/lib/admin/editable";
 import { useEffect, useRef, useState } from "react";
 import { company as defaultCompany } from "@/lib/company";
 import {
@@ -15,12 +17,15 @@ function telHref(phone: string) {
 
 /** The written details under the card — small, on the same blue ground. */
 export default function ContactDetails({
-  locations = defaultLocations,
-  company = defaultCompany,
+  locations: publishedLocations = defaultLocations,
+  company: publishedCompany = defaultCompany,
 }: {
   locations?: ContactLocation[];
   company?: typeof defaultCompany;
 }) {
+  const locations = useDraft("contact.locations", publishedLocations);
+  const company = useDraft("company", publishedCompany);
+  const editing = Boolean(useEditingEditor());
   const sectionRef = useRef<HTMLElement>(null);
   const [visible, setVisible] = useState(false);
 
@@ -54,19 +59,29 @@ export default function ContactDetails({
           className="cc-tile hl-reveal rounded-2xl p-5"
           data-visible={visible}
           style={{ animationDelay: `${60 + i * 80}ms` }}
+          {...editItem("contact.locations", i)}
         >
-          <h2 className="text-[10px] font-semibold tracking-[0.16em] text-brand-deep uppercase">
+          <h2 className="text-[10px] font-semibold tracking-[0.16em] text-brand-deep uppercase" {...edit(`contact.locations.${i}.label`)}>
             {location.label}
           </h2>
-          <p className="mt-3 text-[13px] leading-relaxed text-steel-800">
+          <p className="mt-3 text-[13px] leading-relaxed text-steel-800" {...edit(`contact.locations.${i}.address`)}>
             {location.address}
           </p>
           <a
             href={telHref(location.phone)}
             className="type-figure mt-3 inline-block text-sm text-steel-900 transition-colors hover:text-brand-deep"
           >
-            {location.phone}
+            <span {...edit(`contact.locations.${i}.phone`)}>{location.phone}</span>
           </a>
+          {/* Not printed on the page, but it is what the map looks up. */}
+          {editing ? (
+            <p className="mt-3 text-[11px] text-steel-800/70">
+              Map search:{" "}
+              <span {...edit(`contact.locations.${i}.mapQuery`)}>
+                {location.mapQuery}
+              </span>
+            </p>
+          ) : null}
         </article>
       ))}
 
@@ -82,13 +97,16 @@ export default function ContactDetails({
           href={`mailto:${company.email}`}
           className="mt-3 inline-block text-[13px] font-semibold text-steel-900 transition-colors hover:text-brand-deep"
         >
-          {company.email}
+          <span {...edit("company.email")}>{company.email}</span>
         </a>
         <p className="mt-2 text-[12px] leading-relaxed text-steel-800/80">
-          {company.complianceOfficer.name} — investor queries
+          <span {...edit("company.complianceOfficer.name")}>
+            {company.complianceOfficer.name}
+          </span>{" "}
+          — investor queries
         </p>
         <p className="mt-2 text-[11px] tracking-[0.04em] text-steel-800/60 tabular-nums">
-          CIN {company.cin}
+          CIN <span {...edit("company.cin")}>{company.cin}</span>
         </p>
       </article>
     </section>
