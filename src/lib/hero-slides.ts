@@ -10,7 +10,7 @@ export type HeroSlide = {
 };
 
 /**
- * The hero cycles these four in order and loops. Order here is the order on screen.
+ * The hero cycles these three in order and loops. Order here is the order on screen.
  */
 export const heroSlides: HeroSlide[] = [
   {
@@ -24,12 +24,6 @@ export const heroSlides: HeroSlide[] = [
     image: "/images/hero-2.jpg",
     alt: "Cold rolled steel coils stacked down the finished goods bay",
     position: "45% 50%",
-  },
-  {
-    sector: "Galvanised",
-    image: "/images/hero-3.jpg",
-    alt: "Bundled galvanised steel stock staged across the warehouse floor",
-    position: "50% 60%",
   },
   {
     sector: "HRPO Coils",

@@ -124,17 +124,6 @@ export const investorSlides: InvestorSlide[] = [
     alt: "Cold rolled steel coils stacked down the finished goods bay",
     position: "55% 50%",
   },
-  {
-    id: "governance",
-    eyebrow: "Policies, Codes & Unclaimed Dividend",
-    headline: ["Governed", "in the open"],
-    standfirst:
-      "Board policies, the code of conduct and unclaimed dividend records, kept current for every shareholder.",
-    cta: { label: "Read the Policies", href: "#policies" },
-    image: "/images/hero-3.jpg",
-    alt: "Bundled steel stock staged across the warehouse floor",
-    position: "50% 60%",
-  },
 ];
 
 /** Milliseconds each slide holds before advancing. Mirrors --ir-slide-duration. */
