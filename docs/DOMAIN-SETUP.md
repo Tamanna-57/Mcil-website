@@ -1,159 +1,87 @@
-# Putting the site on mcil.net
+# Moving the site to a US region and attaching mcil.net
 
-Plain-English notes on how the running Cloud Run service becomes
-`https://mcil.net`, what each option costs, and the exact commands.
+The plan, in one line: **deploy the same container again in `us-central1`,
+check it, point `mcil.net` at it, then delete the Mumbai one.**
 
-Today the site runs here:
+## Why
 
-```
-https://mcil-website-943483190840.asia-south1.run.app
-```
+A Cloud Run service lives in exactly one region, and there is no "move"
+button — you deploy it again somewhere else. Ours is in `asia-south1`
+(Mumbai), and Google only offers its simple custom-domain mapping in a list of
+regions that the Indian ones are not on. `us-central1` (Iowa) is on it.
 
-`asia-south1` is Google's Mumbai region. That is the fastest place to serve
-visitors in India, and it is also the reason the simple domain button in the
-console is greyed out.
+The cost of moving is speed: every request from an Indian visitor now travels
+to Iowa and back, roughly a quarter of a second before anything is drawn. If
+that becomes a problem later, the fix is Firebase Hosting in front of the same
+US service — its CDN caches pages near the visitor and buys the time back.
+That can be added afterwards without redoing any of this.
 
-## The problem in one paragraph
+## What "domain mapping" means
 
-A Cloud Run service is tied to one region. Google's simplest way of attaching a
-custom domain — **Cloud Run → Manage custom domains → Add mapping** — is only
-offered in a list of regions, and the Indian regions (`asia-south1` Mumbai,
-`asia-south2` Delhi) are not on that list. So the easy button is not available
-to us where the service currently lives. Nothing is broken; it is just a
-feature Google has not switched on for those regions.
+The service today only answers to the address Google generated for it. Domain
+mapping is the link between the name and the service, and it has two halves:
 
-There are three honest ways out. They are all normal, supported setups.
+- **DNS, at the registrar** — "mcil.net points at Google."
+- **The mapping, in Cloud Run** — "a request arriving for mcil.net goes to the
+  `mcil-website` service."
 
----
+Both halves are needed. Google issues the HTTPS certificate as part of it, so
+there is no certificate to buy.
 
-## The three options
+## Before you start
 
-### Option A — Keep the service in Mumbai, put a Load Balancer in front
+You need:
 
-A Global External Application Load Balancer is a Google-run front door with its
-own fixed public IP address. You point `mcil.net` at that IP. The load balancer
-holds the SSL certificate (Google renews it for free, forever) and forwards
-every request to the Cloud Run service — **in any region, Mumbai included**.
+- The Cloud project (number `943483190840`) with Owner or Editor rights.
+- **Access to DNS for `mcil.net`** — the registrar login, or someone who has
+  it. Everything up to step 5 works without it. Step 5 does not.
 
-- Fastest for Indian visitors — the site stays in Mumbai.
-- No change to the app, the bucket, or the deployment at all.
-- Costs money even when idle: roughly **$18–25 a month** for the forwarding
-  rule and IP, plus traffic. (Ballpark — confirm on Google's pricing page.)
-- Most moving parts to set up (about six console screens).
-
-This is what Google's own documentation recommends for production.
-
-### Option B — Redeploy the service in a US region, use the simple domain mapping
-
-We deploy the exact same container to `us-central1` (Iowa), then use the
-greyed-out button, which is available there. You add a few DNS records and
-Google issues the certificate.
-
-- Nearly free — no load balancer bill.
-- Simplest to set up and to hand over to someone else later.
-- **Slower for Indian visitors.** Every page request travels India → Iowa →
-  India, which adds roughly a quarter of a second before anything is drawn.
-- Needs the content bucket moved too, or the site gets *twice* as slow. See
-  "The bucket catch" below — this part is easy to miss.
-
-### Option C — US region + Firebase Hosting in front
-
-Deploy to `us-central1` as in Option B, then let Firebase Hosting serve
-`mcil.net` and forward to Cloud Run. Firebase gives a free global CDN, so pages
-are cached near the visitor and the India → US distance mostly stops mattering.
-
-- Free tier is generous; likely ₹0 for a site this size.
-- Fast for visitors, because of the CDN.
-- One more Google product in the stack to understand and maintain.
-- Firebase only forwards to Cloud Run in certain regions; `us-central1` is
-  supported. Check the current list before relying on it.
-
-### What to pick
-
-**If the budget can carry ~$20/month, pick A.** The audience is in India, the
-service is already in India, and nothing in the app has to change. The cost
-buys you the shortest path and the fewest surprises.
-
-**If it must be free, pick C** (not plain B) — the CDN buys back the speed that
-moving to Iowa costs.
-
-Plain B is the right answer only if you want the absolute simplest thing and
-accept a visibly slower site.
-
----
-
-## The bucket catch (applies to B and C only)
-
-Admin-saved content lives in a Cloud Storage bucket created in `asia-south1`,
-and `src/lib/content/store.ts` reads it **on every request** by default
-(`CONTENT_CACHE_MS` is `0`).
-
-If the service moves to Iowa while the bucket stays in Mumbai, every single
-page view does a round trip back to India just to read the content file. That
-is the slow path twice over. So if you move the service, also:
-
-1. Create a bucket in the US (or a multi-region one) and copy the contents
-   across.
-2. Point `GCS_BUCKET` at the new one.
-3. Set `CONTENT_CACHE_MS=30000` so the content file is held for 30 seconds
-   instead of being re-fetched every request. An admin edit then shows up
-   within half a minute rather than instantly — a fair trade.
-
-Uploaded images are served to browsers directly from `storage.googleapis.com`,
-so those are fine either way.
-
----
-
-## Commands
-
-Run these in Cloud Shell (the `>_` icon in the Cloud Console), from a checkout
-of this repository. Replace `PROJECT`, `SA`, `BUCKET` with the real values.
-
-### Option A — Load balancer in front of the Mumbai service
-
-Nothing to redeploy. In the console:
-
-1. **Network Services → Load balancing → Create load balancer**
-2. Application Load Balancer → **External** → **Global**
-3. **Backend configuration** → create a backend service of type **Serverless
-   network endpoint group**, pointing at the Cloud Run service
-   `mcil-website` in `asia-south1`. Turn Cloud CDN on while you are there.
-4. **Frontend configuration** → protocol HTTPS, reserve a **new static IPv4
-   address**, and create a **Google-managed certificate** listing both
-   `mcil.net` and `www.mcil.net`.
-5. Add a second frontend on HTTP port 80 so plain `http://` visitors get
-   redirected up to HTTPS.
-6. Create it, then copy the static IP it hands you.
-
-Then at whoever hosts DNS for `mcil.net`:
-
-| Record | Name  | Value                   |
-| ------ | ----- | ----------------------- |
-| A      | `@`   | the static IP from step 6 |
-| A      | `www` | the same static IP        |
-
-The certificate goes from PROVISIONING to ACTIVE once DNS has propagated —
-usually under an hour, occasionally up to a day. The site is not reachable on
-the domain until it turns ACTIVE. That wait is normal; do not start changing
-things.
-
-### Option B / C — redeploy in a US region
+Find the values the current service uses:
 
 ```bash
-# 1. A US bucket for the content, and a copy of what is already saved.
+gcloud config set project PROJECT_ID
+
+gcloud run services describe mcil-website --region asia-south1 \
+  --format='value(spec.template.spec.serviceAccountName)'
+gcloud run services describe mcil-website --region asia-south1 \
+  --format='value(spec.template.spec.containers[0].env)'
+```
+
+The first prints the service account (`SA@PROJECT.iam.gserviceaccount.com`),
+the second includes `GCS_BUCKET` — the existing content bucket. Note both.
+
+---
+
+## Step 1 — A US bucket for the content
+
+Admin-saved content and uploads live in a Cloud Storage bucket that is
+currently in Mumbai. `src/lib/content/store.ts` reads it **on every request**,
+so leaving it behind would put a Mumbai round trip in the path of every single
+page view — the slow path twice over. Copy it to the US.
+
+```bash
 gcloud storage buckets create gs://NEW_BUCKET --location=us-central1 \
   --uniform-bucket-level-access
+
+# Uploaded images and filings are served straight to browsers.
 gcloud storage buckets add-iam-policy-binding gs://NEW_BUCKET \
   --member=allUsers --role=roles/storage.objectViewer
-gcloud storage rsync -r gs://OLD_BUCKET gs://NEW_BUCKET
 
-# 2. Let the service account write to it.
+# The service writes to it when an admin saves.
 gcloud storage buckets add-iam-policy-binding gs://NEW_BUCKET \
   --member=serviceAccount:SA@PROJECT.iam.gserviceaccount.com \
   --role=roles/storage.objectAdmin
 
-# 3. Deploy the same source to Iowa. This creates a SECOND service; the
-#    Mumbai one keeps running untouched until you are happy.
+# Copy everything across. The old bucket is not touched.
+gcloud storage rsync -r gs://OLD_BUCKET gs://NEW_BUCKET
+```
+
+## Step 2 — Deploy to us-central1
+
+This creates a **second** service. The Mumbai one keeps serving, untouched,
+until you delete it yourself in step 6.
+
+```bash
 gcloud run deploy mcil-website --source . --region us-central1 \
   --service-account SA@PROJECT.iam.gserviceaccount.com \
   --set-env-vars GCS_BUCKET=NEW_BUCKET,CONTENT_CACHE_MS=30000 \
@@ -161,38 +89,95 @@ gcloud run deploy mcil-website --source . --region us-central1 \
   --allow-unauthenticated
 ```
 
-Open the new `*.us-central1.run.app` URL it prints and check the site, the
-images, and `/admin` before going any further.
+`CONTENT_CACHE_MS=30000` holds the content file for 30 seconds instead of
+re-reading it on every request. An admin edit then appears within half a minute
+rather than instantly, which is a fair trade for not fetching the same file
+hundreds of times a minute.
 
-**Option B — attach the domain:**
+## Step 3 — Check the new service
+
+It prints a `https://mcil-website-….us-central1.run.app` URL. Open it and go
+through it properly before touching DNS:
+
+- The landing page, and the images on it.
+- The investor page — filings open, the PDF viewer works.
+- `/admin` — log in, change something small, save, confirm it shows up.
+
+If anything is wrong, fix it here. The live site is still on Mumbai and no
+visitor has seen any of this yet.
+
+## Step 4 — Prove you own mcil.net
+
+Google will not map a domain to a service until it knows the domain is yours.
+
+```bash
+gcloud domains verify mcil.net
+```
+
+This opens [Search Console](https://search.google.com/search-console), which
+gives you a **TXT record** to add at the registrar. Add it, come back, click
+Verify. This is the first step that needs DNS access.
+
+## Step 5 — Create the mapping, then point DNS
 
 ```bash
 gcloud beta run domain-mappings create --service mcil-website \
   --domain mcil.net --region us-central1
+
 gcloud beta run domain-mappings create --service mcil-website \
   --domain www.mcil.net --region us-central1
 ```
 
-Google first asks you to prove you own `mcil.net` (a TXT record, through
-[Search Console](https://search.google.com/search-console)). It then prints the
-DNS records to add. **Use the records it prints**, not the ones below — these
-are only here so you know what to expect:
+Do both. People type both.
 
-| Record | Name  | Value                                          |
-| ------ | ----- | ---------------------------------------------- |
-| A      | `@`   | `216.239.32.21` … `.34.21` … `.36.21` … `.38.21` |
-| CNAME  | `www` | `ghs.googlehosted.com.`                        |
+Each command prints the DNS records to add. **Use the records it prints.** The
+table below is only so you know what to expect:
 
-**Option C — put Firebase Hosting in front instead:**
+| Record | Name  | Value                                              |
+| ------ | ----- | -------------------------------------------------- |
+| A      | `@`   | `216.239.32.21`, `.34.21`, `.36.21`, `.38.21`        |
+| AAAA   | `@`   | the four `2001:4860:4802:…` addresses it prints      |
+| CNAME  | `www` | `ghs.googlehosted.com.`                             |
+
+**This is the moment the public switches over.** Do it when someone is around
+to look at the result.
+
+Then wait. DNS takes anywhere from a few minutes to a day to spread, and the
+certificate is only issued once Google can see the records. Until it is issued
+the domain shows a security warning — that is the certificate not being ready,
+not a mistake. Check with:
+
+```bash
+gcloud beta run domain-mappings describe --domain mcil.net --region us-central1
+```
+
+Re-editing the DNS records while waiting is the most common way people break
+this. Leave them alone.
+
+## Step 6 — Clean up, once it has been fine for a few days
+
+```bash
+gcloud run services delete mcil-website --region asia-south1
+gcloud storage rm -r gs://OLD_BUCKET
+```
+
+Keep the old bucket until you are certain the copy is complete and the admin
+panel has been saving to the new one. Deleting it cannot be undone.
+
+---
+
+## If the site feels slow afterwards
+
+That is the Iowa distance, and it is expected. Put Firebase Hosting in front of
+the same service — it adds a CDN that caches pages near the visitor:
 
 ```bash
 npm install -g firebase-tools
 firebase login
-firebase init hosting     # pick the same GCP project
+firebase init hosting     # same GCP project
 ```
 
-In the generated `firebase.json`, replace the `hosting` block's rewrites so
-everything goes to Cloud Run:
+In `firebase.json`, send everything to Cloud Run:
 
 ```json
 {
@@ -205,32 +190,14 @@ everything goes to Cloud Run:
 }
 ```
 
-Then `firebase deploy --only hosting`, and add `mcil.net` under
-**Firebase Console → Hosting → Add custom domain**, which walks you through the
-DNS records.
+Then `firebase deploy --only hosting`, and move the domain over under
+**Firebase Console → Hosting → Add custom domain**.
 
-### Afterwards
+## Notes
 
-Once `https://mcil.net` is live and has been fine for a few days:
-
-```bash
-gcloud run services delete mcil-website --region asia-south1   # options B/C only
-gcloud storage rm -r gs://OLD_BUCKET                           # only after checking the copy
-```
-
-Keep the old bucket until you are certain. Deleting it is not reversible.
-
----
-
-## Things that will trip you up
-
-- **DNS is not instant.** After adding records, wait. Checking every two
-  minutes and re-editing the records is the most common way people break this.
-- **The certificate must say ACTIVE.** Until then the domain shows a security
-  warning. That is the certificate not being ready, not a misconfiguration.
-- **Both `mcil.net` and `www.mcil.net`** need setting up. People type both.
-- **`mcil.net` is currently serving the old site**, so switching DNS is the
-  moment the public sees the new one. Do it when someone is around to look.
-- **Cloud Run rejects requests whose Host header it does not recognise**, which
-  is why you cannot simply CNAME the domain at the `run.app` URL, and why a
-  plain Cloudflare proxy in front of it does not work either.
+- Cloud Run refuses requests whose Host header it does not recognise. That is
+  why you cannot just point a CNAME at the `run.app` URL, and why putting
+  Cloudflare in front of it does not work on the normal plans either.
+- Keeping the service in Mumbai is possible — it needs a Global External
+  Application Load Balancer instead of this mapping, which works from any
+  region but costs roughly $18–25 a month whether anyone visits or not.
