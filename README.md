@@ -5,7 +5,7 @@ Tailwind CSS v4.
 
 ## Getting started
 
-```bashvwswbd,hjkn4 rhciqok4rlhq83p9rq;h.w'  weq;w/i"d
+```bash
 npm install
 npm run dev     # http://localhost:3000
 npm run build   # production build
