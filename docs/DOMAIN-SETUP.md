@@ -32,23 +32,32 @@ there is no certificate to buy.
 
 You need:
 
-- The Cloud project (number `943483190840`) with Owner or Editor rights.
+- The Cloud project `arched-elixir-464218-j8` with Owner or Editor rights.
 - **Access to DNS for `mcil.net`** — the registrar login, or someone who has
   it. Everything up to step 5 works without it. Step 5 does not.
 
-Find the values the current service uses:
+The values the Mumbai service runs with, read off it once and recorded here:
+
+| | |
+| ---------------- | ----------------------------------------------------- |
+| Project          | `arched-elixir-464218-j8`                             |
+| Service account  | `943483190840-compute@developer.gserviceaccount.com`  |
+| Content bucket   | `mcil-website-files` (asia-south1)                    |
+| Env vars set     | `GCS_BUCKET`, `ADMIN_PASSWORD`                        |
+
+To read them again if anything changes:
 
 ```bash
-gcloud config set project PROJECT_ID
-
 gcloud run services describe mcil-website --region asia-south1 \
   --format='value(spec.template.spec.serviceAccountName)'
 gcloud run services describe mcil-website --region asia-south1 \
   --format='value(spec.template.spec.containers[0].env)'
 ```
 
-The first prints the service account (`SA@PROJECT.iam.gserviceaccount.com`),
-the second includes `GCS_BUCKET` — the existing content bucket. Note both.
+Note that `ADMIN_PASSWORD` is a plain environment variable rather than a
+Secret Manager secret, so it is readable by anyone with Viewer on the project
+and it shows up in output like the above. Moving it into Secret Manager is a
+worthwhile follow-up; it is not a blocker for the move.
 
 ---
 
@@ -60,20 +69,20 @@ so leaving it behind would put a Mumbai round trip in the path of every single
 page view — the slow path twice over. Copy it to the US.
 
 ```bash
-gcloud storage buckets create gs://NEW_BUCKET --location=us-central1 \
+gcloud storage buckets create gs://mcil-website-files-us --location=us-central1 \
   --uniform-bucket-level-access
 
 # Uploaded images and filings are served straight to browsers.
-gcloud storage buckets add-iam-policy-binding gs://NEW_BUCKET \
+gcloud storage buckets add-iam-policy-binding gs://mcil-website-files-us \
   --member=allUsers --role=roles/storage.objectViewer
 
 # The service writes to it when an admin saves.
-gcloud storage buckets add-iam-policy-binding gs://NEW_BUCKET \
-  --member=serviceAccount:SA@PROJECT.iam.gserviceaccount.com \
+gcloud storage buckets add-iam-policy-binding gs://mcil-website-files-us \
+  --member=serviceAccount:943483190840-compute@developer.gserviceaccount.com \
   --role=roles/storage.objectAdmin
 
 # Copy everything across. The old bucket is not touched.
-gcloud storage rsync -r gs://OLD_BUCKET gs://NEW_BUCKET
+gcloud storage rsync -r gs://mcil-website-files gs://mcil-website-files-us
 ```
 
 ## Step 2 — Deploy to us-central1
@@ -81,13 +90,21 @@ gcloud storage rsync -r gs://OLD_BUCKET gs://NEW_BUCKET
 This creates a **second** service. The Mumbai one keeps serving, untouched,
 until you delete it yourself in step 6.
 
+From a checkout of this repository in Cloud Shell:
+
 ```bash
+git clone https://github.com/Tamanna-57/Mcil-website.git
+cd Mcil-website
+
 gcloud run deploy mcil-website --source . --region us-central1 \
-  --service-account SA@PROJECT.iam.gserviceaccount.com \
-  --set-env-vars GCS_BUCKET=NEW_BUCKET,CONTENT_CACHE_MS=30000 \
-  --set-secrets ADMIN_PASSWORD=mcil-admin-password:latest \
+  --service-account 943483190840-compute@developer.gserviceaccount.com \
+  --set-env-vars "GCS_BUCKET=mcil-website-files-us,CONTENT_CACHE_MS=30000,ADMIN_PASSWORD=<the value the Mumbai service uses>" \
   --allow-unauthenticated
 ```
+
+`ADMIN_PASSWORD` is passed the same way the Mumbai service has it — as a plain
+environment variable, not `--set-secrets`. Read the current value off the old
+service with the describe command above rather than writing it down anywhere.
 
 `CONTENT_CACHE_MS=30000` holds the content file for 30 seconds instead of
 re-reading it on every request. An admin edit then appears within half a minute
@@ -158,7 +175,7 @@ this. Leave them alone.
 
 ```bash
 gcloud run services delete mcil-website --region asia-south1
-gcloud storage rm -r gs://OLD_BUCKET
+gcloud storage rm -r gs://mcil-website-files
 ```
 
 Keep the old bucket until you are certain the copy is complete and the admin
